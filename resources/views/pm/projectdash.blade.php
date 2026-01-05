@@ -5,13 +5,16 @@
 <script src="{{ asset('assets/js/full-screen.js') }}"></script>
 <script src="{{ asset('assets/js/chart3.js') }}"></script>
 <!-- Highcharts Libraries -->
-<script src="https://code.highcharts.com/highcharts.js"></script>
-<script src="https://code.highcharts.com/modules/data.js"></script>
-<script src="https://code.highcharts.com/modules/drilldown.js"></script>
-<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<!-- <script src="https://code.highcharts.com/highcharts.js"></script> -->
+ <script src="{{ asset('assets/js/highcharts.js') }}"></script>
+<!-- <script src="https://code.highcharts.com/modules/data.js"></script> -->
+  <script src="{{ asset('assets/js/data2.js') }}"></script>
+<!-- <script src="https://code.highcharts.com/modules/drilldown.js"></script> -->
+  <script src="{{ asset('assets/js/drilldown.js') }}"></script>
+<!-- <script src="https://code.highcharts.com/modules/exporting.js"></script>
 <script src="https://code.highcharts.com/modules/export-data.js"></script>
 <script src="https://code.highcharts.com/modules/accessibility.js"></script>
-<script src="https://code.highcharts.com/themes/adaptive.js"></script>
+<script src="https://code.highcharts.com/themes/adaptive.js"></script> -->
 
 <style>
     body {

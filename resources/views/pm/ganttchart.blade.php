@@ -29,7 +29,6 @@
             opacity: 0.5;
         }
 
-        /* Dashboard Header */
         .dashboard-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -43,46 +42,34 @@
             font-weight: 700;
         }
 
-        /* DIPERKECIL: Dashboard Stats */
         .dashboard-stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            /* Diperkecil dari 200px */
             gap: 12px;
-            /* Diperkecil dari 15px */
             margin-bottom: 20px;
-            /* Diperkecil dari 25px */
         }
 
         .stat-card {
             background: white;
             border-radius: 6px;
-            /* Diperkecil dari 8px */
             padding: 15px;
-            /* Diperkecil dari 20px */
             text-align: center;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            /* Diperkecil shadow */
             border-left: 3px solid #667eea;
-            /* Diperkecil dari 4px */
         }
 
         .stat-card .number {
             font-size: 1.5rem;
-            /* Diperkecil dari 2rem */
             font-weight: 700;
             color: #667eea;
             margin-bottom: 4px;
-            /* Diperkecil dari 5px */
         }
 
         .stat-card .label {
             font-size: 0.8rem;
-            /* Diperkecil dari 0.9rem */
             color: #6c757d;
         }
 
-        /* Filter Section - DIKECILKAN */
         .filter-section {
             background: #f8f9fa;
             border: 1px solid #dee2e6;
@@ -206,7 +193,6 @@
             text-decoration: none;
         }
 
-        /* Fullscreen styles */
         .highcharts-container {
             overflow: auto !important;
         }
@@ -215,7 +201,6 @@
             overflow: visible !important;
         }
 
-        /* Menu Export Styles */
         .chart-header {
             display: flex;
             justify-content: space-between;
@@ -298,12 +283,10 @@
             border-bottom: 1px solid #eee;
         }
 
-        /* Hide default Highcharts export button */
         .highcharts-contextbutton {
             display: none !important;
         }
 
-        /* Gantt Chart Legend */
         .gantt-legend {
             background: white;
             border-radius: 8px;
@@ -322,7 +305,6 @@
             padding-bottom: 8px;
         }
 
-        /* === ALL LEGEND IN ONE ROW === */
         .legend-row {
             display: flex;
             align-items: center;
@@ -332,9 +314,6 @@
             padding-bottom: 10px;
         }
 
-
-
-        /* Keep existing box style */
         .legend-item,
         .timeline-item,
         .today-item {
@@ -346,7 +325,6 @@
             border-radius: 6px;
         }
 
-        /* Keep existing color boxes */
         .legend-color {
             width: 20px;
             height: 20px;
@@ -369,7 +347,6 @@
             overflow: hidden;
         }
 
-        /* Label mengikuti warna box */
         .legend-text-green {
             color: #28a745;
             font-weight: 600;
@@ -390,7 +367,6 @@
             font-weight: 500;
         }
 
-        /* === ALL LEGEND IN ONE ROW === */
         .legend-row {
             display: flex;
             align-items: center;
@@ -400,7 +376,6 @@
             padding-bottom: 10px;
         }
 
-        /* Keep existing box style - SEMUA MENJADI LEGEND-ITEM */
         .legend-item {
             display: flex;
             align-items: center;
@@ -412,37 +387,33 @@
 
         .legend-color {
             width: 25px;
-            /* DIUBAH dari 20px */
             height: 15px;
-            /* DIUBAH dari 20px */
             border-radius: 3px;
-            /* DIUBAH dari 4px */
             border: 1px solid rgba(0, 0, 0, 0.1);
         }
 
 
 
-       .legend-color-blue {
-    background: #3498db !important;
-    border-color: #2980b9 !important;
-}
+        .legend-color-blue {
+            background: #3498db !important;
+            border-color: #2980b9 !important;
+        }
 
-.legend-color-yellow {
-    background: #f39c12 !important;
-    border-color: #d68910 !important;
-}
+        .legend-color-yellow {
+            background: #f39c12 !important;
+            border-color: #d68910 !important;
+        }
 
-.legend-color-green {
-    background: #2ecc71 !important;
-    border-color: #27ae60 !important;
-}
+        .legend-color-green {
+            background: #2ecc71 !important;
+            border-color: #27ae60 !important;
+        }
 
-.legend-color-red {
-    background: #e74c3c !important;
-    border-color: #c0392b !important;
-}
+        .legend-color-red {
+            background: #e74c3c !important;
+            border-color: #c0392b !important;
+        }
 
-        /* Today item tetap seperti semula */
         .today-item {
             display: flex;
             align-items: center;
@@ -452,7 +423,6 @@
             border-radius: 6px;
         }
 
-        /* Tambahkan di bagian style */
         #print-container {
             position: absolute;
             left: -9999px;
@@ -461,27 +431,22 @@
             height: auto;
         }
 
-        /* Tambahkan CSS untuk export yang lebih baik */
         #print-container {
             position: absolute;
             left: -9999px;
             top: -9999px;
             width: 2000px;
-            /* Lebar lebih besar */
             height: auto;
         }
 
-        /* Tambahkan style untuk highcharts export */
         .highcharts-exporting-contextmenu {
             z-index: 10000 !important;
         }
 
-        /* Style untuk chart saat export */
         .highcharts-export-chart {
             overflow: visible !important;
         }
 
-        /* Tambahkan juga CSS untuk memastikan container export cukup lebar */
         @media print {
             #print-container {
                 width: 100% !important;
@@ -618,96 +583,95 @@
     <div class="gantt-legend">
         <h5>Gantt Chart Legend</h5>
 
-        <!-- Update bagian legend dalam .legend-row -->
-<div class="legend-row">
-    <!-- Milestone -->
-    <div class="legend-item">
-        <div class="legend-color" style="background:#28a745;"></div>
-        <div class="legend-label legend-text-green">Milestone</div>
-    </div>
+        <div class="legend-row">
+            <!-- Milestone -->
+            <div class="legend-item">
+                <div class="legend-color" style="background:#28a745;"></div>
+                <div class="legend-label legend-text-green">Milestone</div>
+            </div>
 
-    <!-- Activity (Bold) -->
-    <div class="legend-item">
-        <div class="legend-color"
-            style="background:#000; display:flex; align-items:center; justify-content:center;">
-            <span style="color:white; font-weight:bold; font-size:12px;">B</span>
-        </div>
-        <div class="legend-label legend-text-black-bold">Activity</div>
-    </div>
+            <!-- Activity (Bold) -->
+            <div class="legend-item">
+                <div class="legend-color"
+                    style="background:#000; display:flex; align-items:center; justify-content:center;">
+                    <span style="color:white; font-weight:bold; font-size:12px;">B</span>
+                </div>
+                <div class="legend-label legend-text-black-bold">Activity</div>
+            </div>
 
-    <!-- Activity (Regular) -->
-    <div class="legend-item">
-        <div class="legend-color" style="background:#000;"></div>
-        <div class="legend-label legend-text-black">Sub-Activity</div>
-    </div>
+            <!-- Activity (Regular) -->
+            <div class="legend-item">
+                <div class="legend-color" style="background:#000;"></div>
+                <div class="legend-label legend-text-black">Sub-Activity</div>
+            </div>
 
-    <!-- Sub Activity -->
-    <div class="legend-item">
-        <div class="legend-color" style="background:#6c757d;"></div>
-        <div class="legend-label legend-text-grey">Default <span>(Belum diisi)</span>
-        </div>
-    </div>
+            <!-- Sub Activity -->
+            <div class="legend-item">
+                <div class="legend-color" style="background:#6c757d;"></div>
+                <div class="legend-label legend-text-grey">Default <span>(Belum diisi)</span>
+                </div>
+            </div>
 
-    <!-- Plan Timeline - WARNA BIRU -->
-    <div class="legend-item">
-        <div class="legend-color" style="background:#3498db; border-color:#2980b9;"></div>
-        <div class="legend-label">Plan</div>
-    </div>
+            <!-- Plan Timeline  -->
+            <div class="legend-item">
+                <div class="legend-color" style="background:#3498db; border-color:#2980b9;"></div>
+                <div class="legend-label">Plan</div>
+            </div>
 
-    <!-- Actual Timeline - Berdasarkan Kondisi -->
-    <div class="legend-item">
-        <div class="legend-color" style="background:#f39c12; border-color:#d68910;"></div>
-        <div class="legend-label">In Progress</div>
-    </div>
-    
-    <div class="legend-item">
-        <div class="legend-color" style="background:#2ecc71; border-color:#27ae60;"></div>
-        <div class="legend-label">On Time</div>
-    </div>
-    
-    <div class="legend-item">
-        <div class="legend-color" style="background:#e74c3c; border-color:#c0392b;"></div>
-        <div class="legend-label">Overdue</div>
-    </div>
+            <!-- Actual Timeline -->
+            <div class="legend-item">
+                <div class="legend-color" style="background:#f39c12; border-color:#d68910;"></div>
+                <div class="legend-label">In Progress</div>
+            </div>
 
-    <!-- Holiday -->
-    <div class="legend-item">
-        <div class="legend-color">
-            <div style="width:100%;height:100%;background:repeating-linear-gradient(
+            <div class="legend-item">
+                <div class="legend-color" style="background:#2ecc71; border-color:#27ae60;"></div>
+                <div class="legend-label">On Time</div>
+            </div>
+
+            <div class="legend-item">
+                <div class="legend-color" style="background:#e74c3c; border-color:#c0392b;"></div>
+                <div class="legend-label">Overdue</div>
+            </div>
+
+            <!-- Holiday -->
+            <div class="legend-item">
+                <div class="legend-color">
+                    <div style="width:100%;height:100%;background:repeating-linear-gradient(
             45deg,
             transparent,
             transparent 3px,
             rgba(255,0,0,0.2) 3px,
             rgba(255,0,0,0.2) 6px
             )"></div>
-        </div>
-        <div class="legend-label">Holiday</div>
-    </div>
+                </div>
+                <div class="legend-label">Holiday</div>
+            </div>
 
-    <!-- Weekend -->
-    <div class="legend-item">
-        <div class="legend-color" style="border-color:rgba(128,128,128,0.3);">
-            <div style="width:100%;height:100%;background:repeating-linear-gradient(
+            <!-- Weekend -->
+            <div class="legend-item">
+                <div class="legend-color" style="border-color:rgba(128,128,128,0.3);">
+                    <div style="width:100%;height:100%;background:repeating-linear-gradient(
             45deg,
             transparent,
             transparent 3px,
             rgba(128,128,128,0.15) 3px,
             rgba(128,128,128,0.15) 6px
             )"></div>
-        </div>
-        <div class="legend-label">Weekend</div>
-    </div>
+                </div>
+                <div class="legend-label">Weekend</div>
+            </div>
 
-    <!-- Today's Date Line -->
-    <div class="today-item">
-        <div style="width:30px; height:2px; background:#2caffe; position:relative;">
-            <div
-                style="position:absolute; top:-4px; width:100%; height:10px; border-bottom:2px dashed #2caffe;">
+            <!-- Today's Date Line -->
+            <div class="today-item">
+                <div style="width:30px; height:2px; background:#2caffe; position:relative;">
+                    <div
+                        style="position:absolute; top:-4px; width:100%; height:10px; border-bottom:2px dashed #2caffe;">
+                    </div>
+                </div>
+                <div class="timeline-label">Today</div>
             </div>
         </div>
-        <div class="timeline-label">Today</div>
-    </div>
-</div>
     </div>
 
 
@@ -993,213 +957,209 @@
             return false;
         }
 
-// Ganti fungsi data_task_to_ganttChart dengan yang berikut ini:
-
-function data_task_to_ganttChart(tasks, timeFrame = '') {
-    if (!tasks || tasks.length === 0) {
-        return [{
-            name: 'No Tasks Available',
-            data: [{
-                name: 'No tasks found with current filters',
-                id: 'no_data',
-                start: today,
-                end: today + day
-            }]
-        }];
-    }
-
-    const seriesData = [];
-    const projectMap = new Map();
-
-    function convert_time(dateString) {
-        if (!dateString) return null;
-        try {
-            const date = new Date(dateString);
-            return Date.UTC(
-                date.getFullYear(),
-                date.getMonth(),
-                date.getDate(),
-                12, 0, 0, 0
-            );
-        } catch (error) {
-            console.error('Error converting date:', dateString, error);
-            return null;
-        }
-    }
-
-    function get_color_milestone(isMilestone) {
-        switch (isMilestone) {
-            case '20':
-                return {
-                    color: '#28a745',
-                    fontWeight: '600'
-                };
-            case '21':
-                return {
-                    color: '#000000',
-                    fontWeight: 'bold'
-                };
-            case '70':
-                return {
-                    color: '#000000',
-                    fontWeight: 'normal'
-                };
-            default:
-                return {
-                    color: '#6c757d',
-                    fontWeight: 'normal'
-                };
-        }
-    }
-
-    // Fungsi untuk mendapatkan warna actual berdasarkan kondisi
-    function get_actual_color(task) {
-        const planEnd = task.plan_end ? new Date(task.plan_end) : null;
-        const actualStart = task.actual_start ? new Date(task.actual_start) : null;
-        const actualEnd = task.actual_end ? new Date(task.actual_end) : null;
-        
-        // Jika actual end ada dan melebihi plan end (overdue) -> MERAH
-        if (actualEnd && planEnd && actualEnd > planEnd) {
-            return '#e74c3c'; // Red for overdue
-        }
-        
-        // Jika actual end ada dan tidak melebihi plan end -> HIJAU
-        if (actualEnd && planEnd && actualEnd <= planEnd) {
-            return '#2ecc71'; // Green for on time
-        }
-        
-        // Jika ada actual start tapi tidak ada actual end (in progress) -> KUNING
-        if (actualStart && !actualEnd) {
-            return '#f39c12'; // Yellow for in progress
-        }
-        
-        // Default (tidak ada actual sama sekali) -> Abu-abu
-        return '#95a5a6';
-    }
-
-    function get_style_milestone(taskName, isMilestone) {
-        const style = get_color_milestone(isMilestone);
-        return `<span style="color: ${style.color}; font-weight: ${style.fontWeight}">${taskName}</span>`;
-    }
-
-    tasks.forEach(task => {
-        const projectId = task.project_id;
-        if (!projectMap.has(projectId)) {
-            projectMap.set(projectId, {
-                projectName: task.project_name,
-                tasks: []
-            });
-        }
-        projectMap.get(projectId).tasks.push(task);
-    });
-
-    projectMap.forEach((projectData, projectId) => {
-        const projectTasks = [];
-
-        projectTasks.push({
-            name: projectData.projectName,
-            id: `project_${projectId}`,
-            responsible: projectData.tasks[0]?.responsible_name || 'Unassigned',
-            color: get_project_color(projectId)
-        });
-
-        projectData.tasks.forEach((task, index) => {
-            const taskId = `task_${projectId}_${index}`;
-            const taskName = task.milestone_task ||
-                (task.is_milestone_name ? `Milestone ${index + 1}` : `Task ${index + 1}`);
-
-            const planStart = convert_time(task.plan_start);
-            const planEnd = convert_time(task.plan_end);
-            const actualStart = convert_time(task.actual_start);
-            const actualEnd = convert_time(task.actual_end);
-
-            const formattedName = get_style_milestone(taskName, task.is_milestone);
-
-            const taskData = {
-                name: formattedName,
-                id: taskId,
-                parent: `project_${projectId}`,
-                responsible: task.responsible_name,
-                status: task.status,
-                complexity: task.complexity,
-                priority: task.priority,
-                is_milestone: task.is_milestone,
-                plan_start: task.plan_start?.split(' ')[0],
-                plan_end: task.plan_end?.split(' ')[0],
-                actual_start: task.actual_start?.split(' ')[0],
-                actual_end: task.actual_end?.split(' ')[0],
-                isOverdue: overdue_task(task),
-                actual_color: get_actual_color(task)
-            };
-
-            switch (timeFrame) {
-                case 'plan':
-                    projectTasks.push({
-                        ...taskData,
-                        id: taskId + "_plan",
-                        start: planStart || null,
-                        end: planEnd || null,
-                        color: '#3498db', // BLUE untuk plan
-                        borderColor: '#2980b9',
-                        opacity: 0.9,
-                        type: 'plan'
-                    });
-                    break;
-
-                case 'actual':
-                    projectTasks.push({
-                        ...taskData,
-                        id: taskId + "_actual",
-                        start: actualStart || null,
-                        end: actualEnd || null,
-                        color: get_actual_color(task), // Warna berdasarkan kondisi actual
-                        borderColor: get_actual_color(task),
-                        opacity: 0.9,
-                        type: 'actual'
-                    });
-                    break;
-
-                case 'both':
-                default:
-                    // Tampilkan BOTH secara default (plan dan actual)
-                    projectTasks.push({
-                        ...taskData,
-                        name: get_style_milestone(taskName + " (Plan)", task.is_milestone),
-                        id: taskId + "_plan",
-                        start: planStart || null,
-                        end: planEnd || null,
-                        color: '#3498db', // BLUE untuk plan
-                        borderColor: '#2980b9',
-                        opacity: 0.9,
-                        type: 'plan'
-                    });
-
-                    // Only show actual if there are actual dates
-                    if (actualStart || actualEnd) {
-                        projectTasks.push({
-                            ...taskData,
-                            name: get_style_milestone(taskName + " (Actual)", task.is_milestone),
-                            id: taskId + "_actual",
-                            start: actualStart || null,
-                            end: actualEnd || null,
-                            color: get_actual_color(task), // Warna berdasarkan kondisi
-                            borderColor: get_actual_color(task),
-                            opacity: 0.9,
-                            type: 'actual'
-                        });
-                    }
-                    break;
+        function data_task_to_ganttChart(tasks, timeFrame = '') {
+            if (!tasks || tasks.length === 0) {
+                return [{
+                    name: 'No Tasks Available',
+                    data: [{
+                        name: 'No tasks found with current filters',
+                        id: 'no_data',
+                        start: today,
+                        end: today + day
+                    }]
+                }];
             }
-        });
 
-        seriesData.push({
-            name: projectData.projectName,
-            data: projectTasks
-        });
-    });
+            const seriesData = [];
+            const projectMap = new Map();
 
-    return seriesData;
-}
+            function convert_time(dateString) {
+                if (!dateString) return null;
+                try {
+                    const date = new Date(dateString);
+                    return Date.UTC(
+                        date.getFullYear(),
+                        date.getMonth(),
+                        date.getDate(),
+                        12, 0, 0, 0
+                    );
+                } catch (error) {
+                    console.error('Error converting date:', dateString, error);
+                    return null;
+                }
+            }
+
+            function get_color_milestone(isMilestone) {
+                switch (isMilestone) {
+                    case '20':
+                        return {
+                            color: '#28a745',
+                            fontWeight: '600'
+                        };
+                    case '21':
+                        return {
+                            color: '#000000',
+                            fontWeight: 'bold'
+                        };
+                    case '70':
+                        return {
+                            color: '#000000',
+                            fontWeight: 'normal'
+                        };
+                    default:
+                        return {
+                            color: '#6c757d',
+                            fontWeight: 'normal'
+                        };
+                }
+            }
+
+            function get_actual_color(task) {
+                const planEnd = task.plan_end ? new Date(task.plan_end) : null;
+                const actualStart = task.actual_start ? new Date(task.actual_start) : null;
+                const actualEnd = task.actual_end ? new Date(task.actual_end) : null;
+
+                // Jika actual end ada dan melebihi plan end (overdue) -> MERAH
+                if (actualEnd && planEnd && actualEnd > planEnd) {
+                    return '#e74c3c'; // Red for overdue
+                }
+
+                // Jika actual end ada dan tidak melebihi plan end -> HIJAU
+                if (actualEnd && planEnd && actualEnd <= planEnd) {
+                    return '#2ecc71'; // Green for on time
+                }
+
+                // Jika ada actual start tapi tidak ada actual end (in progress) -> KUNING
+                if (actualStart && !actualEnd) {
+                    return '#f39c12'; 
+                }
+
+                // Default 
+                return '#95a5a6';
+            }
+
+            function get_style_milestone(taskName, isMilestone) {
+                const style = get_color_milestone(isMilestone);
+                return `<span style="color: ${style.color}; font-weight: ${style.fontWeight}">${taskName}</span>`;
+            }
+
+            tasks.forEach(task => {
+                const projectId = task.project_id;
+                if (!projectMap.has(projectId)) {
+                    projectMap.set(projectId, {
+                        projectName: task.project_name,
+                        tasks: []
+                    });
+                }
+                projectMap.get(projectId).tasks.push(task);
+            });
+
+            projectMap.forEach((projectData, projectId) => {
+                const projectTasks = [];
+
+                projectTasks.push({
+                    name: projectData.projectName,
+                    id: `project_${projectId}`,
+                    responsible: projectData.tasks[0]?.responsible_name || 'Unassigned',
+                    color: get_project_color(projectId)
+                });
+
+                projectData.tasks.forEach((task, index) => {
+                    const taskId = `task_${projectId}_${index}`;
+                    const taskName = task.milestone_task ||
+                        (task.is_milestone_name ? `Milestone ${index + 1}` : `Task ${index + 1}`);
+
+                    const planStart = convert_time(task.plan_start);
+                    const planEnd = convert_time(task.plan_end);
+                    const actualStart = convert_time(task.actual_start);
+                    const actualEnd = convert_time(task.actual_end);
+
+                    const formattedName = get_style_milestone(taskName, task.is_milestone);
+
+                    const taskData = {
+                        name: formattedName,
+                        id: taskId,
+                        parent: `project_${projectId}`,
+                        responsible: task.responsible_name,
+                        status: task.status,
+                        complexity: task.complexity,
+                        priority: task.priority,
+                        is_milestone: task.is_milestone,
+                        plan_start: task.plan_start?.split(' ')[0],
+                        plan_end: task.plan_end?.split(' ')[0],
+                        actual_start: task.actual_start?.split(' ')[0],
+                        actual_end: task.actual_end?.split(' ')[0],
+                        isOverdue: overdue_task(task),
+                        actual_color: get_actual_color(task)
+                    };
+
+                    switch (timeFrame) {
+                        case 'plan':
+                            projectTasks.push({
+                                ...taskData,
+                                id: taskId + "_plan",
+                                start: planStart || null,
+                                end: planEnd || null,
+                                color: '#3498db', 
+                                borderColor: '#2980b9',
+                                opacity: 0.9,
+                                type: 'plan'
+                            });
+                            break;
+
+                        case 'actual':
+                            projectTasks.push({
+                                ...taskData,
+                                id: taskId + "_actual",
+                                start: actualStart || null,
+                                end: actualEnd || null,
+                                color: get_actual_color(task),
+                                borderColor: get_actual_color(task),
+                                opacity: 0.9,
+                                type: 'actual'
+                            });
+                            break;
+
+                        case 'both':
+                        default:
+
+                            projectTasks.push({
+                                ...taskData,
+                                name: get_style_milestone(taskName + " (Plan)", task.is_milestone),
+                                id: taskId + "_plan",
+                                start: planStart || null,
+                                end: planEnd || null,
+                                color: '#3498db', 
+                                borderColor: '#2980b9',
+                                opacity: 0.9,
+                                type: 'plan'
+                            });
+
+                            if (actualStart || actualEnd) {
+                                projectTasks.push({
+                                    ...taskData,
+                                    name: get_style_milestone(taskName + " (Actual)", task.is_milestone),
+                                    id: taskId + "_actual",
+                                    start: actualStart || null,
+                                    end: actualEnd || null,
+                                    color: get_actual_color(task), 
+                                    borderColor: get_actual_color(task),
+                                    opacity: 0.9,
+                                    type: 'actual'
+                                });
+                            }
+                            break;
+                    }
+                });
+
+                seriesData.push({
+                    name: projectData.projectName,
+                    data: projectTasks
+                });
+            });
+
+            return seriesData;
+        }
 
 
 
@@ -1457,7 +1417,6 @@ function data_task_to_ganttChart(tasks, timeFrame = '') {
             render_ganttchart();
         }
 
-        // Update fungsi export di bagian event listener
         document.addEventListener('DOMContentLoaded', function () {
             const exportMenuBtn = document.getElementById('exportMenuBtn');
             const exportMenu = document.getElementById('exportMenu');
@@ -1475,7 +1434,6 @@ function data_task_to_ganttChart(tasks, timeFrame = '') {
                 exportMenu.classList.remove('show');
             });
 
-            // Fullscreen functionality
             fullscreenBtn.addEventListener('click', function () {
                 if (chart) {
                     chart.fullscreen.toggle();
@@ -1483,20 +1441,14 @@ function data_task_to_ganttChart(tasks, timeFrame = '') {
                 exportMenu.classList.remove('show');
             });
 
-            // Print chart functionality
             printChartBtn.addEventListener('click', function () {
                 if (chart) {
-                    // Hitung width yang dibutuhkan berdasarkan range tanggal
                     const xAxis = chart.xAxis[0];
                     const dateRange = xAxis.max - xAxis.min;
                     const days = dateRange / (24 * 3600 * 1000);
-
-                    // Lebar dinamis: base 1200px + 30px per hari di atas 30 hari
                     const baseWidth = 1200;
                     const extraWidth = Math.max(0, (days - 30) * 30);
-                    const exportWidth = Math.min(baseWidth + extraWidth, 3000); // Maksimal 3000px
-
-                    // Tinggi berdasarkan jumlah data
+                    const exportWidth = Math.min(baseWidth + extraWidth, 3000); 
                     const dataPoints = chart.series.reduce((sum, series) => sum + series.points.length, 0);
                     const exportHeight = Math.max(600, 150 + (dataPoints * 30));
 
@@ -1517,9 +1469,9 @@ function data_task_to_ganttChart(tasks, timeFrame = '') {
                         chartOptions: {
                             chart: {
                                 backgroundColor: '#ffffff',
-                                spacing: [50, 30, 50, 30], // Margin lebih besar
-                                marginLeft: 250, // Space lebih besar untuk y-axis
-                                marginRight: 80  // Space lebih besar di kanan
+                                spacing: [50, 30, 50, 30], 
+                                marginLeft: 250,
+                                marginRight: 80  
                             },
                             title: {
                                 text: document.getElementById('chartTitle').textContent,
@@ -1535,11 +1487,11 @@ function data_task_to_ganttChart(tasks, timeFrame = '') {
                                 labels: {
                                     style: {
                                         color: '#333333',
-                                        fontSize: '10px', // Font lebih kecil
+                                        fontSize: '10px', 
                                         fontWeight: 'normal'
                                     },
                                     y: 15,
-                                    step: 1 // Tampilkan semua label
+                                    step: 1 
                                 },
                                 tickLength: 15,
                                 lineWidth: 1
@@ -1550,7 +1502,7 @@ function data_task_to_ganttChart(tasks, timeFrame = '') {
                                         color: '#333333',
                                         fontSize: '11px'
                                     },
-                                    x: -230, // Space lebih untuk labels
+                                    x: -230, 
                                     align: 'right'
                                 }
                             },
@@ -1567,17 +1519,17 @@ function data_task_to_ganttChart(tasks, timeFrame = '') {
                 exportMenu.classList.remove('show');
             });
 
-            // Download PNG functionality - DIPERBAIKI untuk tidak terpotong
+            // Download PNG 
             downloadPNGBtn.addEventListener('click', function () {
                 exportChartImage('png');
             });
 
-            // Download JPEG functionality - DIPERBAIKI untuk tidak terpotong
+            // Download JPEG 
             downloadJPGBtn.addEventListener('click', function () {
                 exportChartImage('jpeg');
             });
 
-            // Fungsi utama untuk export chart image
+            // Fungsi export chart image
             function exportChartImage(format) {
                 if (!chart) return;
 
@@ -1587,8 +1539,7 @@ function data_task_to_ganttChart(tasks, timeFrame = '') {
                     document.getElementById('projectNameFilter').options[document.getElementById('projectNameFilter').selectedIndex].text :
                     'All-Projects';
 
-                // Hitung ukuran yang optimal untuk semua data visible
-                const { exportWidth, exportHeight } = calculateExportSize();
+                const { exportWidth, exportHeight } = calculate_export_size();
 
                 console.log(`Exporting ${format.toUpperCase()}: ${exportWidth}x${exportHeight}px`);
 
@@ -1596,42 +1547,38 @@ function data_task_to_ganttChart(tasks, timeFrame = '') {
                 const timestamp = new Date().toISOString().slice(0, 10);
                 const filename = `Gantt-Chart-${projectName.replace(/\s+/g, '-')}-${timestamp}`;
 
-                // Export dengan width yang cukup
                 chart.exportChart({
                     type: format === 'png' ? 'image/png' : 'image/jpeg',
                     filename: filename,
                     sourceWidth: exportWidth,
                     sourceHeight: exportHeight,
-                    scale: 1, // Scale 1 agar tidak ada kompresi berlebihan
-                    chartOptions: getExportChartOptions()
+                    scale: 1, 
+                    chartOptions: get_export_chart()
                 });
 
                 exportMenu.classList.remove('show');
             }
 
             // Fungsi untuk menghitung ukuran export
-            function calculateExportSize() {
+            function calculate_export_size() {
                 const xAxis = chart.xAxis[0];
                 const dateRange = xAxis.max - xAxis.min;
                 const days = dateRange / (24 * 3600 * 1000);
 
-                // Hitung width: base lebih besar + tambahan berdasarkan hari
-                let baseWidth = 1800; // DITINGKATKAN dari 1200
+                let baseWidth = 1800; 
                 let extraWidth = 0;
 
                 if (days <= 30) {
                     extraWidth = 0;
                 } else if (days <= 60) {
-                    extraWidth = (days - 30) * 40; // 40px per hari tambahan
+                    extraWidth = (days - 30) * 40; 
                 } else if (days <= 90) {
-                    extraWidth = 1200 + (days - 60) * 35; // 35px per hari
+                    extraWidth = 1200 + (days - 60) * 35; 
                 } else {
-                    extraWidth = 2250 + (days - 90) * 30; // 30px per hari
+                    extraWidth = 2250 + (days - 90) * 30; 
                 }
 
-                const exportWidth = Math.min(baseWidth + extraWidth, 5000); // Maksimal 5000px
-
-                // Hitung height berdasarkan jumlah data points
+                const exportWidth = Math.min(baseWidth + extraWidth, 5000); 
                 const dataPoints = chart.series.reduce((sum, series) => sum + series.points.length, 0);
                 const exportHeight = Math.max(700, 200 + (dataPoints * 18));
 
@@ -1639,13 +1586,13 @@ function data_task_to_ganttChart(tasks, timeFrame = '') {
             }
 
             // Fungsi untuk mendapatkan options export chart
-            function getExportChartOptions() {
+            function get_export_chart() {
                 return {
                     chart: {
                         backgroundColor: '#ffffff',
-                        spacing: [60, 40, 60, 40], // Margin besar di semua sisi
-                        marginLeft: 280, // Space sangat besar untuk y-axis labels
-                        marginRight: 60, // Space besar di kanan
+                        spacing: [60, 40, 60, 40], 
+                        marginLeft: 280,
+                        marginRight: 60,
                         marginTop: 60,
                         marginBottom: 60
                     },
@@ -1672,20 +1619,20 @@ function data_task_to_ganttChart(tasks, timeFrame = '') {
                         labels: {
                             style: {
                                 color: '#333333',
-                                fontSize: '9px', // Font lebih kecil untuk muat lebih banyak
+                                fontSize: '9px', 
                                 fontWeight: 'normal'
                             },
                             rotation: 0,
                             y: 20,
-                            step: 1, // Tampilkan semua label
-                            reserveSpace: true // Reserve space untuk labels
+                            step: 1, 
+                            reserveSpace: true 
                         },
                         tickWidth: 1,
                         tickLength: 12,
                         minorTickLength: 6,
                         gridLineWidth: 1,
                         lineWidth: 1,
-                        offset: 10 // Offset dari edge
+                        offset: 10 
                     }],
                     yAxis: {
                         labels: {
@@ -1693,7 +1640,7 @@ function data_task_to_ganttChart(tasks, timeFrame = '') {
                                 color: '#333333',
                                 fontSize: '11px'
                             },
-                            x: -260, // Space sangat besar untuk labels y-axis
+                            x: -260, 
                             align: 'right',
                             reserveSpace: true
                         },
@@ -1733,7 +1680,6 @@ function data_task_to_ganttChart(tasks, timeFrame = '') {
             }
         });
 
-        // Weekend plot bands plugin
         Highcharts.addEvent(Highcharts.Axis, 'foundExtremes', e => {
             if (e.target.options.custom && e.target.options.custom.weekendPlotBands) {
                 const axis = e.target,

@@ -74,7 +74,6 @@
 <script>
     let chart;
 
-    // Initialize chart on page load
     document.addEventListener('DOMContentLoaded', function () {
         loadAllResourcesData();
     });
@@ -86,7 +85,7 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    renderChart(data.data, data.stats.total_projects); // Kirim total projects ke renderChart
+                    renderChart(data.data, data.stats.total_projects); 
                 } else {
                     document.getElementById('container').innerHTML = '<div class="loading">Error loading data</div>';
                 }
@@ -98,7 +97,6 @@
     }
 
     function renderChart(resourceData, totalProjects) {
-        // Filter out empty/null resource names and sort by plan hours descending
         const filtered = Object.entries(resourceData)
             .filter(([responsibleName, data]) => {
                 return responsibleName && responsibleName !== 'Unassigned' && responsibleName !== '' && responsibleName !== null;

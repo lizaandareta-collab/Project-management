@@ -322,21 +322,17 @@
 
 <script>
     $(document).ready(function () {
-        // Initial chart with data from controller
         renderChart(@json($initialData), {{ $stats['completed_tasks'] ?? 0 }}, {{ $stats['total_tasks'] ?? 0 }});
 
-        // Event listener for person selection
         $('#personSelect').on('change', function () {
             const person = $(this).val();
-            loadProgressData(person); // Panggil langsung, tidak perlu cek if(person)
+            loadProgressData(person); 
         });
     });
 
     function loadProgressData(person) {
-        // Disable select box saat loading
         $('#personSelect').prop('disabled', true);
 
-        // Tambahkan indikator loading sederhana di select box
         $('#personSelect').css('color', '#999');
         $('#personSelect').parent().append('<div class="loading-text" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); font-size: 12px; color: #667eea;">Loading...</div>');
 
@@ -344,7 +340,7 @@
             url: '{{ route("getProgressData") }}',
             type: 'GET',
             data: {
-                person: person || 'all' // Default ke 'all' jika kosong
+                person: person || 'all' 
             },
             success: function (response) {
                 if (response.success) {

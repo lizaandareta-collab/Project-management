@@ -1,6 +1,4 @@
-<!-- ===================== STYLE TABLE HEATMAP ===================== -->
 <style>
-    /* WRAPPER YG PUNYA 1 GARIS LUAR */
     .heatmap-wrapper {
         border: 2px solid #dee2e6;
         border-radius: 8px;
@@ -8,14 +6,12 @@
         margin-bottom: 20px;
     }
 
-    /* Hilangkan border card */
     .card-borderless,
     .card-borderless .card-inner {
         border: none !important;
         box-shadow: none !important;
     }
 
-    /* Hilangkan border luar tabel */
     .heatmap-table {
         border-collapse: collapse;
         width: 100%;
@@ -23,7 +19,6 @@
         border: none !important;
     }
 
-    /* Border antar SEL tetap ada */
     .heatmap-table th,
     .heatmap-table td {
         border: 2px solid #dee2e6 !important;
@@ -32,64 +27,53 @@
         vertical-align: middle;
     }
 
-    /* Header styling */
     .heatmap-table thead th {
         background: #f3f4f7;
         font-weight: 700;
     }
 
-    /* Footer styling */
     .heatmap-table tfoot td {
         background: #f3f4f7;
         font-weight: 700 !important;
     }
 
-    /* Samakan posisi awal filter dan tabel */
     .heatmap-wrapper .card-inner {
         padding-left: 0 !important;
         padding-right: 0 !important;
     }
 
-    /* ====== HEATMAP COLORS ====== */
     .hm-hours-low {
         background-color: #d1f2d1 !important;
-        /* Hijau muda */
         font-weight: 700;
     }
 
     .hm-hours-mid {
         background-color: #faf740ff !important;
-        /* Kuning */
         font-weight: 700;
     }
 
     .hm-hours-high {
         background-color: #ff5c5c !important;
-        /* Merah */
         color: white;
         font-weight: 700;
     }
 
     .hm-task-low {
         background-color: #d1f2d1 !important;
-        /* Hijau muda */
         font-weight: 700;
     }
 
     .hm-task-mid {
         background-color: #faf740ff !important;
-        /* Kuning */
         font-weight: 700;
     }
 
     .hm-task-high {
         background-color: #ff5c5c !important;
-        /* Merah */
         color: white;
         font-weight: 700;
     }
 
-    /* Kolom pertama & terakhir warna abu seperti header */
     .heatmap-table td:first-child,
     .heatmap-table th:first-child,
     .heatmap-table td:last-child,
@@ -106,7 +90,6 @@
         padding-bottom: 10px;
     }
 
-    /* HAPUS atau COMMENT CSS untuk stats-badge */
     /*
     .stats-badge {
         background: #e3f2fd;
@@ -124,7 +107,6 @@
         margin-left: 10px;
     }
 
-    /* ===== INLINE BADGE ROW (BIGGER + CLEARER) ===== */
     .heatmap-info-inline {
         background: white;
         border: 1px solid #dee2e6;
@@ -146,7 +128,6 @@
         font-weight: 700;
     }
 
-    /* BADGE lebih besar & jelas */
     .info-badge {
         width: 22px;
         height: 22px;
@@ -156,10 +137,8 @@
     }
 </style>
 
-<!-- HAPUS span stats-badge dari page-title -->
 <div class="page-title">
     Tasks Heatmap
-    <!-- <span class="stats-badge" id="projectsCount">Loading...</span> HAPUS BARIS INI -->
     <span class="loading-spinner" id="loadingSpinner">
         <i class="fa fa-spinner fa-spin"></i> Loading...
     </span>
@@ -175,19 +154,17 @@
             <label class="form-label fw-bold">Year</label>
             <select id="yearFilter" class="form-select">
                 <?php 
-            // Gunakan yearRange yang dikirim dari controller
-$minYear = isset($yearRange['min']) ? $yearRange['min'] : (date('Y') - 1);
-$maxYear = isset($yearRange['max']) ? $yearRange['max'] : (date('Y') + 1);
+            
+                $minYear = isset($yearRange['min']) ? $yearRange['min'] : (date('Y') - 1);
+                $maxYear = isset($yearRange['max']) ? $yearRange['max'] : (date('Y') + 1);
 
-// Pastikan tahun minimal tidak kurang dari 2020 (opsional)
-$minYear = max(2020, $minYear);
+                $minYear = max(2020, $minYear);
 
-// Pastikan range cukup (minimal 3 tahun)
-if ($maxYear - $minYear < 2) {
-    $maxYear = $minYear + 2;
-}
+                if ($maxYear - $minYear < 2) {
+                    $maxYear = $minYear + 2;
+                }
 
-for ($year = $minYear; $year <= $maxYear; $year++): 
+                for ($year = $minYear; $year <= $maxYear; $year++): 
                                         ?>
                 <option value="<?= $year ?>" <?= $year == date('Y') ? 'selected' : '' ?>>
                     <?= $year ?>
@@ -246,7 +223,6 @@ for ($year = $minYear; $year <= $maxYear; $year++):
                     > 6
                 </div>
 
-                <!-- Separator -->
                 <div style="width:1px;height:18px;background:#ccc;margin:0 5px;"></div>
 
                 <!-- TASK -->
@@ -289,13 +265,9 @@ for ($year = $minYear; $year <= $maxYear; $year++):
                                     <th width="70">TOTAL</th>
                                 </tr>
                             </thead>
-
                             <tbody id="tableBody">
-                                <!-- Baris akan digenerate oleh JavaScript -->
                             </tbody>
-
                             <tfoot id="tableFooter">
-                                <!-- Footer akan digenerate oleh JavaScript -->
                             </tfoot>
                         </table>
                     </div>
@@ -307,7 +279,6 @@ for ($year = $minYear; $year <= $maxYear; $year++):
             let holidays = [];
             let currentYear = new Date().getFullYear();
 
-            // DEBUG: Log initial data structure
             console.log('=== INITIAL HEATMAP DATA ===');
             console.log('Full heatmapData:', heatmapData);
             console.log('Type:', typeof heatmapData);
@@ -326,7 +297,6 @@ for ($year = $minYear; $year <= $maxYear; $year++):
                     console.log('Tasks years:', Object.keys(heatmapData.tasks));
                     console.log('Sample tasks 2025:', heatmapData.tasks[2025]);
 
-                    // Check specific data
                     if (heatmapData.tasks[2025]) {
                         console.log('Tasks 2025 days 1-5:');
                         for (let day = 1; day <= 5; day++) {
@@ -338,7 +308,6 @@ for ($year = $minYear; $year <= $maxYear; $year++):
                 }
             }
 
-            // Fungsi untuk menentukan kelas warna berdasarkan nilai dan mode
             function getHeatmapClass(value, mode) {
                 if (!value || value === 0) return '';
 
@@ -346,52 +315,44 @@ for ($year = $minYear; $year <= $maxYear; $year++):
                     if (value < 4) return 'hm-hours-low';
                     if (value < 6) return 'hm-hours-mid';
                     return 'hm-hours-high';
-                } else { // mode = 'task'
+                } else { 
                     if (value < 3) return 'hm-task-low';
                     if (value < 4) return 'hm-task-mid';
                     return 'hm-task-high';
                 }
             }
 
-            // Fungsi untuk membulatkan angka
             function formatNumber(num, isTaskMode = false) {
                 console.log('formatNumber called:', { num, isTaskMode, type: typeof num });
 
-                // Handle null/undefined/empty
                 if (num === null || num === undefined || num === '' || num === 0 || num === '0') {
                     return '';
                 }
-
-                // Convert to number
                 let numberValue;
+
                 if (typeof num === 'string') {
                     numberValue = parseFloat(num);
                 } else {
                     numberValue = num;
                 }
 
-                // Check if valid number
                 if (isNaN(numberValue)) {
                     return '';
                 }
 
-                // For TASK mode
                 if (isTaskMode) {
                     return numberValue % 1 === 0
                         ? numberValue.toString()
                         : numberValue.toFixed(2);
                 }
 
-                // For HOURS mode
                 if (Number.isInteger(numberValue)) {
                     return numberValue.toString();
                 }
 
-                // Show 1 decimal place
                 return numberValue.toFixed(1);
             }
 
-            // Fungsi untuk menghitung total per bulan
             function calculateMonthlyTotals(yearData) {
                 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                 const monthTotals = months.map(() => 0);
@@ -417,7 +378,6 @@ for ($year = $minYear; $year <= $maxYear; $year++):
                 return monthTotals;
             }
 
-            // Fungsi untuk memperbarui heatmap
             function updateHeatmap() {
                 console.log('=== UPDATE HEATMAP START ===');
 
@@ -432,10 +392,8 @@ for ($year = $minYear; $year <= $maxYear; $year++):
                 console.log('Selected:', { year: selectedYear, mode: selectedMode });
                 console.log('Current heatmapData:', heatmapData);
 
-                // Update header tahun
                 currentYearHeader.textContent = selectedYear;
-
-                // Kosongkan tabel
+                
                 tableBody.innerHTML = '';
                 tableFooter.innerHTML = '';
 
@@ -506,15 +464,14 @@ for ($year = $minYear; $year <= $maxYear; $year++):
 
                         // ========== SKIP WEEKEND & HOLIDAY ==========
                         if (
-                            dayOfWeek === 0 || dayOfWeek === 6 || // weekend
-                            holidays.includes(dateStr)            // holiday
+                            dayOfWeek === 0 || dayOfWeek === 6 || 
+                            holidays.includes(dateStr)            
                         ) {
-                            cell.textContent = '';       // kosongkan sel
-                            cell.className = '';         // tanpa warna
+                            cell.textContent = '';       
+                            cell.className = '';         
                             row.appendChild(cell);
-                            return;                      // lanjut next month
+                            return;
                         }
-                        // ============================================
 
                         let value = dayData[month] || 0;
 
@@ -688,7 +645,6 @@ for ($year = $minYear; $year <= $maxYear; $year++):
                 console.log('=== UPDATE HEATMAP END ===');
             }
 
-            // Load data dari server dengan filter
             function loadHeatmapData() {
                 console.log('=== LOAD HEATMAP DATA START ===');
 
@@ -705,7 +661,6 @@ for ($year = $minYear; $year <= $maxYear; $year++):
                 // Tampilkan loading spinner
                 document.getElementById('loadingSpinner').style.display = 'inline';
 
-                // Build URL dengan query parameters
                 let url = '/heatmap/data';
                 const params = new URLSearchParams({
                     year: selectedYear,
@@ -740,10 +695,8 @@ for ($year = $minYear; $year <= $maxYear; $year++):
                                 const minYear = data.yearRange.min;
                                 const maxYear = data.yearRange.max;
 
-                                // Clear existing options
                                 yearFilter.innerHTML = '';
 
-                                // Add new options based on range
                                 for (let year = minYear; year <= maxYear; year++) {
                                     const option = document.createElement('option');
                                     option.value = year;
@@ -765,14 +718,7 @@ for ($year = $minYear; $year <= $maxYear; $year++):
                                     }
                                 }
                             }
-                            // ==========================================
-
-                            // HAPUS atau COMMENT baris yang mengupdate stats
-                            // document.getElementById('projectsCount').textContent =
-                            //     data.stats.total_projects + ' Projects, ' +
-                            //     data.stats.filtered_tasks + ' Tasks';
-
-                            // Update heatmap
+                            
                             updateHeatmap();
                         } else {
                             console.error('Server error:', data.message);
@@ -784,7 +730,6 @@ for ($year = $minYear; $year <= $maxYear; $year++):
                         alert('Failed to load heatmap data: ' + error.message);
                     })
                     .finally(() => {
-                        // Sembunyikan loading spinner
                         document.getElementById('loadingSpinner').style.display = 'none';
                         console.log('=== LOAD HEATMAP DATA END ===');
                     });
