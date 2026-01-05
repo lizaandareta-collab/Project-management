@@ -266,7 +266,7 @@
             series: [{
                 name: 'Plan Hours',
                 type: 'column',
-                yAxis: 0, // Menggunakan yAxis pertama (kiri)
+                yAxis: 0, 
                 data: planHours,
                 color: Highcharts.getOptions().colors[0],
                 tooltip: {
@@ -276,7 +276,7 @@
             }, {
                 name: 'Tasks',
                 type: 'spline',
-                yAxis: 1, // Menggunakan yAxis kedua (kanan)
+                yAxis: 1, 
                 data: taskCounts,
                 color: Highcharts.getOptions().colors[1],
                 tooltip: {

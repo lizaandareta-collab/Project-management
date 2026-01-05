@@ -213,7 +213,6 @@
         background: #555;
     }
 
-    /* Custom scrollbar untuk history table */
     #editRemarksModal .modal-body>div:last-child>div::-webkit-scrollbar {
         width: 5px;
     }
@@ -508,7 +507,6 @@
                             placeholder="Enter task details..." required></textarea>
                     </div>
 
-                    <!-- History dengan fixed height dan scroll -->
                     <div class="border-top pt-3 mt-3">
                         <h6>History</h6>
                         <div
@@ -593,7 +591,7 @@
             document.getElementById('file_chosen').textContent = fileNames.join(', ');
         });
 
-        // 🔥 EVENT LISTENER UNTUK RESET MODAL REMARKS SAAT DITUTUP
+        //  EVENT LISTENER UNTUK RESET MODAL REMARKS SAAT DITUTUP
         $('#editRemarksModal').on('hidden.bs.modal', function () {
             // Reset judul modal
             document.getElementById('remarksModalTitle').textContent = 'Documentation';
@@ -617,7 +615,6 @@
             document.getElementById('remark_text').value = '';
         });
 
-        // HAPUS bagian event listener untuk adjust modal height karena sudah inline style
     });
 
     function f_autoload() {
@@ -675,11 +672,11 @@
 
             // Tentukan class untuk Milestone Task berdasarkan kategori
             let milestoneTaskClass = '';
-            if (t.is_milestone === '70') { // Sub-Activity
+            if (t.is_milestone === '70') { 
                 milestoneTaskClass = 'milestone-task-subactivity';
-            } else if (t.is_milestone === '21') { // Activity
+            } else if (t.is_milestone === '21') { 
                 milestoneTaskClass = 'milestone-task-activity';
-            } else if (t.is_milestone === '20') { // Milestone
+            } else if (t.is_milestone === '20') { 
                 milestoneTaskClass = 'milestone-task-milestone';
             }
 
@@ -880,7 +877,7 @@
 
         if (task) {
             const kpiStatus = calculateKPIStatus(task);
-            const kpiCell = row.querySelector('td:nth-child(5)'); // Kolom Status KPI (urutan ke-5)
+            const kpiCell = row.querySelector('td:nth-child(5)'); 
 
             if (kpiCell) {
                 // Jika ada class, tampilkan indikator. Jika tidak, kosongkan.
@@ -1024,7 +1021,6 @@
         `;
 
         } else if (fieldType === 'actual_end') {
-            // TAMBAHKAN CASE UNTUK ACTUAL END
             inputField = `
             <label class="form-label">${fieldLabel}</label>
             <input type="date" class="form-control" name="actual_end" 
@@ -1034,7 +1030,6 @@
         `;
 
         } else if (fieldType === 'actual_duration') {
-            // JADIKAN READ-ONLY KARENA OTOMATIS
             inputField = `
             <label class="form-label">${fieldLabel} (Auto-calculated)</label>
             <input type="number" min="0" class="form-control" 
@@ -1048,7 +1043,6 @@
         `;
 
         } else if (fieldType.includes('hour')) {
-            // Untuk plan_hour dan actual_hour
             inputField = `
             <label class="form-label">${fieldLabel}</label>
             <input type="number" min="0" step="0.1" class="form-control" 
@@ -1058,10 +1052,9 @@
         } else if (fieldType === 'remark') {
             // Untuk remarks, buka modal khusus
             openRemarksModal(taskId, milestoneTask, currentValue);
-            return; // Return early agar tidak melanjutkan ke modal biasa
+            return; 
 
         } else {
-            // Default untuk field lainnya
             inputField = `
             <label class="form-label">${fieldLabel}</label>
             <textarea class="form-control" name="${fieldType}" rows="3" required>${currentValue || ''}</textarea>
@@ -1070,9 +1063,8 @@
 
         container.innerHTML = inputField;
 
-        // Tambahkan event listener untuk actual start/end jika diperlukan
+        // event listener untuk actual start/end jika diperlukan
         if (fieldType === 'actual_start' || fieldType === 'actual_end') {
-            // Beri sedikit delay agar DOM sudah ter-render
             setTimeout(() => {
                 const actualStartInput = document.getElementById('actual_start_input');
                 const actualEndInput = document.getElementById('actual_end_input');
@@ -1097,20 +1089,16 @@
     function openRemarksModal(taskId, milestoneTask, currentValue, fromStatusUpdate = false) {
         const projectId = document.getElementById('remarks_project_id').value;
 
-        // Update judul modal menjadi "Documentation - [Milestone Task]"
         document.getElementById('remarksModalTitle').textContent = `Documentation - ${milestoneTask}`;
 
-        // Set value ke form fields
         document.getElementById('remarks_task_id').value = taskId;
-        document.getElementById('remarks_activity').value = milestoneTask; // Tetap simpan di hidden field
+        document.getElementById('remarks_activity').value = milestoneTask; 
         document.getElementById('remark_text').value = currentValue || '';
         document.getElementById('file_chosen').textContent = 'No file chosen';
         document.getElementById('activity_file').value = '';
-
-        // 🔥 SIMPAN INFORMASI APAKAH INI DARI STATUS UPDATE
         document.getElementById('editRemarksModal').dataset.fromStatusUpdate = fromStatusUpdate;
 
-        // 🔥 ATUR VALIDASI FILE BERDASARKAN JENIS MODAL
+
         const isFromStatusUpdate = fromStatusUpdate === true;
 
         if (isFromStatusUpdate) {
@@ -1127,7 +1115,6 @@
             document.getElementById('activity_file').required = false;
         }
 
-        // Load history
         loadActivityHistory(projectId, taskId);
 
         $('#editRemarksModal').modal('show');
@@ -1168,7 +1155,6 @@
                         if (item.docs && item.docs.length > 0) {
                             fileHtml = item.docs
                                 .map(doc => {
-                                    // Shorten filename if too long
                                     let displayName = doc.client_name;
                                     if (displayName.length > 15) {
                                         displayName = displayName.substring(0, 12) + '...';
@@ -1178,7 +1164,6 @@
                                 .join('');
                         }
 
-                        // Shorten task detail if too long
                         let taskDetail = item.task_det || '-';
                         if (taskDetail.length > 50) {
                             taskDetail = taskDetail.substring(0, 47) + '...';
@@ -1275,20 +1260,18 @@
                         let displayValue = newValue;
 
                         if (fieldType === 'status') {
-                    const statusMapping = @json($lov_status->keyBy('lov_id'));
-                    if (statusMapping[newValue]) {
-                        displayValue = statusMapping[newValue].description;
-                    }
-                }
+                            const statusMapping = @json($lov_status->keyBy('lov_id'));
+                            if (statusMapping[newValue]) {
+                                displayValue = statusMapping[newValue].description;
+                            }
+                        }
 
-                        // Format date untuk field yang bertipe tanggal
                         if ((fieldType === 'plan_start' || fieldType === 'actual_start' || fieldType === 'actual_end') && newValue) {
                             displayValue = format_date_local(newValue);
                         } else if (fieldType === 'actual_progress') {
                             displayValue = newValue + '%';
                         }
 
-                        // Update UI untuk cell yang diklik
                         if (cell.classList.contains('editable-field')) {
                             cell.textContent = displayValue;
                             cell.dataset.current = newValue;
@@ -1306,10 +1289,7 @@
                         `;
                         }
 
-                        // Update allTasks
                         updateTaskInAllTasks(taskId, fieldType, newValue);
-
-                        // 🔴 PERBAIKAN: TAMBAHKAN PEMANGGILAN update_left_join DI SINI
                         update_left_join(row, fieldType, newValue);
 
                         // Jika field yang diubah adalah actual_start atau actual_end, hitung actual_duration
@@ -1320,10 +1300,8 @@
                             if (actualStart && actualEnd) {
                                 const actualDuration = calculate_working_days(actualStart, actualEnd);
 
-                                // Update allTasks
                                 updateTaskInAllTasks(taskId, 'actual_duration', actualDuration);
 
-                                // Update UI untuk actual_duration (kolom 11)
                                 const actualDurationCell = row.querySelector('td:nth-child(11)');
                                 if (actualDurationCell) {
                                     actualDurationCell.textContent = actualDuration;
@@ -1342,7 +1320,7 @@
                             }
                         }
 
-                        // Jika field yang diubah adalah plan_start atau plan_duration
+                        // field yang diubah adalah plan_start atau plan_duration
                         if (fieldType === 'plan_start' || fieldType === 'plan_duration') {
                             const planStart = fieldType === 'plan_start' ? newValue : row.querySelector('[data-type="plan_start"]')?.dataset.current;
                             const planDuration = fieldType === 'plan_duration' ? newValue : row.querySelector('[data-type="plan_duration"]')?.dataset.current;
@@ -1351,15 +1329,13 @@
                                 const planEnd = working_day(planStart, parseInt(planDuration));
                                 updateTaskInAllTasks(taskId, 'plan_end', planEnd);
 
-                                // Update UI untuk plan_end (kolom 9)
                                 const planEndCell = row.querySelector('td:nth-child(9)');
                                 if (planEndCell) {
                                     planEndCell.textContent = format_date_local(planEnd);
                                 }
                             }
                         }
-
-                        // Update KPI status
+                        
                         updateKPIStatus(row);
 
                         // Update styling Milestone Task jika kategori berubah
@@ -1484,10 +1460,10 @@
 
                     if (cell) {
                         let displayValue = pendingUpdate.status;
-                const statusMapping = @json($lov_status->keyBy('lov_id'));
-                if (statusMapping[pendingUpdate.status]) {
-                    displayValue = statusMapping[pendingUpdate.status].description;
-                }
+                        const statusMapping = @json($lov_status->keyBy('lov_id'));
+                        if (statusMapping[pendingUpdate.status]) {
+                            displayValue = statusMapping[pendingUpdate.status].description;
+                        }
 
                         if (cell.classList.contains('editable-field')) {
                             cell.textContent = displayValue;
@@ -1584,11 +1560,8 @@
     //     }
     // }
 
-    // Variabel global untuk menyimpan data awal
-    // Variabel global untuk menyimpan semua data task
     const allTasks = @json($tasks);
 
-    // Fungsi untuk progress summary berdasarkan data awal (saat pertama load)
     function total_persentase() {
         const tasks = allTasks;
         const totalTasks = tasks.length;
@@ -1609,13 +1582,9 @@
         updateProgressUI(projectProgress, totalTasks, completedTasks);
     }
 
-    // Fungsi untuk progress summary realtime berdasarkan DOM
-    // Fungsi untuk progress summary realtime berdasarkan DOM
 
     function total_persentase_realtime() {
         console.log('=== total_persentase_realtime() called ===');
-
-        // Gunakan allTasks yang berisi semua data, bukan hanya yang ditampilkan
         const tasks = allTasks;
         const totalTasks = tasks.length;
 
@@ -1675,7 +1644,6 @@
         }
     }
 
-    // Fungsi umum untuk update UI progress
     function updateProgressUI(progress, total, completed) {
         const progressBar = document.getElementById('projectProgressBar');
         if (progressBar) {
@@ -1810,7 +1778,7 @@
         // === ACTUAL DURATION AUTO-CALCULATE ===
         const actualStart = getFieldValue('actual_start');
         const actualEndCell = row.querySelector('td:nth-child(12)');
-        const actualDurationCell = row.querySelector('td:nth-child(11)'); // Kolom actual duration
+        const actualDurationCell = row.querySelector('td:nth-child(11)'); 
 
         if (changedField === 'actual_end' || changedField === 'actual_start') {
             // Jika user mengisi actual_end atau actual_start
@@ -1820,20 +1788,17 @@
                 // Hitung duration berdasarkan hari kerja
                 const actualDuration = calculate_working_days(actualStart, actualEnd);
 
-                // Update actual duration di UI
                 if (actualDurationCell) {
                     actualDurationCell.textContent = actualDuration;
                 }
 
-                // Update actualEndCell display
                 actualEndCell.textContent = format_date_local(actualEnd);
 
-                // Simpan ke allTasks
                 const taskId = row.querySelector('[data-type]').dataset.id;
                 updateTaskInAllTasks(taskId, 'actual_duration', actualDuration);
             }
         } else if (actualDurationFromServer !== null) {
-            // Jika dari server ada actual_duration
+
             if (actualDurationCell) {
                 actualDurationCell.textContent = actualDurationFromServer;
             }
@@ -1857,14 +1822,12 @@
         updateKPIStatus(row);
     }
 
-    // Fungsi untuk menghitung hari kerja antara dua tanggal
     function calculate_working_days(startDate, endDate) {
         if (!startDate || !endDate) return 0;
 
         const start = new Date(startDate);
         const end = new Date(endDate);
 
-        // Jika end date lebih awal dari start date
         if (end < start) return 0;
 
         let count = 0;
@@ -1951,25 +1914,21 @@
             }
         }
 
-        // Update styling Milestone Task jika kategori berubah
         if (changedField === 'is_milestone') {
             updateMilestoneTaskStyling(row, newValue);
         }
     }
 
-    // Fungsi untuk update styling Milestone Task
     function updateMilestoneTaskStyling(row, categoryValue) {
-        const milestoneTaskCell = row.querySelector('td:nth-child(2)'); // Kolom Milestone Task
+        const milestoneTaskCell = row.querySelector('td:nth-child(2)'); 
 
-        // Hapus class styling sebelumnya
         milestoneTaskCell.classList.remove('milestone-task-subactivity', 'milestone-task-activity', 'milestone-task-milestone');
 
-        // Tambahkan class styling berdasarkan kategori
-        if (categoryValue === '70') { // Sub-Activity
+        if (categoryValue === '70') { 
             milestoneTaskCell.classList.add('milestone-task-subactivity');
-        } else if (categoryValue === '21') { // Activity
+        } else if (categoryValue === '21') { 
             milestoneTaskCell.classList.add('milestone-task-activity');
-        } else if (categoryValue === '20') { // Milestone
+        } else if (categoryValue === '20') { 
             milestoneTaskCell.classList.add('milestone-task-milestone');
         }
     }

@@ -976,6 +976,7 @@
                         <div class="card-title">PROJECT MILESTONE</div>
                         <div id="container"></div>
                         <div class="progress-legend" style="margin-top: 10px;">
+                            <div >total</div>
                             <!-- <div class="legend-item">
                                 <span class="status-open-box"></span>
                                 <span>Click bars to view activities (Subactivities not counted)</span>
