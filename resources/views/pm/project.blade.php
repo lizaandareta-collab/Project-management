@@ -1,3 +1,14 @@
+<style>
+.modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1020; /* 🔥 di atas semua isi modal */
+    border-radius: 6px;
+}
+
+</style>
+
 <div class="nk-content">
     <div class="container-fluid">
         <div class="nk-content-inner">
@@ -88,7 +99,8 @@
 <!-- Modal Tambah Project -->
 <div class="modal fade" id="addProjectModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
-        <div class="modal-content">
+        <div class="modal-content position-relative">
+            <div id="addProjectOverlay" class="modal-overlay d-none"></div>
             <form id="formProject">
                 <div class="modal-header">
                     <h5 class="modal-title">Add Project</h5>
@@ -181,6 +193,31 @@
                             </select>
                         </div>
 
+                        <div class="col-md-12">
+                        <label class="form-label">Flow Process</label>
+                        <div class="row g-2">
+
+                            <?php foreach ($lov_process as $proc) { ?>
+                            <div class="col-md-4">
+                                <div class="custom-control custom-checkbox">
+                                    <input 
+                                        type="checkbox"
+                                        class="custom-control-input process-checkbox"
+                                        id="proc_<?= $proc->lov_id ?>"
+                                        data-lov-id="<?= $proc->lov_id ?>"
+                                        data-init="process"
+                                    >
+
+                                    <label class="custom-control-label" for="proc_<?= $proc->lov_id ?>">
+                                        <?= $proc->description ?>
+                                    </label>
+                                </div>
+                            </div>
+                            <?php } ?>
+
+                        </div>
+                    </div>
+
 
                     </div>
                 </div>
@@ -217,6 +254,7 @@
                         </select>
                     </div>
                 </div>
+                
                 <div class="modal-footer">
                     <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary">Save</button>
@@ -226,6 +264,46 @@
     </div>
 </div>
 
+<!-- Modal Input Standard Process Value -->
+<div class="modal fade" id="stdValueModal" tabindex="-1" data-bs-backdrop="false">
+
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="formStdValue">
+                <div class="modal-header">
+                    <h5 class="modal-title">Standard Process Value</h5>
+                    <a href="#" class="close" data-bs-dismiss="modal">
+                        <em class="icon ni ni-cross"></em>
+                    </a>
+                </div>
+
+                <div class="modal-body">
+                    <input type="hidden" id="std_process_id">
+
+                    <div class="mb-3">
+                        <label class="form-label">OK Ratio Target (%)</label>
+                        <input type="number" class="form-control std-value" data-stdproc="77">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">CT Target (second)</label>
+                        <input type="number" class="form-control std-value" data-stdproc="78">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Berat Target</label>
+                        <input type="number" class="form-control std-value" data-stdproc="79">
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 
 <script>
@@ -315,5 +393,159 @@
                 });
         });
     });
+document.addEventListener('DOMContentLoaded', function () {
+
+    document.querySelectorAll('.process-checkbox').forEach(cb => {
+        cb.addEventListener('change', function () {
+
+    fetch("{{ route('zzz_save_process_temp') }}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": "{{ csrf_token() }}"
+        },
+        body: JSON.stringify({
+            lov_id: this.dataset.lovId,
+            init: this.dataset.init,
+            checked: this.checked
+        })
+    })
+    .then(res => res.json())
+    .then(res => {
+        if (!res.success) {
+            Swal.fire('Error', res.message, 'error');
+            this.checked = !this.checked;
+            return;
+        }
+
+        // 🔥 JIKA CHECKED → BUKA MODAL VALUE
+       if (this.checked) {
+    activeProcessCheckbox = this; // 🔥 SIMPAN REFERENSI
+    document.getElementById('std_process_id').value = this.dataset.lovId;
+    new bootstrap.Modal(document.getElementById('stdValueModal')).show();
+}
+
+    });
+});
+
+    });
+
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+
+    const modal = document.getElementById('addProjectModal');
+
+    modal.addEventListener('hidden.bs.modal', function () {
+
+        document.querySelectorAll('.process-checkbox').forEach(cb => {
+            if (cb.checked) {
+
+                fetch("{{ route('zzz_save_process_temp') }}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                    },
+                    body: JSON.stringify({
+                        lov_id: cb.dataset.lovId,
+                        init: cb.dataset.init,
+                        checked: false   // 🔥 PAKSA DELETE
+                    })
+                });
+
+                cb.checked = false; // reset UI
+            }
+        });
+
+    });
+
+});
+
+document.getElementById('formStdValue').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    let valid = true;
+
+    document.querySelectorAll('.std-value').forEach(input => {
+        if (input.value === '') {
+            valid = false;
+            input.classList.add('is-invalid');
+        } else {
+            input.classList.remove('is-invalid');
+        }
+    });
+
+    if (!valid) {
+        Swal.fire('Warning', 'All Standard Process Value must be filled!', 'warning');
+        return;
+    }
+
+    const processId = document.getElementById('std_process_id').value;
+
+    document.querySelectorAll('.std-value').forEach(input => {
+        fetch("{{ route('zzz_save_process_temp') }}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": "{{ csrf_token() }}"
+            },
+            body: JSON.stringify({
+                process_id: processId,
+                stdproc_id: input.dataset.stdproc,
+                value: input.value,
+                init: 'stdproc',
+                checked: true
+            })
+        });
+
+        input.value = '';
+    });
+
+    document.getElementById('std_process_id').value = '';
+    activeProcessCheckbox = null;
+
+    bootstrap.Modal.getInstance(
+        document.getElementById('stdValueModal')
+    ).hide();
+});
+
+document.getElementById('stdValueModal').addEventListener('hidden.bs.modal', function () {
+
+    // jika masih ada checkbox aktif → berarti batal
+    if (activeProcessCheckbox) {
+
+        fetch("{{ route('zzz_save_process_temp') }}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": "{{ csrf_token() }}"
+            },
+            body: JSON.stringify({
+                lov_id: activeProcessCheckbox.dataset.lovId,
+                init: 'process',
+                checked: false
+            })
+        });
+
+        activeProcessCheckbox.checked = false;
+        activeProcessCheckbox = null;
+
+        document.querySelectorAll('.std-value').forEach(i => i.value = '');
+        document.getElementById('std_process_id').value = '';
+    }
+});
+
+const stdModal = document.getElementById('stdValueModal');
+const overlay = document.getElementById('addProjectOverlay');
+
+stdModal.addEventListener('show.bs.modal', function () {
+    overlay.classList.remove('d-none');
+});
+
+stdModal.addEventListener('hidden.bs.modal', function () {
+    overlay.classList.add('d-none');
+});
+
 
 </script>

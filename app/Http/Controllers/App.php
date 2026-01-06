@@ -983,32 +983,37 @@ class App extends Controller
 
 
 
-    public function project()
-    {
-        $projects = Maio::get_projects();
-        $lov = Maio::get_lov();
-        $client = Maio::get_client();
-        $responsible = Maio::get_resource_mgmt();
-        $holiday = Maio::get_holiday();
+public function project()
+{
+    $projects = Maio::get_projects();
+    $lov = Maio::get_lov();
+    $client = Maio::get_client();
+    $responsible = Maio::get_resource_mgmt();
+    $holiday = Maio::get_holiday();
 
-        $lov_status = $lov->where('init', 'status');
-        $lov_complexity = $lov->where('init', 'complexity');
-        $lov_priority = $lov->where('init', 'priority');
+    $lov_status     = $lov->where('init', 'status');
+    $lov_complexity = $lov->where('init', 'complexity');
+    $lov_priority   = $lov->where('init', 'priority');
+    $lov_process    = $lov->where('init', 'process'); 
+    $lov_stdproc = $lov->where('init', 'stdproc');
 
-        $data = [
-            'title' => 'Project Management',
-            'content' => 'pm.project',
-            'projects' => $projects,
-            'lov_status' => $lov_status,
-            'lov_complexity' => $lov_complexity,
-            'lov_priority' => $lov_priority,
-            'client' => $client,
-            'responsible' => $responsible,
-            'holiday' => $holiday
-        ];
+    $data = [
+        'title' => 'Project Management',
+        'content' => 'pm.project',
+        'projects' => $projects,
+        'lov_status' => $lov_status,
+        'lov_complexity' => $lov_complexity,
+        'lov_priority' => $lov_priority,
+        'lov_process' => $lov_process,
+        'lov_stdproc' => $lov_stdproc,
+        'client' => $client,
+        'responsible' => $responsible,
+        'holiday' => $holiday
+    ];
 
-        return view('template.wrapper', $data);
-    }
+    return view('template.wrapper', $data);
+}
+
 
     public function zzz_project(Request $request)
     {
@@ -1026,6 +1031,21 @@ class App extends Controller
             ]);
         }
     }
+
+    public function zzz_save_process_temp(Request $request)
+{
+    $result = Mapp::save_process_temp($request);
+
+    if ($result['success']) {
+        return response()->json(['success' => true]);
+    }
+
+    return response()->json([
+        'success' => false,
+        'message' => $result['message']
+    ]);
+}
+
 
 
     public function task($id)

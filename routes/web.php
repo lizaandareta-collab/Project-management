@@ -33,12 +33,14 @@ Route::middleware(['web'])->group(function () {
     Route::post('/update-resource', [App::class, 'update_resource'])->name('update_resource');
     Route::post('/delete-resource', [App::class, 'delete_resource'])->name('delete_resource');
     
-
     Route::get('/project', [App::class, 'project'])->name('project');
     Route::post('/zzz_project', [App::class, 'zzz_project'])->name('zzz_project');
     Route::post('/update_project/{id}', [App::class, 'updateProject'])->name('update_project');
     Route::delete('/delete_project/{id}', [App::class, 'deleteProject'])->name('delete_project');
     Route::post('/zzz_updateStatus', [App::class, 'zzz_updateStatus'])->name('zzz_updateStatus');
+    Route::post('/zzz_save_process_temp', [App::class, 'zzz_save_process_temp'])->name('zzz_save_process_temp');
+    Route::get('/zzz_get_stdproc', [App::class, 'zzz_get_stdproc']);
+    Route::post('/zzz_save_stdproc', [App::class, 'zzz_save_stdproc']);
 
     Route::get('/task/{id}', [App::class, 'task'])->name('task');
     Route::get('/test-holiday', [App::class, 'testHoliday']);

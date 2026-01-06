@@ -235,11 +235,6 @@ class Mapp
         }
     }
 
-
-
-
-
-
     public static function insert_project($req)
     {
         try {
@@ -273,13 +268,35 @@ class Mapp
                 throw new \Exception('Project not found after insert');
             }
 
+            // $projectId = $project->id;
+
+            // // === 3. AMBIL TEMPLATE TASK DARI TASK_SETUP ===
+            // $taskSetup = DB::connection('oracle')
+            //     ->table('PROMAN.TASK_SETUP')
+            //     ->select('TASK_ID', 'MILESTONE_TASK', 'IS_MILESTONE', 'PARENT_TASK', 'ORDER1')
+            //     ->get();
+
             $projectId = $project->id;
+
+            /*
+            |--------------------------------------------------------------------------
+            | 🔥 UPDATE PROMAN.STANDARD
+            | Isi PROJECT_ID untuk data temp
+            |--------------------------------------------------------------------------
+            */
+            DB::connection('oracle')
+                ->table('PROMAN.STANDARD')
+                ->whereNull('PROJECT_ID')
+                ->update([
+                    'PROJECT_ID' => $projectId
+                ]);
 
             // === 3. AMBIL TEMPLATE TASK DARI TASK_SETUP ===
             $taskSetup = DB::connection('oracle')
                 ->table('PROMAN.TASK_SETUP')
                 ->select('TASK_ID', 'MILESTONE_TASK', 'IS_MILESTONE', 'PARENT_TASK', 'ORDER1')
                 ->get();
+
 
             // === 4. INSERT TASK KE PROJECT_TASK ===
             foreach ($taskSetup as $task) {
@@ -301,6 +318,79 @@ class Mapp
             return ['success' => false, 'message' => $e->getMessage()];
         }
     }
+
+    public static function save_process_temp($req)
+    {
+        try {
+            DB::connection('oracle')->beginTransaction();
+
+            if ($req->checked) {
+
+                // === SIMPAN PROCESS ===
+                if ($req->init === 'process') {
+                    DB::connection('oracle')->table('PROMAN.STANDARD')->insert([
+                        'PROCESS_ID' => $req->lov_id,
+                        'INIT' => 'process',
+                        'SYSDATE1' => DB::raw('SYSDATE')
+                    ]);
+                }
+
+                // === SIMPAN STDPROC VALUE ===
+                if ($req->init === 'stdproc') {
+                    DB::connection('oracle')->table('PROMAN.STANDARD')->insert([
+                        'PROCESS_ID' => $req->process_id,
+                        'STDPROC_ID' => $req->stdproc_id,
+                        'VALUE' => $req->value,
+                        'INIT' => 'stdproc',
+                        'SYSDATE1' => DB::raw('SYSDATE')
+                    ]);
+                }
+
+            } else {
+
+                // ============================
+                // DELETE PROCESS
+                // ============================
+                if ($req->init === 'process') {
+
+                    // 🔥 HAPUS STDPROC TERLEBIH DULU
+                    DB::connection('oracle')->table('PROMAN.STANDARD')
+                        ->where('PROCESS_ID', $req->lov_id)
+                        ->where('INIT', 'stdproc')
+                        ->delete();
+
+                    // 🔥 HAPUS PROCESS
+                    DB::connection('oracle')->table('PROMAN.STANDARD')
+                        ->where('PROCESS_ID', $req->lov_id)
+                        ->where('INIT', 'process')
+                        ->delete();
+                }
+
+                // ============================
+                // DELETE STDPROC (MANUAL UNCHECK / FUTURE)
+                // ============================
+                if ($req->init === 'stdproc') {
+                    DB::connection('oracle')->table('PROMAN.STANDARD')
+                        ->where('PROCESS_ID', $req->process_id)
+                        ->where('STDPROC_ID', $req->stdproc_id)
+                        ->where('INIT', 'stdproc')
+                        ->delete();
+                }
+            }
+
+
+            DB::connection('oracle')->commit();
+            return ['success' => true];
+
+        } catch (\Exception $e) {
+            DB::connection('oracle')->rollBack();
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
 
 
 
