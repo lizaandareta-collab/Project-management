@@ -1,3 +1,45 @@
+<style>
+    /* Select Process Area */
+    .process-wrapper {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    /* Default button */
+    .btn-process {
+        border-radius: 20px;
+        padding: 6px 16px;
+        font-size: 13px;
+        font-weight: 500;
+        white-space: nowrap;
+        transition: background-color .2s ease, color .2s ease, border-color .2s ease;
+    }
+
+    /* Hover = hijau gelap */
+    .btn-process:hover {
+        background-color: #0fac81;
+        /* hijau gelap template */
+        border-color: #0fac81;
+        color: #fff !important;
+    }
+
+    /* Focus */
+    .btn-process:focus {
+        background-color: #0fac81;
+        border-color: #0fac81;
+        color: #fff !important;
+        box-shadow: none;
+    }
+
+    /* Active (yang diklik) */
+    .btn-process.btn-primary {
+        background-color: #0fac81;
+        border-color: #0fac81;
+        color: #fff !important;
+    }
+</style>
+
 <div class="nk-content">
     <div class="container-fluid">
         <div class="nk-content-inner">
@@ -5,79 +47,67 @@
                 <div class="components-preview mx-auto w-100">
                     <div class="nk-block nk-block-lg">
                         <div class="nk-block-head">
-                            <div class="nk-block-head-content d-flex justify-content-between align-items-center">
-                                <h4 class="nk-block-title mb-0">Project Management</h4>
-                                <button class="btn btn-primary" data-bs-toggle="modal"
-                                    data-bs-target="#addProjectModal">
-                                    <em class="icon ni ni-plus"></em> Add Project
-                                </button>
+                            <div class="nk-block-head-content">
+                                <h4 class="nk-block-title mb-0">
+                                    Trial Record & Report -
+                                    <span>
+                                        {{ $project->project_name }}
+                                    </span>
+                                </h4>
+
                             </div>
                         </div>
 
-                        <div class="card card-bordered card-preview">
+                        <div class="card card-bordered mb-3">
                             <div class="card-inner">
-                                <table class="datatable-init-export nowrap table" data-export-title="Export Project"
-                                    data-ordering="false">
+                                <label class="form-label fw-bold mb-2">Select Process</label>
+
+                                <div class="process-wrapper">
+
+                                    <?php foreach ($process as $p) { ?>
+                                    <button type="button" class="btn btn-outline-primary btn-process"
+                                        data-process-id="<?= $p->lov_id ?>" data-process-name="<?= $p->description ?>">
+                                        <?= $p->description ?>
+                                    </button>
+                                    <?php } ?>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="card card-bordered card-preview d-none" id="trialTableCard">
+                            <div class="card-inner">
+                                <h6 class="mb-3">
+                                    Report -
+                                    <span id="selectedProcess"></span>
+                                </h6>
+
+                                <table class="datatable-init-export nowrap table"
+                                    data-export-title="Export Trial Report" data-ordering="false">
 
                                     <thead>
                                         <tr>
-                                            <th>Project Name</th>
-                                            <th>Responsible</th>
-                                            <th>Client</th>
-                                            <th>Budget</th>
-                                            <th>Start Date</th>
-                                            <th>Days</th>
-                                            <th>End Date</th>
-                                            <!-- <th>Complexity</th> -->
-                                            <th>Priority</th>
-                                            <th>Status</th>
-                                            <th>#</th>
+                                            <th>Trial</th>
+                                            <th>Casting</th>
+                                            <th>Machine</th>
+                                            <th>Date</th>
+                                            <th>OK</th>
+                                            <th>%</th>
+                                            <th>Target</th>
+                                            <th>CT</th>
+                                            <th>CT Target</th>
+                                            <th>Berat</th>
+                                            <th>Berat Target</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        <?php foreach ($projects as $p) { ?>
-                                        <tr>
-                                            <td><?= $p->project_name ?></td>
-                                            <td><?= $p->responsible ?></td>
-                                            <td><?= $p->client ?></td>
-                                            <td>Rp <?= number_format($p->budget, 0, ',', '.') ?></td>
-                                            <td><?= date('Y-m-d', strtotime($p->start_date)) ?></td>
-                                            <td><?= $p->days ?></td>
-                                            <td><?= date('Y-m-d', strtotime($p->end_date)) ?></td>
-                                            <!-- <td><?= $p->complexity ?></td> -->
-                                            <td><?= $p->priority ?></td>
-                                            <td><?= $p->status ?></td>
-                                            <td>
-                                                <div class="drodown">
-                                                    <a href="#" class="dropdown-toggle btn btn-icon btn-trigger"
-                                                        data-bs-toggle="dropdown">
-                                                        <em class="icon ni ni-more-h"></em>
-                                                    </a>
-                                                    <div class="dropdown-menu dropdown-menu-end">
-                                                        <ul class="link-list-opt no-bdr">
-                                                            <li><a href="{{ route('projectdash', ['id' => $p->id]) }}">
-                                                                    <em class="icon ni ni-eye"></em><span>Project
-                                                                        Dashboard</span></a></li>
-                                                            <li><a href="{{ route('task', ['id' => $p->id]) }}">
-                                                                    <em class="icon ni ni-eye"></em><span>Task
-                                                                        Management</span></a></li>
-                                                            <li><a href="{{ route('trial', ['id' => $p->id]) }}">
-                                                                    <em class="icon ni ni-eye"></em><span>Trial
-                                                                        Record</span></a></li>
-                                                            <li><a href="{{ route('problem', ['id' => $p->id]) }}">
-                                                                    <em class="icon ni ni-eye"></em><span>Problem
-                                                                        History</span></a></li>            
-                                                            
-                                                        </ul>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <?php } ?>
+
+                                    <tbody id="trialTableBody">
+                                        <!-- dummy -->
                                     </tbody>
                                 </table>
                             </div>
                         </div>
+
                     </div>
                 </div><!-- .components-preview -->
             </div>
@@ -85,355 +115,53 @@
     </div>
 </div>
 
-<!-- Modal Tambah Project -->
-<div class="modal fade" id="addProjectModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <form id="formProject">
-                <div class="modal-header">
-                    <h5 class="modal-title">Add Project</h5>
-                    <a href="#" class="close" data-bs-dismiss="modal">
-                        <em class="icon ni ni-cross"></em>
-                    </a>
-                </div>
-
-                <div class="modal-body">
-                    <div class="row gy-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Project Name</label>
-                            <input type="text" class="form-control" name="project_name" required>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Responsible</label>
-                            <select class="form-control" name="responsible" required>
-                                <option value="" disabled selected>-- Select Responsible --</option>
-                                <?php foreach ($responsible as $a) { ?>
-                                <option value="<?= $a->npk ?>"><?= $a->emp_name ?></option>
-                                <?php } ?>
-                            </select>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Client</label>
-                            <select class="form-control" name="client" required>
-                                <option value="" disabled selected>-- Select Client --</option>
-                                <!-- <?php foreach ($client as $b) { ?>
-                                <option value="<?= $b->client_ora ?>"><?= $b->name ?></option>
-                                <?php } ?> -->
-
-                                <?php foreach ($client as $b) { ?>
-                                <?php    if ($b->client_ora) { ?>
-                                <option value="<?= $b->client_ora ?>"><?= $b->name ?></option>
-                                <?php    } ?>
-                                <?php } ?>
-
-                            </select>
-                        </div>
-
-
-                        <div class="col-md-6">
-                            <label class="form-label">Budget</label>
-                            <input type="number" class="form-control" name="budget" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Start Date</label>
-                            <input type="date" class="form-control" name="start_date" required>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">End Date</label>
-                            <input type="date" class="form-control" name="end_date" required>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Days (Auto)</label>
-                            <input type="number" class="form-control" name="days" readonly>
-                        </div>
-
-                        <!-- <div class="col-md-6">
-                            <label class="form-label">Complexity</label>
-                            <select class="form-control" name="complexity" required>
-                                <option value="" disabled selected>-- Select Complexity --</option>
-                                <?php foreach ($lov_complexity as $c) { ?>
-                                <option value="<?= $c->lov_id ?>"><?= $c->description ?></option>
-                                <?php } ?>
-                            </select>
-                        </div> -->
-
-                        <div class="col-md-6">
-                            <label class="form-label">Priority</label>
-                            <select class="form-control" name="priority" required>
-                                <option value="" disabled selected>-- Select Priority --</option>
-                                <?php foreach ($lov_priority as $p) { ?>
-                                <option value="<?= $p->lov_id ?>"><?= $p->description ?></option>
-                                <?php } ?>
-                            </select>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Status</label>
-                            <select class="form-control" name="status" required>
-                                <option value="" disabled selected>-- Select Status --</option>
-                                <?php foreach ($lov_status as $s) { ?>
-                                <option value="<?= $s->lov_id ?>"><?= $s->description ?></option>
-                                <?php } ?>
-                            </select>
-                        </div>
-
-                        <div class="col-md-12">
-                        <label class="form-label">Flow Process</label>
-                        <div class="row g-2">
-
-                            <?php foreach ($lov_process as $proc) { ?>
-                            <div class="col-md-4">
-                                <div class="custom-control custom-checkbox">
-                                    <input 
-    type="checkbox"
-    class="custom-control-input process-checkbox"
-    id="proc_<?= $proc->lov_id ?>"
-    data-lov-id="<?= $proc->lov_id ?>"
-    data-init="process"
->
-
-                                    <label class="custom-control-label" for="proc_<?= $proc->lov_id ?>">
-                                        <?= $proc->description ?>
-                                    </label>
-                                </div>
-                            </div>
-                            <?php } ?>
-
-                        </div>
-                    </div>
-
-
-                    </div>
-                </div>
-
-                <div class="modal-footer d-flex">
-                    <button class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary ms-auto">Save</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Edit Status -->
-<div class="modal fade" id="editStatusModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form id="formEditStatus">
-                <div class="modal-header">
-                    <h5 class="modal-title">Edit Status</h5>
-                    <a href="#" class="close" data-bs-dismiss="modal">
-                        <em class="icon ni ni-cross"></em>
-                    </a>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" name="project_name" id="editProjectName">
-                    <div class="mb-3">
-                        <label class="form-label">Status</label>
-                        <select class="form-control" name="status" id="editStatusSelect" required>
-                            <option value="" disabled selected>-- Select Status --</option>
-                            <?php foreach ($lov_status as $s) { ?>
-                            <option value="<?= $s->description ?>"><?= $s->description ?></option>
-                            <?php } ?>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- Modal flow proses -->
- <div class="modal fade" id="modalStdProc" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <form id="formStdProc">
-        <div class="modal-header">
-          <h5 class="modal-title">Process Value</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-
-        <div class="modal-body">
-          <input type="hidden" name="process_id" id="std_process_id">
-
-          <div class="mb-3">
-            <label class="form-label">Standard Process</label>
-            <select class="form-control" name="stdproc_id" id="stdproc_select" required>
-              <option value="">-- Select --</option>
-            </select>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label">Value</label>
-            <input type="text" class="form-control" name="value" required>
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <button class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
-          <button class="btn btn-primary" type="submit">Save</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
-
-
-
 <script>
-    const holidayList = @json($holiday);
-    document.addEventListener('DOMContentLoaded', function () {
-        // === AUTO HITUNG END DATE ===
-        const startInput = document.querySelector('input[name="start_date"]');
-        const daysInput = document.querySelector('input[name="days"]');
-        const endInput = document.querySelector('input[name="end_date"]');
+    document.querySelectorAll('.btn-process').forEach(btn => {
+        btn.addEventListener('click', function () {
 
-        // function update_end_date() {
-        //     const startDate = new Date(startInput.value);
-        //     const days = parseInt(daysInput.value);
+            // highlight active button
+            document.querySelectorAll('.btn-process')
+                .forEach(b => b.classList.remove('btn-primary'));
 
-        //     if (!isNaN(startDate) && !isNaN(days)) {
-        //         const endDate = new Date(startDate);
-        //         endDate.setDate(startDate.getDate() + days);
-        //         endInput.value = endDate.toISOString().split('T')[0];
-        //     } else {
-        //         endInput.value = '';
-        //     }
-        // }
+            this.classList.add('btn-primary');
 
-        function update_days() {
-            const startDate = new Date(startInput.value);
-            const endDate = new Date(endInput.value);
+            const processName = this.dataset.processName;
 
-            if (isNaN(startDate) || isNaN(endDate) || endDate < startDate) {
-                daysInput.value = '';
-                return;
-            }
+            document.getElementById('selectedProcess').innerText = processName;
 
-            let count = 0;
-            let current = new Date(startDate);
+            const tbody = document.getElementById('trialTableBody');
 
-            while (current <= endDate) {
+            // 🔥 DATA DUMMY
+            tbody.innerHTML = `
+            <tr>
+                <td>Trial 1</td>
+                <td>${processName} Improve A</td>
+                <td>TIHO 5A</td>
+                <td>25/11/25</td>
+                <td>78</td>
+                <td class="text-danger fw-bold">78%</td>
+                <td>97%</td>
+                <td>117</td>
+                <td>120</td>
+                <td>14.4</td>
+                <td>15</td>
+            </tr>
+            <tr>
+                <td>Trial 2</td>
+                <td>${processName} Improve B</td>
+                <td>4A</td>
+                <td>26/11/25</td>
+                <td>98</td>
+                <td class="text-success fw-bold">98%</td>
+                <td>97%</td>
+                <td>122</td>
+                <td>120</td>
+                <td>14.2</td>
+                <td>15</td>
+            </tr>
+        `;
 
-                const day = current.getDay();
-                const formatted = current.toISOString().split('T')[0];
-
-                const isWeekend = (day === 0 || day === 6);
-                const isHoliday = holidayList.includes(formatted);
-
-                if (!isWeekend && !isHoliday) {
-                    count++;
-                }
-
-                current.setDate(current.getDate() + 1);
-            }
-
-            daysInput.value = count;
-        }
-
-
-        startInput.addEventListener('change', update_days);
-        endInput.addEventListener('change', update_days);
-
-
-        const form = document.getElementById('formProject');
-        form.addEventListener('submit', function (e) {
-            e.preventDefault();
-
-            fetch("{{ route('zzz_project') }}", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
-                },
-                body: new URLSearchParams(new FormData(form))
-            })
-                .then(response => response.json())
-                .then(res => {
-                    if (res.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Success',
-                            text: res.message,
-                            timer: 1500,
-                            showConfirmButton: false
-                        }).then(() => location.reload());
-                    } else {
-                        Swal.fire('Error', res.message, 'error');
-                    }
-                })
-                .catch(err => {
-                    Swal.fire('Error', 'Failed to save project', 'error');
-                });
+            document.getElementById('trialTableCard').classList.remove('d-none');
         });
     });
-document.addEventListener('DOMContentLoaded', function () {
-
-    document.querySelectorAll('.process-checkbox').forEach(cb => {
-        cb.addEventListener('change', function () {
-
-            fetch("{{ route('zzz_save_process_temp') }}", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
-                },
-                body: JSON.stringify({
-                    lov_id: this.dataset.lovId,
-                    init: this.dataset.init,
-                    checked: this.checked
-                })
-            })
-            .then(res => res.json())
-            .then(res => {
-                if (!res.success) {
-                    Swal.fire('Error', res.message, 'error');
-                    this.checked = !this.checked; // rollback UI
-                }
-            });
-
-        });
-    });
-
-});
-
-document.addEventListener('DOMContentLoaded', function () {
-
-    const modal = document.getElementById('addProjectModal');
-
-    modal.addEventListener('hidden.bs.modal', function () {
-
-        document.querySelectorAll('.process-checkbox').forEach(cb => {
-            if (cb.checked) {
-
-                fetch("{{ route('zzz_save_process_temp') }}", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-CSRF-TOKEN": "{{ csrf_token() }}"
-                    },
-                    body: JSON.stringify({
-                        lov_id: cb.dataset.lovId,
-                        init: cb.dataset.init,
-                        checked: false   // 🔥 PAKSA DELETE
-                    })
-                });
-
-                cb.checked = false; // reset UI
-            }
-        });
-
-    });
-
-});
 </script>

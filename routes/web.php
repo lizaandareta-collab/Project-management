@@ -32,7 +32,7 @@ Route::middleware(['web'])->group(function () {
     Route::post('/insert-resource', [App::class, 'insert_resource'])->name('insert_resource');
     Route::post('/update-resource', [App::class, 'update_resource'])->name('update_resource');
     Route::post('/delete-resource', [App::class, 'delete_resource'])->name('delete_resource');
-    
+
     Route::get('/project', [App::class, 'project'])->name('project');
     Route::post('/zzz_project', [App::class, 'zzz_project'])->name('zzz_project');
     Route::post('/update_project/{id}', [App::class, 'updateProject'])->name('update_project');
@@ -41,6 +41,10 @@ Route::middleware(['web'])->group(function () {
     Route::post('/zzz_save_process_temp', [App::class, 'zzz_save_process_temp'])->name('zzz_save_process_temp');
     Route::get('/zzz_get_stdproc', [App::class, 'zzz_get_stdproc']);
     Route::post('/zzz_save_stdproc', [App::class, 'zzz_save_stdproc']);
+
+    Route::get('/trial/{id}', [App::class, 'trial'])->name('trial');
+    Route::post('/trial/store', [App::class, 'trial_store'])->name('trial.store');
+    Route::post('/trial/data', [App::class, 'trial_data'])->name('trial.data');
 
     Route::get('/task/{id}', [App::class, 'task'])->name('task');
     Route::get('/test-holiday', [App::class, 'testHoliday']);
@@ -60,8 +64,6 @@ Route::middleware(['web'])->group(function () {
     Route::post('/invoice/add', [App::class, 'addInvoice'])->name('invoice.add');
     Route::get('/invoice/list/{project_id}', [App::class, 'getInvoiceList'])->name('invoice.list');
     Route::post('/invoice/add', [App::class, 'addInvoice'])->name('invoice.add');
-
-    Route::get('/trial/{id}', [App::class, 'trial'])->name('trial');
 
     Route::get('/problem/{id}', [App::class, 'problem'])->name('problem');
 

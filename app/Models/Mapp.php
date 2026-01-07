@@ -353,17 +353,18 @@ class Mapp
                 // ============================
                 if ($req->init === 'process') {
 
-                    // 🔥 HAPUS STDPROC TERLEBIH DULU
                     DB::connection('oracle')->table('PROMAN.STANDARD')
                         ->where('PROCESS_ID', $req->lov_id)
                         ->where('INIT', 'stdproc')
+                        ->whereNull('PROJECT_ID')   // 🔥 penting
                         ->delete();
 
-                    // 🔥 HAPUS PROCESS
                     DB::connection('oracle')->table('PROMAN.STANDARD')
                         ->where('PROCESS_ID', $req->lov_id)
                         ->where('INIT', 'process')
+                        ->whereNull('PROJECT_ID')   // 🔥 penting
                         ->delete();
+
                 }
 
                 // ============================
@@ -374,7 +375,9 @@ class Mapp
                         ->where('PROCESS_ID', $req->process_id)
                         ->where('STDPROC_ID', $req->stdproc_id)
                         ->where('INIT', 'stdproc')
+                        ->whereNull('PROJECT_ID')   // 🔥 penting
                         ->delete();
+
                 }
             }
 
@@ -390,6 +393,30 @@ class Mapp
             ];
         }
     }
+
+    public static function insert_trial($req)
+    {
+        DB::connection('oracle')->table('PROMAN.TRIAL_RR')->insert([
+            'PROJECT_ID' => $req->project_id,
+            'PROCESS_ID' => $req->process_id,
+            'TRIAL_NO' => $req->trial_no,
+            'TRIAL_STAT' => $req->trial_stat,
+            'TRIAL_MACHINE' => $req->trial_machine,
+            'TRIAL_DATE' => $req->trial_date,
+            'ACTUAL' => $req->actual,
+            'OK' => $req->ok,
+            'PERCT' => $req->perct,
+            'TARGET' => $req->target,
+            'CT' => $req->ct,
+            'CT_TARGET' => $req->ct_target,
+            'BERAT' => $req->berat,
+            'BERAT_TARGET' => $req->berat_target,
+            'SYSDATE1' => DB::raw('SYSDATE')
+        ]);
+
+        return true;
+    }
+
 
 
 
