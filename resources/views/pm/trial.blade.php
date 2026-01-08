@@ -104,10 +104,10 @@
                                     <thead>
                                         <tr>
                                             <th>Trial</th>
-                                            <th>Casting</th>
+                                            <th>Casting (Status Trial)</th>
                                             <th>Machine</th>
                                             <th>Date</th>
-                                            <th>Progcess</th>
+                                            <th>Process</th>
                                             <th>OK</th>
                                             <th>%</th>
                                             <th>Target</th>
@@ -130,6 +130,7 @@
             </div>
         </div>
     </div>
+
     <div class="modal fade" id="modalAddTrial" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <form id="formAddTrial">
@@ -145,77 +146,84 @@
 
                 <div class="modal-body row g-3">
 
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label">Trial</label>
                         <input type="text" name="trial_no" class="form-control" required>
                     </div>
 
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label">Casting (Status Trial)</label>
                         <input type="text" name="trial_stat" class="form-control" required>
                     </div>
 
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label">Machine</label>
                         <input type="text" name="trial_machine" class="form-control" required>
                     </div>
 
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label">Date</label>
                         <input type="date" name="trial_date" class="form-control" required>
                     </div>
 
-                    <div class="col-md-4">
-                        <label class="form-label">Process (Actual)</label>
+                    <div class="col-md-3">
+                        <label class="form-label">Process</label>
                         <input type="number" name="actual" class="form-control">
                     </div>
 
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label">OK</label>
                         <input type="number" name="ok" class="form-control">
                     </div>
 
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label">%</label>
                         <input type="number" step="0.01" name="perct" id="perct" class="form-control" readonly>
                     </div>
 
-                    <div class="col-md-4">
-                        <label class="form-label">Target</label>
-                        <input type="number" name="target" class="form-control">
-                    </div>
+                    <div class="col-md-3">
+    <label class="form-label">Target</label>
 
-                    <div class="col-md-4">
+    <!-- 1️⃣ Tampilan (97,00) -->
+    <input type="text" id="target_view" class="form-control" readonly>
+
+    <!-- 2️⃣ Data asli (97.00) -->
+    <input type="hidden" name="target" id="target_real">
+</div>
+
+
+                    <div class="col-md-3">
                         <label class="form-label">CT</label>
                         <input type="number" name="ct" class="form-control">
                     </div>
 
-                    <div class="col-md-4">
-                        <label class="form-label">CT Target</label>
-                        <input type="number" name="ct_target" class="form-control">
-                    </div>
+                    <div class="col-md-3">
+    <label class="form-label">CT Target</label>
+    <input type="number" name="ct_target" class="form-control" readonly>
+</div>
 
-                    <div class="col-md-4">
+
+                    <div class="col-md-3">
                         <label class="form-label">Berat</label>
                         <input type="number" step="0.01" name="berat" class="form-control">
                     </div>
 
-                    <div class="col-md-4">
-                        <label class="form-label">Berat Target</label>
-                        <input type="number" step="0.01" name="berat_target" class="form-control">
-                    </div>
+                    <div class="col-md-3">
+    <label class="form-label">Berat Target</label>
+    <input type="number" name="berat_target" class="form-control" readonly>
+</div>
 
                 </div>
 
                 <div class="modal-footer d-flex">
-    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
-        Cancel
-    </button>
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
+                    Cancel
+                </button>
 
-    <button type="submit" class="btn btn-primary ms-auto">
-        Save
-    </button>
-</div>
+                <button type="submit" class="btn btn-primary ms-auto">
+                    Save
+                </button>
+            </div>
 
             </div>
         </form>
@@ -256,6 +264,16 @@ document.querySelectorAll('.btn-process').forEach(btn => {
     });
 });
 
+function formatModalTarget(val) {
+    if (val === null || val === '' || isNaN(val)) return '';
+    return parseFloat(val).toFixed(2).replace('.', ','); // 97,00
+}
+
+function formatTableTarget(val) {
+    if (val === null || val === '' || isNaN(val)) return '';
+    return parseFloat(val).toFixed(2); // 97.00
+}
+
 /* ===============================
    LOAD REAL DATA (NO DUMMY)
 ================================ */
@@ -287,29 +305,78 @@ function loadTrialData() {
             `;
         } else {
             data.forEach(row => {
-                html += `
-                    <tr>
-                        <td>${row.trial_no ?? ''}</td>
-                        <td>${row.trial_stat ?? ''}</td>
-                        <td>${row.trial_machine ?? ''}</td>
-                        <td>${row.trial_date ? row.trial_date.split(' ')[0] : ''}</td>
-                        <td>${row.actual ?? ''}</td>
-                        <td>${row.ok ?? ''}</td>
-                        <td>${row.perct ?? ''}</td>
-                        <td>${row.target ?? ''}</td>
-                        <td>${row.ct ?? ''}</td>
-                        <td>${row.ct_target ?? ''}</td>
-                        <td>${row.berat ?? ''}</td>
-                        <td>${row.berat_target ?? ''}</td>
-                    </tr>
-                `;
-            });
+
+    const perctVal  = parseFloat(row.perct);
+    const targetVal = parseFloat(row.target);
+
+    // tentukan warna %
+    let perctClass = '';
+    if (!isNaN(perctVal) && !isNaN(targetVal)) {
+        perctClass = perctVal >= targetVal
+            ? 'text-success fw-bold'
+            : 'text-danger fw-bold';
+    }
+
+    html += `
+        <tr>
+            <td>${row.trial_no ?? ''}</td>
+            <td>${row.trial_stat ?? ''}</td>
+            <td>${row.trial_machine ?? ''}</td>
+            <td>${row.trial_date ? row.trial_date.split(' ')[0] : ''}</td>
+            <td>${row.actual ?? ''}</td>
+            <td>${row.ok ?? ''}</td>
+            <td class="${perctClass}">
+                ${formatTableTarget(row.perct)} %
+            </td>
+            <td>${formatTableTarget(row.target)} %</td>
+            <td>${row.ct ?? ''}</td>
+            <td>${row.ct_target ?? ''}</td>
+            <td>${row.berat ?? ''}</td>
+            <td>${row.berat_target ?? ''}</td>
+        </tr>
+    `;
+});
+
         }
 
         document.getElementById('trialTableBody').innerHTML = html;
     })
     .catch(err => console.error(err));
 }
+
+function loadStandardTarget() {
+    fetch("{{ route('trial.standard') }}", {
+        method: "POST",
+        headers: {
+            "X-CSRF-TOKEN": "{{ csrf_token() }}",
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            project_id: projectId,
+            process_id: selectedProcessId
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+    // tampil ke user (pakai koma)
+document.getElementById('target_view').value =
+    formatModalTarget(data.target);
+
+// kirim ke DB (angka murni, titik)
+document.getElementById('target_real').value =
+    parseFloat(data.target).toFixed(2);
+
+
+    document.querySelector('input[name="ct_target"]').value =
+        data.ct_target ?? '';
+
+    document.querySelector('input[name="berat_target"]').value =
+        data.berat_target ?? '';
+})
+
+    .catch(err => console.error(err));
+}
+
 
 /* ===============================
    ADD TRIAL BUTTON
@@ -319,6 +386,9 @@ document.getElementById('btnAddTrial').addEventListener('click', function () {
         alert('Pilih process terlebih dahulu');
         return;
     }
+
+    loadStandardTarget();
+
 
     new bootstrap.Modal(
         document.getElementById('modalAddTrial')

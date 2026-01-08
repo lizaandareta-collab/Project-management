@@ -45,6 +45,8 @@ Route::middleware(['web'])->group(function () {
     Route::get('/trial/{id}', [App::class, 'trial'])->name('trial');
     Route::post('/trial/store', [App::class, 'trial_store'])->name('trial.store');
     Route::post('/trial/data', [App::class, 'trial_data'])->name('trial.data');
+    Route::post('/trial/standard', [App::class, 'trial_standard'])
+    ->name('trial.standard');
 
     Route::get('/task/{id}', [App::class, 'task'])->name('task');
     Route::get('/test-holiday', [App::class, 'testHoliday']);

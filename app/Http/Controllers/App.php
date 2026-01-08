@@ -1609,6 +1609,33 @@ class App extends Controller
         }
     }
 
+    public function trial_standard(Request $request)
+{
+    $project_id = $request->project_id;
+    $process_id = $request->process_id;
+
+    $standards = Maio::get_standard_by_project_process($project_id, $process_id);
+
+    $result = [
+        'target' => null,
+        'ct_target' => null,
+        'berat_target' => null
+    ];
+
+    foreach ($standards as $std) {
+        if ($std->stdproc_id == 77) {
+            $result['target'] = $std->value;
+        } elseif ($std->stdproc_id == 78) {
+            $result['ct_target'] = $std->value;
+        } elseif ($std->stdproc_id == 79) {
+            $result['berat_target'] = $std->value;
+        }
+    }
+
+    return response()->json($result);
+}
+
+    
 
 
     public function problem()
