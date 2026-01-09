@@ -3,18 +3,13 @@
 <script src="{{ asset('assets/js/exporting.js') }}"></script>
 <script src="{{ asset('assets/js/export-data.js') }}"></script>
 <script src="{{ asset('assets/js/full-screen.js') }}"></script>
-<script src="{{ asset('assets/js/chart3.js') }}"></script>
-<!-- Highcharts Libraries -->
-<!-- <script src="https://code.highcharts.com/highcharts.js"></script> -->
- <script src="{{ asset('assets/js/highcharts.js') }}"></script>
-<!-- <script src="https://code.highcharts.com/modules/data.js"></script> -->
-  <script src="{{ asset('assets/js/data2.js') }}"></script>
-<!-- <script src="https://code.highcharts.com/modules/drilldown.js"></script> -->
-  <script src="{{ asset('assets/js/drilldown.js') }}"></script>
-<!-- <script src="https://code.highcharts.com/modules/exporting.js"></script>
-<script src="https://code.highcharts.com/modules/export-data.js"></script>
-<script src="https://code.highcharts.com/modules/accessibility.js"></script>
-<script src="https://code.highcharts.com/themes/adaptive.js"></script> -->
+<script src="{{ asset('assets/js/highcharts.js') }}"></script>
+<script src="{{ asset('assets/js/data2.js') }}"></script>
+<script src="{{ asset('assets/js/drilldown.js') }}"></script>
+<script src="{{ asset('assets/js/highcharts-chart.js') }}"></script>
+<script src="{{ asset('assets/js/export-data-chart.js') }}"></script>
+<script src="{{ asset('assets/js/accessibility-chart.js') }}"></script>
+<script src="{{ asset('assets/js/adaptive-chart.js') }}"></script>
 
 <style>
     body {
@@ -77,21 +72,47 @@
         letter-spacing: 0.5px;
     }
 
-    /* OVERALL PROGRESS CHART - HIGHCHARTS DONUT CHART */
-    .chart-box {
+    /* OVERALL PROGRESS CHART */
+    .chart-container-wrapper {
         position: relative;
         width: 100%;
         height: 280px;
         margin: 0 auto;
-        display: flex;
-        justify-content: center;
-        align-items: center;
     }
 
     #overallProgressChart {
         width: 100% !important;
         height: 100% !important;
-        position: relative;
+    }
+
+    .center-label-container {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        pointer-events: none;
+        z-index: 10;
+        width: 100px;
+    }
+
+    .center-percentage {
+        font-size: 28px;
+        font-weight: 800;
+        color: #2c3e50;
+        line-height: 1;
+        margin: 0;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .center-text {
+        font-size: 12px;
+        font-weight: 600;
+        color: #7f8c8d;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-top: 5px;
+        line-height: 1.3;
     }
 
     /* Custom legend untuk chart progress */
@@ -131,32 +152,6 @@
         text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1) !important;
     }
 
-    .highcharts-center-label {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        text-align: center;
-        pointer-events: none;
-    }
-
-    .center-percentage {
-        font-size: 28px;
-        font-weight: 800;
-        color: #2c3e50;
-        line-height: 1;
-        margin: 0;
-    }
-
-    .center-text {
-        font-size: 12px;
-        font-weight: 600;
-        color: #7f8c8d;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        margin-top: 5px;
-    }
-
     /* Status color boxes untuk legend */
     .status-box {
         display: inline-block;
@@ -174,7 +169,7 @@
     .status-cancelled-box { background-color: #d9534f; }
     .status-nostatus-box { background-color: #34495e; }
 
-    /* PLAN HOURS vs HOURS SPENT - IMPROVED VISUALIZATION */
+    /* PLAN HOURS vs HOURS SPENT */
     .hours-visualization-container {
         display: flex;
         justify-content: space-between;
@@ -339,16 +334,20 @@
         display: none !important;
     }
 
-    /* Hilangkan semua grid kiri Gantt */
-    .highcharts-grid-line,
-    .highcharts-yaxis-grid,
-    .highcharts-axis-line,
-    .highcharts-axis,
-    .highcharts-row-series {
-        display: none !important;
+    /* Resource Workload Chart */
+    #resourceWorkloadContainer {
+        width: 100%;
+        height: 500px;
+        margin-top: 20px;
     }
 
-    /* MILESTONE & TASKS PROGRESS - GROUPED STYLE */
+    .loading {
+        text-align: center;
+        padding: 20px;
+        color: #666;
+    }
+
+    /* MILESTONE & TASKS PROGRESS - GROUPED STYLES */
     .tasks-grouped-container {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -480,13 +479,6 @@
         border: 1px solid #e9ecef;
     }
 
-    .legend-item {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 12px;
-    }
-
     /* Task Counter */
     .task-counter {
         margin-left: 10px;
@@ -535,29 +527,6 @@
 
     .invoice-table-wrapper::-webkit-scrollbar-thumb:hover {
         background: #555;
-    }
-
-    .currency-value {
-        font-variant-numeric: tabular-nums;
-        display: block;
-    }
-
-    /* Gantt Chart Styling - Garis Timeline */
-    .highcharts-xaxis-grid .highcharts-grid-line {
-        display: block !important;
-        stroke: #e0e0e0 !important;
-        stroke-width: 1px !important;
-    }
-
-    .highcharts-axis-line {
-        display: block !important;
-        stroke: #ccc !important;
-        stroke-width: 1px !important;
-    }
-
-    .highcharts-axis-labels text {
-        fill: #666 !important;
-        font-size: 11px !important;
     }
 
     /* LEVEL 3 STRUCTURE STYLES */
@@ -859,6 +828,52 @@
         font-weight: normal !important;
     }
 
+    /* Process Filter Buttons */
+    .process-filter-wrapper {
+        margin-bottom: 20px;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+    }
+
+    .process-filter-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 10px;
+    }
+
+    .process-button-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .btn-process-filter {
+        border-radius: 20px;
+        padding: 8px 20px;
+        font-size: 14px;
+        font-weight: 500;
+        white-space: nowrap;
+        transition: all 0.2s ease;
+        background: white;
+        border: 2px solid #dee2e6;
+        color: #495057;
+    }
+
+    .btn-process-filter:hover {
+        background-color: #0fac81;
+        border-color: #0fac81;
+        color: #fff !important;
+    }
+
+    .btn-process-filter.active {
+        background-color: #0fac81;
+        border-color: #0fac81;
+        color: #fff !important;
+    }
+
     /* Responsive adjustments */
     @media (max-width: 1200px) {
         .tasks-grouped-container {
@@ -914,7 +929,7 @@
             width: 50px;
         }
         
-        .chart-box {
+        .chart-container-wrapper {
             height: 240px;
         }
         
@@ -929,6 +944,19 @@
         #container {
             height: 350px;
         }
+        
+        #resourceWorkloadContainer {
+            height: 400px;
+        }
+        
+        .process-button-group {
+            justify-content: center;
+        }
+        
+        .btn-process-filter {
+            padding: 6px 15px;
+            font-size: 13px;
+        }
     }
 </style>
 
@@ -940,11 +968,15 @@
 
                 <!-- WRAPPER 4 CARD -->
                 <div class="card-row">
-                    <!-- CARD 1 - OVERALL PROGRESS - HIGHCHARTS DONUT CHART YANG RAPIH -->
+                    <!-- CARD 1 - OVERALL PROGRESS -->
                     <div class="dash-card">
                         <div class="card-title">OVERALL PROGRESS</div>
-                        <div class="chart-box">
+                        <div class="chart-container-wrapper">
                             <div id="overallProgressChart"></div>
+                            <div class="center-label-container" id="overallProgressLabel">
+                                <div class="center-percentage">{{ $overall }}%</div>
+                                <div class="center-text">OVERALL<br>PROGRESS</div>
+                            </div>
                         </div>
                         <!-- Legend di bawah chart -->
                         <div class="progress-legend">
@@ -971,16 +1003,11 @@
                         </div>
                     </div>
 
-                    <!-- CARD 2 - PROJECT MILESTONE - HORIZONTAL BAR CHART DENGAN DRILLDOWN -->
+                    <!-- CARD 2 - PROJECT MILESTONE -->
                     <div class="dash-card">
                         <div class="card-title">PROJECT MILESTONE</div>
-                        <div id="container"></div>
+                        <div id="projectMilestoneChart"></div>
                         <div class="progress-legend" style="margin-top: 10px;">
-                            <div >total</div>
-                            <!-- <div class="legend-item">
-                                <span class="status-open-box"></span>
-                                <span>Click bars to view activities (Subactivities not counted)</span>
-                            </div> -->
                         </div>
                     </div>
 
@@ -1066,7 +1093,7 @@
                         </h3>
                     </div>
 
-                    <!-- Filter Controls - Hanya Filter Milestone -->
+                    <!-- Filter Controls -->
                     <div class="filter-controls">
                         <div class="filter-group">
                             <div class="filter-label">Filter by Milestone</div>
@@ -1105,7 +1132,7 @@
                         </div>
                     </div>
 
-                    <!-- Task Grid - GROUPED VERSION 3 LEVEL -->
+                    <!-- Task Grid -->
                     <div class="tasks-grouped-container" id="taskGridContainer">
                         @if(count($groupedTasks) > 0)
                             @foreach($groupedTasks as $milestoneId => $milestoneData)
@@ -1231,6 +1258,36 @@
                         @endif
                     </div>
                 </div>
+
+                <!-- RESOURCE WORKLOAD SECTION -->
+                <div class="gantt-section" style="margin-top: 20px;">
+                    <div class="gantt-header">
+                        <h3 class="gantt-title">Trial Record</h3>
+                    </div>
+                    
+                    <!-- Process Filter Buttons -->
+                    <div class="process-filter-wrapper">
+                        <div class="process-filter-label">Select Process Area:</div>
+                        <div class="process-button-group">
+                            @foreach($processList as $process)
+                                @if($process->init == 'process')
+                                    <button type="button" class="btn btn-process-filter {{ $loop->first ? 'active' : '' }}" 
+                                            data-process-id="{{ $process->id }}"
+                                            data-process-name="{{ $process->description }}">
+                                        {{ $process->description }}
+                                    </button>
+                                @endif
+                            @endforeach
+                        </div>
+                    </div>
+                    
+                    <div id="resourceWorkloadContainer">
+                        <div class="loading">
+                            Loading Trial Record data...
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
@@ -1356,7 +1413,7 @@
         }
     @endphp
 
-    // Function to create Highcharts Donut Chart yang RAPIH
+    // Function to create Highcharts Donut Chart
     function createOverallProgressChart(elementId, statusData, overallPercentage) {
         const data = [
             {
@@ -1391,7 +1448,13 @@
             }
         ];
 
-        const chart = Highcharts.chart(elementId, {
+        // Update label tengah dengan persentase
+        const percentageElement = document.querySelector('#overallProgressLabel .center-percentage');
+        if (percentageElement) {
+            percentageElement.textContent = `${overallPercentage}%`;
+        }
+
+        return Highcharts.chart(elementId, {
             chart: {
                 type: 'pie',
                 backgroundColor: 'transparent',
@@ -1400,27 +1463,7 @@
                 plotShadow: false,
                 height: 260,
                 margin: [0, 0, 0, 0],
-                spacing: [0, 0, 0, 0],
-                events: {
-                    load: function() {
-                        const centerX = this.plotWidth / 2;
-                        const centerY = this.plotHeight / 2;
-                        
-                        this.renderer.label(
-                            `<div class="center-percentage">${overallPercentage}%</div>
-                             <div class="center-text">OVERALL<br>PROGRESS</div>`,
-                            centerX - 40,
-                            centerY - 25
-                        )
-                        .css({
-                            textAlign: 'center',
-                            width: '80px',
-                            height: '50px',
-                            color: '#2c3e50'
-                        })
-                        .add();
-                    }
-                }
+                spacing: [0, 0, 0, 0]
             },
             title: {
                 text: null
@@ -1444,8 +1487,8 @@
             plotOptions: {
                 pie: {
                     innerSize: '75%',
-                    allowPointSelect: true,
-                    cursor: 'pointer',
+                    allowPointSelect: false,
+                    cursor: 'default',
                     dataLabels: {
                         enabled: false
                     },
@@ -1453,10 +1496,7 @@
                     borderWidth: 0,
                     states: {
                         hover: {
-                            brightness: 0.1,
-                            halo: {
-                                size: 0
-                            }
+                            enabled: false
                         }
                     }
                 }
@@ -1472,263 +1512,545 @@
                 }
             }]
         });
-
-        return chart;
     }
 
-    // Function to create PROJECT MILESTONE chart dengan warna berdasarkan status
-function createMilestoneDrilldownChart(elementId, groupedTasks) {
-    // Fungsi untuk mendapatkan warna berdasarkan status
-    function getStatusColor(status) {
-        const statusColors = {
-            0: '#34495e', // No Status
-            1: '#1f77b4', // Open
-            2: '#00a591', // In Progress
-            3: '#9acd32', // Completed
-            4: '#f0ad4e', // On Hold
-            5: '#d9534f'  // Cancelled
-        };
-        return statusColors[status] || '#34495e';
-    }
-
-    function getStatusTextFromNumber(status) {
-        const statusTexts = {
-            0: 'No Status',
-            1: 'Open',
-            2: 'In Progress',
-            3: 'Completed',
-            4: 'On Hold',
-            5: 'Cancelled'
-        };
-        return statusTexts[status] || 'No Status';
-    }
-
-    // Siapkan data untuk main chart (milestone)
-    const mainSeriesData = [];
-    const drilldownSeries = [];
-    
-    // Proses data dari groupedTasks
-    Object.entries(groupedTasks).forEach(([milestoneId, milestoneData]) => {
-        if (milestoneData['parent']) {
-            const milestoneName = milestoneData['parent'].milestone_task || 'Unnamed Milestone';
-            const milestoneStatus = milestoneData['parent'].status || 0;
-            const milestoneColor = getStatusColor(milestoneStatus);
-            
-            // Hitung total ACTIVITIES untuk milestone ini (TANPA subactivities)
-            let totalActivities = 0;
-            const drilldownData = [];
-            
-            // Kumpulkan activities untuk tooltip
-            const activitiesList = [];
-            
-            // Hitung dari activities saja (Level 2) - TANPA subactivities
-            if (milestoneData['activities']) {
-                Object.entries(milestoneData['activities']).forEach(([activityId, activityData]) => {
-                    if (activityData['activity']) {
-                        totalActivities++;
-                        const activityName = activityData['activity'].milestone_task || 'Unnamed Activity';
-                        const activityStatus = activityData['activity'].status || 0;
-                        const activityColor = getStatusColor(activityStatus);
-                        
-                        // Tambahkan ke drilldown data - HANYA activity
-                        drilldownData.push({
-                            name: activityName,
-                            y: 1,
-                            color: activityColor,
-                            status: activityStatus,
-                            statusText: getStatusTextFromNumber(activityStatus)
-                        });
-                        
-                        // Tambahkan ke activities list untuk tooltip
-                        activitiesList.push({
-                            name: activityName,
-                            color: activityColor,
-                            statusText: getStatusTextFromNumber(activityStatus)
-                        });
-                    }
-                });
-            }
-            
-            // Tambahkan ke main series dengan data tambahan untuk tooltip
-            mainSeriesData.push({
-                name: milestoneName,
-                y: totalActivities,
-                drilldown: `milestone-${milestoneId}`,
-                color: milestoneColor,
-                status: milestoneStatus,
-                statusText: getStatusTextFromNumber(milestoneStatus),
-                activitiesList: activitiesList,
-                totalActivities: totalActivities
-            });
-            
-            // Tambahkan ke drilldown series
-            drilldownSeries.push({
-                name: milestoneName,
-                id: `milestone-${milestoneId}`,
-                data: drilldownData,
-                color: milestoneColor,
-                isDrilldown: true  // Flag untuk membedakan drilldown series
-            });
+    // Function to create PROJECT MILESTONE chart dengan drilldown
+    function createMilestoneDrilldownChart(elementId, groupedTasks) {
+        function getStatusColor(status) {
+            const statusColors = {
+                0: '#34495e',
+                1: '#1f77b4',
+                2: '#00a591',
+                3: '#9acd32',
+                4: '#f0ad4e',
+                5: '#d9534f'
+            };
+            return statusColors[status] || '#34495e';
         }
-    });
 
-    // Buat chart - MENGUBAH ASUMSI MINIMAL SUMBU Y MENJADI 1
-    Highcharts.chart(elementId, {
-        chart: {
-            type: 'bar',
-            height: 400,
-            events: {
-                drilldown: function(e) {
-                    // Saat drilldown, tetap gunakan warna yang sama
-                    if (e.seriesOptions) {
-                        e.seriesOptions.color = e.point.color;
-                    }
-                },
-                drillup: function(e) {
-                    // Reset saat drillup
-                    this.series[0].update({
-                        colorByPoint: true
+        function getStatusTextFromNumber(status) {
+            const statusTexts = {
+                0: 'No Status',
+                1: 'Open',
+                2: 'In Progress',
+                3: 'Completed',
+                4: 'On Hold',
+                5: 'Cancelled'
+            };
+            return statusTexts[status] || 'No Status';
+        }
+
+        // Siapkan data untuk main chart (milestone)
+        const mainSeriesData = [];
+        const drilldownSeries = [];
+        
+        Object.entries(groupedTasks).forEach(([milestoneId, milestoneData]) => {
+            if (milestoneData['parent']) {
+                const milestoneName = milestoneData['parent'].milestone_task || 'Unnamed Milestone';
+                const milestoneStatus = milestoneData['parent'].status || 0;
+                const milestoneColor = getStatusColor(milestoneStatus);
+                
+                let totalActivities = 0;
+                const drilldownData = [];
+                const activitiesList = [];
+                
+                if (milestoneData['activities']) {
+                    Object.entries(milestoneData['activities']).forEach(([activityId, activityData]) => {
+                        if (activityData['activity']) {
+                            totalActivities++;
+                            const activityName = activityData['activity'].milestone_task || 'Unnamed Activity';
+                            const activityStatus = activityData['activity'].status || 0;
+                            const activityColor = getStatusColor(activityStatus);
+                            
+                            drilldownData.push({
+                                name: activityName,
+                                y: 1,
+                                color: activityColor,
+                                status: activityStatus,
+                                statusText: getStatusTextFromNumber(activityStatus)
+                            });
+                            
+                            activitiesList.push({
+                                name: activityName,
+                                color: activityColor,
+                                statusText: getStatusTextFromNumber(activityStatus)
+                            });
+                        }
                     });
                 }
+                
+                mainSeriesData.push({
+                    name: milestoneName,
+                    y: totalActivities,
+                    drilldown: `milestone-${milestoneId}`,
+                    color: milestoneColor,
+                    status: milestoneStatus,
+                    statusText: getStatusTextFromNumber(milestoneStatus),
+                    activitiesList: activitiesList,
+                    totalActivities: totalActivities
+                });
+                
+                drilldownSeries.push({
+                    name: milestoneName,
+                    id: `milestone-${milestoneId}`,
+                    data: drilldownData,
+                    color: milestoneColor,
+                    isDrilldown: true
+                });
             }
-        },
-        title: {
-            text: '',
-            align: 'left'
-        },
-        accessibility: {
-            announceNewData: {
-                enabled: true
-            }
-        },
-        xAxis: {
-            type: 'category'
-        },
-        yAxis: {
-            title: {
-                text: 'Number of Activities'
-            },
-            min: 1, // MENGUBAH INI DARI 0 MENJADI 1
-            allowDecimals: false,
-            tickInterval: 1
-        },
-        legend: {
-            enabled: false
-        },
-        plotOptions: {
-            series: {
-                borderWidth: 0,
-                dataLabels: {
-                    enabled: true,
-                    format: '{point.y}',
-                    style: {
-                        fontWeight: 'bold'
-                    }
-                },
-                cursor: 'pointer'
-            },
-            bar: {
-                pointPadding: 0.2,
-                groupPadding: 0.1
-            }
-        },
-        tooltip: {
-            useHTML: true,
-            backgroundColor: 'rgba(255, 255, 255, 0.95)',
-            borderColor: '#dee2e6',
-            borderRadius: 6,
-            borderWidth: 1,
-            shadow: true,
-            style: {
-                color: '#333333',
-                fontSize: '12px',
-                padding: '10px'
-            },
-            formatter: function() {
-                // Jika ini adalah DRILLDOWN (activity individual)
-                if (this.series.userOptions && this.series.userOptions.isDrilldown) {
-                    // Tooltip untuk activity individual
-                    return `
-                        <span style="font-size:13px; font-weight:bold">${this.point.name}</span><br>
-                        <span style="color:${this.point.color}">●</span> 
-                        Status: <b style="color:${this.point.color}">${this.point.statusText}</b>
-                    `;
-                } else {
-                    // Ini adalah MILESTONE (main chart)
-                    let tooltipHTML = `
-                        <div style="text-align:left;">
-                            <span style="font-size:13px; font-weight:bold">${this.point.name}</span><br>
-                            <span style="color:${this.point.color}">●</span> 
-                            Milestone Status: <b style="color:${this.point.color}">${this.point.statusText}</b><br/>
-                            Total Activities: <b>${this.point.totalActivities}</b>
-                    `;
-                    
-                    // Jika ada activities, tampilkan list-nya
-                    if (this.point.activitiesList && this.point.activitiesList.length > 0) {
-                        tooltipHTML += `
-                            <hr style="margin:8px 0; border:none; border-top:1px solid #eee;">
-                            <div style="font-weight:600; margin-bottom:5px;">Activities:</div>
-                        `;
-                        
-                        this.point.activitiesList.forEach((activity, index) => {
-                            tooltipHTML += `
-                                <div style="margin-left:8px; margin-bottom:3px; display:flex; align-items:center; gap:5px;">
-                                    <div style="width:8px; height:8px; background:${activity.color}; border-radius:1px;"></div>
-                                    <span style="font-size:11px;">${activity.name}</span>
-                                    <span style="font-size:10px; color:${activity.color}; margin-left:auto;">${activity.statusText}</span>
-                                </div>
-                            `;
+        });
+
+        // Buat chart menggunakan Highcharts.chart (bukan Highcharts.Chart)
+        Highcharts.chart(elementId, {
+            chart: {
+                type: 'bar',
+                height: 400,
+                events: {
+                    drilldown: function(e) {
+                        if (e.seriesOptions) {
+                            e.seriesOptions.color = e.point.color;
+                        }
+                    },
+                    drillup: function(e) {
+                        this.series[0].update({
+                            colorByPoint: true
                         });
                     }
-                    
-                    tooltipHTML += `</div>`;
-                    return tooltipHTML;
                 }
-            }
-        },
-        series: [{
-            name: 'Milestones',
-            colorByPoint: true,
-            data: mainSeriesData
-        }],
-        drilldown: {
-            activeDataLabelStyle: {
-                color: '#333333',
-                fontWeight: 'bold'
             },
-            breadcrumbs: {
-                position: {
-                    align: 'right'
+            title: {
+                text: '',
+                align: 'left'
+            },
+            accessibility: {
+                announceNewData: {
+                    enabled: true
+                }
+            },
+            xAxis: {
+                type: 'category'
+            },
+            yAxis: {
+                title: {
+                    text: 'Total'
                 },
-                buttonTheme: {
-                    fill: '#f8f9fa',
-                    stroke: '#dee2e6',
-                    'stroke-width': 1,
-                    style: {
-                        color: '#495057'
-                    },
-                    states: {
-                        hover: {
-                            fill: '#e9ecef'
+                min: 1,
+                allowDecimals: false,
+                tickInterval: 1
+            },
+            legend: {
+                enabled: false
+            },
+            plotOptions: {
+                series: {
+                    borderWidth: 0,
+                    dataLabels: {
+                        enabled: true,
+                        format: '{point.y}',
+                        style: {
+                            fontWeight: 'bold'
                         }
+                    },
+                    cursor: 'pointer'
+                },
+                bar: {
+                    pointPadding: 0.2,
+                    groupPadding: 0.1
+                }
+            },
+            tooltip: {
+                useHTML: true,
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                borderColor: '#dee2e6',
+                borderRadius: 6,
+                borderWidth: 1,
+                shadow: true,
+                style: {
+                    color: '#333333',
+                    fontSize: '12px',
+                    padding: '10px'
+                },
+                formatter: function() {
+                    if (this.series.userOptions && this.series.userOptions.isDrilldown) {
+                        return `
+                            <span style="font-size:13px; font-weight:bold">${this.point.name}</span><br>
+                            <span style="color:${this.point.color}">●</span> 
+                            Status: <b style="color:${this.point.color}">${this.point.statusText}</b>
+                        `;
+                    } else {
+                        let tooltipHTML = `
+                            <div style="text-align:left;">
+                                <span style="font-size:13px; font-weight:bold">${this.point.name}</span><br>
+                                <span style="color:${this.point.color}">●</span> 
+                                Milestone Status: <b style="color:${this.point.color}">${this.point.statusText}</b><br/>
+                                Total Activities: <b>${this.point.totalActivities}</b>
+                        `;
+                        
+                        if (this.point.activitiesList && this.point.activitiesList.length > 0) {
+                            tooltipHTML += `
+                                <hr style="margin:8px 0; border:none; border-top:1px solid #eee;">
+                                <div style="font-weight:600; margin-bottom:5px;">Activities:</div>
+                            `;
+                            
+                            this.point.activitiesList.forEach((activity) => {
+                                tooltipHTML += `
+                                    <div style="margin-left:8px; margin-bottom:3px; display:flex; align-items:center; gap:5px;">
+                                        <div style="width:8px; height:8px; background:${activity.color}; border-radius:1px;"></div>
+                                        <span style="font-size:11px;">${activity.name}</span>
+                                        <span style="font-size:10px; color:${activity.color}; margin-left:auto;">${activity.statusText}</span>
+                                    </div>
+                                `;
+                            });
+                        }
+                        
+                        tooltipHTML += `</div>`;
+                        return tooltipHTML;
                     }
                 }
             },
-            series: drilldownSeries
-        },
-        credits: {
-            enabled: false
-        }
-    });
-}
+            series: [{
+                name: 'Milestones',
+                colorByPoint: true,
+                data: mainSeriesData
+            }],
+            drilldown: {
+                activeDataLabelStyle: {
+                    color: '#333333',
+                    fontWeight: 'bold'
+                },
+                breadcrumbs: {
+                    position: {
+                        align: 'right'
+                    },
+                    buttonTheme: {
+                        fill: '#f8f9fa',
+                        stroke: '#dee2e6',
+                        'stroke-width': 1,
+                        style: {
+                            color: '#495057'
+                        },
+                        states: {
+                            hover: {
+                                fill: '#e9ecef'
+                            }
+                        }
+                    }
+                },
+                series: drilldownSeries
+            },
+            credits: {
+                enabled: false
+            }
+        });
+    }
 
-    // Initialize charts
-    const statusChart = @json($statusChart);
-    const overallPercentage = {{ $overall }};
-    const groupedTasks = @json($groupedTasks);
-    
-    createOverallProgressChart('overallProgressChart', statusChart, overallPercentage);
-    createMilestoneDrilldownChart('container', groupedTasks);
+    // Function to load and render Resource Workload berdasarkan process
+    function loadResourceWorkload(processId = null) {
+        const container = document.getElementById('resourceWorkloadContainer');
+        container.innerHTML = '<div class="loading">Loading Trial Record data...</div>';
+        
+        // Default load first process if no processId
+        if (!processId && processButtons.length > 0) {
+            processId = processButtons[0].getAttribute('data-process-id');
+        }
+        
+        // Simulasi data - ganti dengan API call
+        const dummyData = {
+            "Implementation": {
+                "Andi": { plan_hours: 120, tasks: 15, milestones: 3 },
+                "Budi": { plan_hours: 95, tasks: 10, milestones: 2 },
+                "Citra": { plan_hours: 160, tasks: 20, milestones: 4 },
+                "Dewi": { plan_hours: 70, tasks: 8, milestones: 1 },
+                "Eko": { plan_hours: 110, tasks: 12, milestones: 2 }
+            },
+            "Design": {
+                "Fajar": { plan_hours: 80, tasks: 10, milestones: 2 },
+                "Gita": { plan_hours: 120, tasks: 15, milestones: 3 },
+                "Hadi": { plan_hours: 60, tasks: 8, milestones: 1 }
+            },
+            "Testing": {
+                "Indra": { plan_hours: 90, tasks: 12, milestones: 2 },
+                "Joko": { plan_hours: 75, tasks: 9, milestones: 2 },
+                "Kartika": { plan_hours: 110, tasks: 14, milestones: 3 }
+            }
+        };
+        
+        setTimeout(() => {
+            // Get process name
+            let processName = "Implementation"; // default
+            processButtons.forEach(btn => {
+                if (btn.getAttribute('data-process-id') == processId) {
+                    processName = btn.getAttribute('data-process-name');
+                }
+            });
+            
+            // Get data based on process
+            const processData = dummyData[processName] || dummyData["Implementation"];
+            renderResourceWorkloadChart(processData, processName);
+        }, 500);
+    }
+
+    function renderResourceWorkloadChart(resourceData, processName) {
+        const filtered = Object.entries(resourceData)
+            .filter(([responsibleName, data]) => {
+                return responsibleName &&
+                    responsibleName !== 'Unassigned' &&
+                    responsibleName !== '' &&
+                    responsibleName !== null;
+            })
+            .sort(([, a], [, b]) => b.plan_hours - a.plan_hours);
+
+        const responsibleNames = filtered.map(([name]) => name);
+        const planHours = filtered.map(([, data]) => data.plan_hours);
+        const taskCounts = filtered.map(([, data]) => data.tasks);
+
+        Highcharts.chart('resourceWorkloadContainer', {
+            chart: {
+                type: 'bar',
+                height: 450,
+                backgroundColor: '#ffffff',
+                borderRadius: 8,
+                style: {
+                    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
+                }
+            },
+            title: {
+                text: `Trial Record - ${processName}`,
+                align: 'center',
+                style: {
+                    fontSize: '18px',
+                    fontWeight: 'bold',
+                    color: '#2c3e50'
+                }
+            },
+            subtitle: {
+                text: `Showing ${filtered.length} resources for ${processName} process`,
+                align: 'center',
+                style: {
+                    fontSize: '12px',
+                    color: '#7f8c8d'
+                }
+            },
+            credits: {
+                enabled: false
+            },
+            xAxis: {
+                categories: responsibleNames,
+                crosshair: true,
+                labels: {
+                    style: {
+                        fontSize: '12px',
+                        fontWeight: '500',
+                        color: '#34495e'
+                    },
+                    rotation: -45
+                },
+                title: {
+                    text: 'Responsible Person',
+                    style: {
+                        fontSize: '14px',
+                        fontWeight: 'bold',
+                        color: '#2c3e50'
+                    }
+                },
+                gridLineWidth: 1,
+                gridLineColor: '#f0f0f0'
+            },
+            yAxis: [{
+                title: {
+                    text: 'Plan Hours',
+                    style: {
+                        fontSize: '14px',
+                        fontWeight: 'bold',
+                        color: '#3498db'
+                    }
+                },
+                labels: {
+                    format: '{value} hours',
+                    style: {
+                        color: '#3498db'
+                    }
+                },
+                gridLineColor: '#f8f9fa',
+                lineColor: '#3498db',
+                lineWidth: 2
+            }, {
+                title: {
+                    text: 'Task Count',
+                    style: {
+                        fontSize: '14px',
+                        fontWeight: 'bold',
+                        color: '#e74c3c'
+                    }
+                },
+                labels: {
+                    format: '{value} tasks',
+                    style: {
+                        color: '#e74c3c'
+                    }
+                },
+                gridLineColor: '#f8f9fa',
+                lineColor: '#e74c3c',
+                lineWidth: 2,
+                opposite: true
+            }],
+            tooltip: {
+                shared: true,
+                useHTML: true,
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                borderColor: '#dee2e6',
+                borderRadius: 6,
+                borderWidth: 1,
+                shadow: true,
+                padding: 12,
+                style: {
+                    fontSize: '12px',
+                    lineHeight: '1.4'
+                },
+                formatter: function () {
+                    const points = this.points || [];
+                    const responsibleName = this.x;
+                    const data = resourceData[responsibleName];
+
+                    if (!data) {
+                        return `<b>${responsibleName}</b><br>No data available`;
+                    }
+
+                    let html = `
+                        <div style="min-width: 200px;">
+                            <div style="font-weight:bold; font-size:14px; margin-bottom:10px; padding-bottom:5px; border-bottom:2px solid #eee; color:#2c3e50">
+                                ${responsibleName}
+                            </div>
+                            <div style="display: grid; grid-template-columns: auto 1fr; gap: 5px 15px; align-items: center;">
+                    `;
+
+                    // Add Plan Hours
+                    html += `
+                        <div style="display: flex; align-items: center;">
+                            <span style="display:inline-block; width:10px; height:10px; background:#3498db; border-radius:2px; margin-right:8px;"></span>
+                            <span style="font-weight:600;">Plan Hours:</span>
+                        </div>
+                        <div style="text-align:right; font-weight:bold; color:#3498db">${data.plan_hours || 0}</div>
+                    `;
+
+                    // Add Task Count
+                    html += `
+                        <div style="display: flex; align-items: center;">
+                            <span style="display:inline-block; width:10px; height:10px; background:#e74c3c; border-radius:2px; margin-right:8px;"></span>
+                            <span style="font-weight:600;">Tasks:</span>
+                        </div>
+                        <div style="text-align:right; font-weight:bold; color:#e74c3c">${data.tasks || 0}</div>
+                    `;
+
+                    // Add Milestones if available
+                    if (data.milestones > 0) {
+                        html += `
+                            <div style="display: flex; align-items: center;">
+                                <span style="display:inline-block; width:10px; height:10px; background:#9b59b6; border-radius:2px; margin-right:8px;"></span>
+                                <span style="font-weight:600;">Milestones:</span>
+                            </div>
+                            <div style="text-align:right; font-weight:bold; color:#9b59b6">${data.milestones}</div>
+                        `;
+                    }
+
+                    html += `</div>`;
+                    html += `</div>`;
+                    return html;
+                }
+            },
+            legend: {
+                align: 'center',
+                verticalAlign: 'top',
+                layout: 'horizontal',
+                backgroundColor: '#f8f9fa',
+                borderColor: '#dee2e6',
+                borderWidth: 1,
+                borderRadius: 6,
+                padding: 10,
+                itemStyle: {
+                    fontSize: '12px',
+                    fontWeight: '500',
+                    color: '#2c3e50'
+                },
+                itemHoverStyle: {
+                    color: '#3498db'
+                }
+            },
+            plotOptions: {
+                series: {
+                    borderRadius: 3,
+                    pointPadding: 0.1,
+                    groupPadding: 0.15,
+                    borderWidth: 0,
+                    states: {
+                        hover: {
+                            brightness: 0.1,
+                            halo: {
+                                size: 0
+                            }
+                        }
+                    }
+                },
+                bar: {
+                    grouping: false,
+                    pointWidth: 25
+                },
+                spline: {
+                    marker: {
+                        enabled: true,
+                        radius: 4,
+                        symbol: 'circle',
+                        lineWidth: 2,
+                        lineColor: '#ffffff'
+                    }
+                }
+            },
+            series: [{
+                name: 'Plan Hours',
+                type: 'bar',
+                yAxis: 0,
+                data: planHours,
+                color: '#3498db',
+                tooltip: {
+                    valueSuffix: ' hours'
+                }
+            }, {
+                name: 'Tasks',
+                type: 'spline',
+                yAxis: 1,
+                data: taskCounts,
+                color: '#e74c3c',
+                lineWidth: 3,
+                marker: {
+                    fillColor: '#ffffff',
+                    lineColor: '#e74c3c',
+                    lineWidth: 2
+                },
+                tooltip: {
+                    valueSuffix: ' tasks'
+                }
+            }],
+            responsive: {
+                rules: [{
+                    condition: {
+                        maxWidth: 768
+                    },
+                    chartOptions: {
+                        legend: {
+                            layout: 'horizontal',
+                            align: 'center',
+                            verticalAlign: 'bottom'
+                        },
+                        xAxis: {
+                            labels: {
+                                rotation: -30
+                            }
+                        }
+                    }
+                }]
+            }
+        });
+    }
 
     // Initialize Plan Hours vs Hours Spent visualization
     function initializeHoursVisualization() {
@@ -1837,7 +2159,6 @@ function createMilestoneDrilldownChart(elementId, groupedTasks) {
             const formattedName = getStyledMilestone(taskName, task.is_milestone);
             const isOverdue = isTaskOverdue(task.plan_end, task.actual_end);
 
-            // BAR 1: PLAN (jika ada plan dates)
             if (planStart && planEnd) {
                 projectTasks.push({
                     name: getStyledMilestone(taskName + " (Plan)", task.is_milestone),
@@ -1860,7 +2181,6 @@ function createMilestoneDrilldownChart(elementId, groupedTasks) {
                 });
             }
 
-            // BAR 2: ACTUAL (jika ada actual dates)
             if (actualStart) {
                 let actualColor, actualBorderColor, actualType;
 
@@ -2112,20 +2432,25 @@ function createMilestoneDrilldownChart(elementId, groupedTasks) {
         ganttContainer.parentNode.insertBefore(legendContainer, ganttContainer.nextSibling);
     }
 
-    // Task Filtering - Hanya Filter Milestone
+    // Initialize everything when DOM is loaded
     document.addEventListener('DOMContentLoaded', function () {
+        // Initialize charts
+        const statusChart = @json($statusChart);
+        const overallPercentage = {{ $overall }};
+        const groupedTasks = @json($groupedTasks);
+        
+        createOverallProgressChart('overallProgressChart', statusChart, overallPercentage);
+        createMilestoneDrilldownChart('projectMilestoneChart', groupedTasks);
+        
         // Initialize Hours Visualization
         initializeHoursVisualization();
         
         // Initialize task filtering
         let currentMilestoneFilter = 'all';
-        
-        // Elements
         const taskGridContainer = document.getElementById('taskGridContainer');
         const visibleTaskCounter = document.getElementById('visibleTaskCounter');
         const milestoneFilter = document.getElementById('milestoneFilter');
         
-        // Simple filtering function
         function filterTasks() {
             let visibleTaskCount = 0;
             const taskGroups = document.querySelectorAll('.task-group-card');
@@ -2160,7 +2485,6 @@ function createMilestoneDrilldownChart(elementId, groupedTasks) {
             }
         }
 
-        // Event Listeners
         if (milestoneFilter) {
             milestoneFilter.addEventListener('change', function() {
                 currentMilestoneFilter = this.value;
@@ -2168,7 +2492,6 @@ function createMilestoneDrilldownChart(elementId, groupedTasks) {
             });
         }
 
-        // Initialize
         filterTasks();
 
         // Export menu functionality
@@ -2185,13 +2508,11 @@ function createMilestoneDrilldownChart(elementId, groupedTasks) {
                 exportMenu.classList.remove('show');
             });
 
-            // Fullscreen functionality
             document.getElementById('fullscreenBtn').addEventListener('click', function () {
                 if (chart) chart.fullscreen.toggle();
                 exportMenu.classList.remove('show');
             });
 
-            // Print functionality
             document.getElementById('printChartBtn').addEventListener('click', function () {
                 if (chart) {
                     chart.exportChart({
@@ -2204,7 +2525,6 @@ function createMilestoneDrilldownChart(elementId, groupedTasks) {
                 exportMenu.classList.remove('show');
             });
 
-            // Download PNG functionality
             document.getElementById('downloadPNGBtn').addEventListener('click', function () {
                 if (chart) {
                     chart.exportChart({
@@ -2217,7 +2537,6 @@ function createMilestoneDrilldownChart(elementId, groupedTasks) {
                 exportMenu.classList.remove('show');
             });
 
-            // Download JPEG functionality
             document.getElementById('downloadJPGBtn').addEventListener('click', function () {
                 if (chart) {
                     chart.exportChart({
@@ -2233,6 +2552,37 @@ function createMilestoneDrilldownChart(elementId, groupedTasks) {
 
         // Initialize Gantt Chart
         renderGanttChart();
+
+        // Initialize Process Filter buttons
+        const processButtons = document.querySelectorAll('.btn-process-filter');
+        
+        if (processButtons.length > 0) {
+            // Add click event to process buttons
+            processButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove active class from all buttons
+                    processButtons.forEach(btn => btn.classList.remove('active'));
+                    
+                    // Add active class to clicked button
+                    this.classList.add('active');
+                    
+                    // Get process ID and name
+                    const processId = this.getAttribute('data-process-id');
+                    const processName = this.getAttribute('data-process-name');
+                    
+                    // Load data with selected process filter
+                    loadResourceWorkload(processId);
+                });
+            });
+            
+            // Load data for first button (active)
+            const firstProcessId = processButtons[0].getAttribute('data-process-id');
+            loadResourceWorkload(firstProcessId);
+        } else {
+            // If no process buttons, show error
+            document.getElementById('resourceWorkloadContainer').innerHTML = 
+                '<div class="loading">No process data available</div>';
+        }
 
         // Invoice modal functionality
         const invoiceCard = document.getElementById('invoiceCard');
@@ -2288,47 +2638,6 @@ function createMilestoneDrilldownChart(elementId, groupedTasks) {
                         Swal.fire('Error', 'Failed to save invoice', 'error');
                     });
             });
-        }
-    });
-
-    // Add weekend plot bands plugin
-    Highcharts.addEvent(Highcharts.Axis, 'foundExtremes', e => {
-        if (e.target.options.custom && e.target.options.custom.weekendPlotBands) {
-            const axis = e.target,
-                chart = axis.chart,
-                day = 24 * 36e5,
-                isWeekend = t => /[06]/.test(chart.time.dateFormat('%w', t)),
-                weekendPlotBands = [];
-
-            let inWeekend = false;
-
-            for (
-                let x = Math.floor(axis.min / day) * day;
-                x <= Math.ceil(axis.max / day) * day;
-                x += day
-            ) {
-                const last = weekendPlotBands.at(-1);
-                if (isWeekend(x) && !inWeekend) {
-                    weekendPlotBands.push({
-                        from: x,
-                        color: {
-                            pattern: {
-                                path: 'M 0 10 L 10 0 M -1 1 L 1 -1 M 9 11 L 11 9',
-                                width: 10, height: 10,
-                                color: 'rgba(128,128,128,0.15)'
-                            }
-                        }
-                    });
-                    inWeekend = true;
-                }
-
-                if (!isWeekend(x) && inWeekend && last) {
-                    last.to = x;
-                    inWeekend = false;
-                }
-            }
-
-            axis.options.plotBands = weekendPlotBands;
         }
     });
 </script>

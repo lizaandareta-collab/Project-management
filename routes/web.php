@@ -66,7 +66,8 @@ Route::middleware(['web'])->group(function () {
     Route::post('/invoice/add', [App::class, 'addInvoice'])->name('invoice.add');
     Route::get('/invoice/list/{project_id}', [App::class, 'getInvoiceList'])->name('invoice.list');
     Route::post('/invoice/add', [App::class, 'addInvoice'])->name('invoice.add');
-
+    Route::get('/api/resource-workload', [App::class, 'getResourceWorkload'])->name('api.resource-workload');
+    
     Route::get('/problem/{id}', [App::class, 'problem'])->name('problem');
 
 

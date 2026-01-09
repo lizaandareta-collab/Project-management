@@ -1357,6 +1357,9 @@ class App extends Controller
         $budget = $project ? $project->budget : 0;
         $invoiceAmount = Maio::get_invoice_amount_by_project($id);
         $invoices = Maio::get_invoices_by_project($id);
+            $lov = Maio::get_lov();
+    $processList = $lov->where('init', 'process');
+    
 
         // ===========================
         // REMAINING BUDGET
@@ -1535,6 +1538,7 @@ class App extends Controller
             'statusCount' => $statusCount,
             'statusChart' => $statusChart,
             'project' => $project,
+            'processList' => $processList,
         ];
 
         return view('template.wrapper', $data);
