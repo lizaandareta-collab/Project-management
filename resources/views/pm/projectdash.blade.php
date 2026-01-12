@@ -3,13 +3,14 @@
 <script src="{{ asset('assets/js/exporting.js') }}"></script>
 <script src="{{ asset('assets/js/export-data.js') }}"></script>
 <script src="{{ asset('assets/js/full-screen.js') }}"></script>
-<script src="{{ asset('assets/js/highcharts.js') }}"></script>
-<script src="{{ asset('assets/js/data2.js') }}"></script>
-<script src="{{ asset('assets/js/drilldown.js') }}"></script>
+<script src="{{ asset('assets/js/chart3.js') }}"></script>
+<!-- Highcharts Libraries -->
 <script src="{{ asset('assets/js/highcharts-chart.js') }}"></script>
 <script src="{{ asset('assets/js/export-data-chart.js') }}"></script>
 <script src="{{ asset('assets/js/accessibility-chart.js') }}"></script>
 <script src="{{ asset('assets/js/adaptive-chart.js') }}"></script>
+
+<script src="{{ asset('assets/js/drilldown.js') }}"></script>
 
 <style>
     body {
@@ -72,47 +73,21 @@
         letter-spacing: 0.5px;
     }
 
-    /* OVERALL PROGRESS CHART */
-    .chart-container-wrapper {
+    /* OVERALL PROGRESS CHART - HIGHCHARTS DONUT CHART */
+    .chart-box {
         position: relative;
         width: 100%;
         height: 280px;
         margin: 0 auto;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 
     #overallProgressChart {
         width: 100% !important;
         height: 100% !important;
-    }
-
-    .center-label-container {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        text-align: center;
-        pointer-events: none;
-        z-index: 10;
-        width: 100px;
-    }
-
-    .center-percentage {
-        font-size: 28px;
-        font-weight: 800;
-        color: #2c3e50;
-        line-height: 1;
-        margin: 0;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    .center-text {
-        font-size: 12px;
-        font-weight: 600;
-        color: #7f8c8d;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        margin-top: 5px;
-        line-height: 1.3;
+        position: relative;
     }
 
     /* Custom legend untuk chart progress */
@@ -152,6 +127,32 @@
         text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1) !important;
     }
 
+    .highcharts-center-label {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        pointer-events: none;
+    }
+
+    .center-percentage {
+        font-size: 28px;
+        font-weight: 800;
+        color: #2c3e50;
+        line-height: 1;
+        margin: 0;
+    }
+
+    .center-text {
+        font-size: 12px;
+        font-weight: 600;
+        color: #7f8c8d;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-top: 5px;
+    }
+
     /* Status color boxes untuk legend */
     .status-box {
         display: inline-block;
@@ -169,7 +170,7 @@
     .status-cancelled-box { background-color: #d9534f; }
     .status-nostatus-box { background-color: #34495e; }
 
-    /* PLAN HOURS vs HOURS SPENT */
+    /* PLAN HOURS vs HOURS SPENT - IMPROVED VISUALIZATION */
     .hours-visualization-container {
         display: flex;
         justify-content: space-between;
@@ -334,20 +335,16 @@
         display: none !important;
     }
 
-    /* Resource Workload Chart */
-    #resourceWorkloadContainer {
-        width: 100%;
-        height: 500px;
-        margin-top: 20px;
+    /* Hilangkan semua grid kiri Gantt */
+    .highcharts-grid-line,
+    .highcharts-yaxis-grid,
+    .highcharts-axis-line,
+    .highcharts-axis,
+    .highcharts-row-series {
+        display: none !important;
     }
 
-    .loading {
-        text-align: center;
-        padding: 20px;
-        color: #666;
-    }
-
-    /* MILESTONE & TASKS PROGRESS - GROUPED STYLES */
+    /* MILESTONE & TASKS PROGRESS - GROUPED STYLE */
     .tasks-grouped-container {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -479,6 +476,13 @@
         border: 1px solid #e9ecef;
     }
 
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+    }
+
     /* Task Counter */
     .task-counter {
         margin-left: 10px;
@@ -527,6 +531,29 @@
 
     .invoice-table-wrapper::-webkit-scrollbar-thumb:hover {
         background: #555;
+    }
+
+    .currency-value {
+        font-variant-numeric: tabular-nums;
+        display: block;
+    }
+
+    /* Gantt Chart Styling - Garis Timeline */
+    .highcharts-xaxis-grid .highcharts-grid-line {
+        display: block !important;
+        stroke: #e0e0e0 !important;
+        stroke-width: 1px !important;
+    }
+
+    .highcharts-axis-line {
+        display: block !important;
+        stroke: #ccc !important;
+        stroke-width: 1px !important;
+    }
+
+    .highcharts-axis-labels text {
+        fill: #666 !important;
+        font-size: 11px !important;
     }
 
     /* LEVEL 3 STRUCTURE STYLES */
@@ -828,47 +855,63 @@
         font-weight: normal !important;
     }
 
-    /* Process Filter Buttons */
-    .process-filter-wrapper {
-        margin-bottom: 20px;
+    /* TRIAL CHART STYLING */
+    .chart-container {
+        margin-top: 20px;
         padding: 15px;
-        background: #f8f9fa;
+        background: white;
         border-radius: 8px;
-        border: 1px solid #e9ecef;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
-    .process-filter-label {
-        font-size: 14px;
-        font-weight: 600;
-        color: #495057;
-        margin-bottom: 10px;
+    .chart-title {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 15px;
+        color: #333;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
     }
 
-    .process-button-group {
+    .chart-wrapper {
+        height: 400px;
+        min-height: 400px;
+    }
+
+    /* Select Process Area */
+    .process-wrapper {
         display: flex;
         flex-wrap: wrap;
         gap: 10px;
     }
 
-    .btn-process-filter {
+    /* Default button */
+    .btn-process {
         border-radius: 20px;
-        padding: 8px 20px;
-        font-size: 14px;
+        padding: 6px 16px;
+        font-size: 13px;
         font-weight: 500;
         white-space: nowrap;
-        transition: all 0.2s ease;
-        background: white;
-        border: 2px solid #dee2e6;
-        color: #495057;
+        transition: background-color .2s ease, color .2s ease, border-color .2s ease;
     }
 
-    .btn-process-filter:hover {
+    /* Hover = hijau gelap */
+    .btn-process:hover {
         background-color: #0fac81;
         border-color: #0fac81;
         color: #fff !important;
     }
 
-    .btn-process-filter.active {
+    /* Focus */
+    .btn-process:focus {
+        background-color: #0fac81;
+        border-color: #0fac81;
+        color: #fff !important;
+        box-shadow: none;
+    }
+
+    /* Active (yang diklik) */
+    .btn-process.btn-primary {
         background-color: #0fac81;
         border-color: #0fac81;
         color: #fff !important;
@@ -877,6 +920,10 @@
     /* Responsive adjustments */
     @media (max-width: 1200px) {
         .tasks-grouped-container {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .card-row {
             grid-template-columns: repeat(2, 1fr);
         }
     }
@@ -929,7 +976,7 @@
             width: 50px;
         }
         
-        .chart-container-wrapper {
+        .chart-box {
             height: 240px;
         }
         
@@ -945,17 +992,8 @@
             height: 350px;
         }
         
-        #resourceWorkloadContainer {
-            height: 400px;
-        }
-        
-        .process-button-group {
-            justify-content: center;
-        }
-        
-        .btn-process-filter {
-            padding: 6px 15px;
-            font-size: 13px;
+        .chart-wrapper {
+            height: 350px;
         }
     }
 </style>
@@ -968,15 +1006,11 @@
 
                 <!-- WRAPPER 4 CARD -->
                 <div class="card-row">
-                    <!-- CARD 1 - OVERALL PROGRESS -->
+                    <!-- CARD 1 - OVERALL PROGRESS - HIGHCHARTS DONUT CHART YANG RAPIH -->
                     <div class="dash-card">
                         <div class="card-title">OVERALL PROGRESS</div>
-                        <div class="chart-container-wrapper">
+                        <div class="chart-box">
                             <div id="overallProgressChart"></div>
-                            <div class="center-label-container" id="overallProgressLabel">
-                                <div class="center-percentage">{{ $overall }}%</div>
-                                <div class="center-text">OVERALL<br>PROGRESS</div>
-                            </div>
                         </div>
                         <!-- Legend di bawah chart -->
                         <div class="progress-legend">
@@ -1003,11 +1037,15 @@
                         </div>
                     </div>
 
-                    <!-- CARD 2 - PROJECT MILESTONE -->
+                    <!-- CARD 2 - PROJECT MILESTONE - HORIZONTAL BAR CHART DENGAN DRILLDOWN -->
                     <div class="dash-card">
                         <div class="card-title">PROJECT MILESTONE</div>
-                        <div id="projectMilestoneChart"></div>
+                        <div id="container"></div>
                         <div class="progress-legend" style="margin-top: 10px;">
+                            <!-- <div class="legend-item">
+                                <span class="status-open-box"></span>
+                                <span>Click bars to view activities (Subactivities not counted)</span>
+                            </div> -->
                         </div>
                     </div>
 
@@ -1093,7 +1131,7 @@
                         </h3>
                     </div>
 
-                    <!-- Filter Controls -->
+                    <!-- Filter Controls - Hanya Filter Milestone -->
                     <div class="filter-controls">
                         <div class="filter-group">
                             <div class="filter-label">Filter by Milestone</div>
@@ -1132,7 +1170,7 @@
                         </div>
                     </div>
 
-                    <!-- Task Grid -->
+                    <!-- Task Grid - GROUPED VERSION 3 LEVEL -->
                     <div class="tasks-grouped-container" id="taskGridContainer">
                         @if(count($groupedTasks) > 0)
                             @foreach($groupedTasks as $milestoneId => $milestoneData)
@@ -1259,35 +1297,58 @@
                     </div>
                 </div>
 
-                <!-- RESOURCE WORKLOAD SECTION -->
+                <!-- TRIAL CHART SECTION -->
                 <div class="gantt-section" style="margin-top: 20px;">
                     <div class="gantt-header">
-                        <h3 class="gantt-title">Trial Record</h3>
+                        <h3 class="gantt-title">Trial Performance Analysis</h3>
                     </div>
-                    
-                    <!-- Process Filter Buttons -->
-                    <div class="process-filter-wrapper">
-                        <div class="process-filter-label">Select Process Area:</div>
-                        <div class="process-button-group">
-                            @foreach($processList as $process)
-                                @if($process->init == 'process')
-                                    <button type="button" class="btn btn-process-filter {{ $loop->first ? 'active' : '' }}" 
-                                            data-process-id="{{ $process->id }}"
-                                            data-process-name="{{ $process->description }}">
-                                        {{ $process->description }}
-                                    </button>
-                                @endif
-                            @endforeach
+
+                    <!-- Select Process untuk Trial Charts -->
+                    <div class="filter-controls">
+                        <div class="filter-group">
+                            <div class="filter-label">Select Process</div>
+                            <select class="filter-select" id="trialProcessFilter">
+                                <option value="">Select Process</option>
+                                @foreach($process as $p)
+                                    <option value="{{ $p->lov_id }}">{{ $p->description }}</option>
+                                @endforeach
+                            </select>
                         </div>
                     </div>
-                    
-                    <div id="resourceWorkloadContainer">
-                        <div class="loading">
-                            Loading Trial Record data...
+
+                    <!-- Grafik Section -->
+                    <div class="row g-4 mb-4 d-none" id="trialChartSection">
+                        <!-- Grafik 1: %OK RATIO -->
+                        <div class="col-12">
+                            <div class="card card-bordered">
+                                <div class="card-inner">
+                                    <div class="chart-title">%OK RATIO vs Target</div>
+                                    <div id="trialChart1" class="chart-wrapper"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Grafik 2: CT -->
+                        <div class="col-12">
+                            <div class="card card-bordered">
+                                <div class="card-inner">
+                                    <div class="chart-title">Cycle Time (CT) vs Target</div>
+                                    <div id="trialChart2" class="chart-wrapper"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Grafik 3: BERAT -->
+                        <div class="col-12">
+                            <div class="card card-bordered">
+                                <div class="card-inner">
+                                    <div class="chart-title">Berat vs Target</div>
+                                    <div id="trialChart3" class="chart-wrapper"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
@@ -1413,7 +1474,7 @@
         }
     @endphp
 
-    // Function to create Highcharts Donut Chart
+    // Function to create Highcharts Donut Chart yang RAPIH
     function createOverallProgressChart(elementId, statusData, overallPercentage) {
         const data = [
             {
@@ -1448,13 +1509,7 @@
             }
         ];
 
-        // Update label tengah dengan persentase
-        const percentageElement = document.querySelector('#overallProgressLabel .center-percentage');
-        if (percentageElement) {
-            percentageElement.textContent = `${overallPercentage}%`;
-        }
-
-        return Highcharts.chart(elementId, {
+        const chart = Highcharts.chart(elementId, {
             chart: {
                 type: 'pie',
                 backgroundColor: 'transparent',
@@ -1463,7 +1518,27 @@
                 plotShadow: false,
                 height: 260,
                 margin: [0, 0, 0, 0],
-                spacing: [0, 0, 0, 0]
+                spacing: [0, 0, 0, 0],
+                events: {
+                    load: function() {
+                        const centerX = this.plotWidth / 2;
+                        const centerY = this.plotHeight / 2;
+                        
+                        this.renderer.label(
+                            `<div class="center-percentage">${overallPercentage}%</div>
+                             <div class="center-text">OVERALL<br>PROGRESS</div>`,
+                            centerX - 40,
+                            centerY - 25
+                        )
+                        .css({
+                            textAlign: 'center',
+                            width: '80px',
+                            height: '50px',
+                            color: '#2c3e50'
+                        })
+                        .add();
+                    }
+                }
             },
             title: {
                 text: null
@@ -1487,8 +1562,8 @@
             plotOptions: {
                 pie: {
                     innerSize: '75%',
-                    allowPointSelect: false,
-                    cursor: 'default',
+                    allowPointSelect: true,
+                    cursor: 'pointer',
                     dataLabels: {
                         enabled: false
                     },
@@ -1496,7 +1571,10 @@
                     borderWidth: 0,
                     states: {
                         hover: {
-                            enabled: false
+                            brightness: 0.1,
+                            halo: {
+                                size: 0
+                            }
                         }
                     }
                 }
@@ -1512,18 +1590,21 @@
                 }
             }]
         });
+
+        return chart;
     }
 
-    // Function to create PROJECT MILESTONE chart dengan drilldown
+    // Function to create PROJECT MILESTONE chart dengan warna berdasarkan status
     function createMilestoneDrilldownChart(elementId, groupedTasks) {
+        // Fungsi untuk mendapatkan warna berdasarkan status
         function getStatusColor(status) {
             const statusColors = {
-                0: '#34495e',
-                1: '#1f77b4',
-                2: '#00a591',
-                3: '#9acd32',
-                4: '#f0ad4e',
-                5: '#d9534f'
+                0: '#34495e', // No Status
+                1: '#1f77b4', // Open
+                2: '#00a591', // In Progress
+                3: '#9acd32', // Completed
+                4: '#f0ad4e', // On Hold
+                5: '#d9534f'  // Cancelled
             };
             return statusColors[status] || '#34495e';
         }
@@ -1544,16 +1625,21 @@
         const mainSeriesData = [];
         const drilldownSeries = [];
         
+        // Proses data dari groupedTasks
         Object.entries(groupedTasks).forEach(([milestoneId, milestoneData]) => {
             if (milestoneData['parent']) {
                 const milestoneName = milestoneData['parent'].milestone_task || 'Unnamed Milestone';
                 const milestoneStatus = milestoneData['parent'].status || 0;
                 const milestoneColor = getStatusColor(milestoneStatus);
                 
+                // Hitung total ACTIVITIES untuk milestone ini (TANPA subactivities)
                 let totalActivities = 0;
                 const drilldownData = [];
+                
+                // Kumpulkan activities untuk tooltip
                 const activitiesList = [];
                 
+                // Hitung dari activities saja (Level 2) - TANPA subactivities
                 if (milestoneData['activities']) {
                     Object.entries(milestoneData['activities']).forEach(([activityId, activityData]) => {
                         if (activityData['activity']) {
@@ -1562,6 +1648,7 @@
                             const activityStatus = activityData['activity'].status || 0;
                             const activityColor = getStatusColor(activityStatus);
                             
+                            // Tambahkan ke drilldown data - HANYA activity
                             drilldownData.push({
                                 name: activityName,
                                 y: 1,
@@ -1570,6 +1657,7 @@
                                 statusText: getStatusTextFromNumber(activityStatus)
                             });
                             
+                            // Tambahkan ke activities list untuk tooltip
                             activitiesList.push({
                                 name: activityName,
                                 color: activityColor,
@@ -1579,6 +1667,7 @@
                     });
                 }
                 
+                // Tambahkan ke main series dengan data tambahan untuk tooltip
                 mainSeriesData.push({
                     name: milestoneName,
                     y: totalActivities,
@@ -1590,28 +1679,31 @@
                     totalActivities: totalActivities
                 });
                 
+                // Tambahkan ke drilldown series
                 drilldownSeries.push({
                     name: milestoneName,
                     id: `milestone-${milestoneId}`,
                     data: drilldownData,
                     color: milestoneColor,
-                    isDrilldown: true
+                    isDrilldown: true  // Flag untuk membedakan drilldown series
                 });
             }
         });
 
-        // Buat chart menggunakan Highcharts.chart (bukan Highcharts.Chart)
+        // Buat chart - MENGUBAH ASUMSI MINIMAL SUMBU Y MENJADI 1
         Highcharts.chart(elementId, {
             chart: {
                 type: 'bar',
                 height: 400,
                 events: {
                     drilldown: function(e) {
+                        // Saat drilldown, tetap gunakan warna yang sama
                         if (e.seriesOptions) {
                             e.seriesOptions.color = e.point.color;
                         }
                     },
                     drillup: function(e) {
+                        // Reset saat drillup
                         this.series[0].update({
                             colorByPoint: true
                         });
@@ -1632,9 +1724,9 @@
             },
             yAxis: {
                 title: {
-                    text: 'Total'
+                    text: 'Number of Activities'
                 },
-                min: 1,
+                min: 1, // MENGUBAH INI DARI 0 MENJADI 1
                 allowDecimals: false,
                 tickInterval: 1
             },
@@ -1671,13 +1763,16 @@
                     padding: '10px'
                 },
                 formatter: function() {
+                    // Jika ini adalah DRILLDOWN (activity individual)
                     if (this.series.userOptions && this.series.userOptions.isDrilldown) {
+                        // Tooltip untuk activity individual
                         return `
                             <span style="font-size:13px; font-weight:bold">${this.point.name}</span><br>
                             <span style="color:${this.point.color}">●</span> 
                             Status: <b style="color:${this.point.color}">${this.point.statusText}</b>
                         `;
                     } else {
+                        // Ini adalah MILESTONE (main chart)
                         let tooltipHTML = `
                             <div style="text-align:left;">
                                 <span style="font-size:13px; font-weight:bold">${this.point.name}</span><br>
@@ -1686,13 +1781,14 @@
                                 Total Activities: <b>${this.point.totalActivities}</b>
                         `;
                         
+                        // Jika ada activities, tampilkan list-nya
                         if (this.point.activitiesList && this.point.activitiesList.length > 0) {
                             tooltipHTML += `
                                 <hr style="margin:8px 0; border:none; border-top:1px solid #eee;">
                                 <div style="font-weight:600; margin-bottom:5px;">Activities:</div>
                             `;
                             
-                            this.point.activitiesList.forEach((activity) => {
+                            this.point.activitiesList.forEach((activity, index) => {
                                 tooltipHTML += `
                                     <div style="margin-left:8px; margin-bottom:3px; display:flex; align-items:center; gap:5px;">
                                         <div style="width:8px; height:8px; background:${activity.color}; border-radius:1px;"></div>
@@ -1744,313 +1840,13 @@
         });
     }
 
-    // Function to load and render Resource Workload berdasarkan process
-    function loadResourceWorkload(processId = null) {
-        const container = document.getElementById('resourceWorkloadContainer');
-        container.innerHTML = '<div class="loading">Loading Trial Record data...</div>';
-        
-        // Default load first process if no processId
-        if (!processId && processButtons.length > 0) {
-            processId = processButtons[0].getAttribute('data-process-id');
-        }
-        
-        // Simulasi data - ganti dengan API call
-        const dummyData = {
-            "Implementation": {
-                "Andi": { plan_hours: 120, tasks: 15, milestones: 3 },
-                "Budi": { plan_hours: 95, tasks: 10, milestones: 2 },
-                "Citra": { plan_hours: 160, tasks: 20, milestones: 4 },
-                "Dewi": { plan_hours: 70, tasks: 8, milestones: 1 },
-                "Eko": { plan_hours: 110, tasks: 12, milestones: 2 }
-            },
-            "Design": {
-                "Fajar": { plan_hours: 80, tasks: 10, milestones: 2 },
-                "Gita": { plan_hours: 120, tasks: 15, milestones: 3 },
-                "Hadi": { plan_hours: 60, tasks: 8, milestones: 1 }
-            },
-            "Testing": {
-                "Indra": { plan_hours: 90, tasks: 12, milestones: 2 },
-                "Joko": { plan_hours: 75, tasks: 9, milestones: 2 },
-                "Kartika": { plan_hours: 110, tasks: 14, milestones: 3 }
-            }
-        };
-        
-        setTimeout(() => {
-            // Get process name
-            let processName = "Implementation"; // default
-            processButtons.forEach(btn => {
-                if (btn.getAttribute('data-process-id') == processId) {
-                    processName = btn.getAttribute('data-process-name');
-                }
-            });
-            
-            // Get data based on process
-            const processData = dummyData[processName] || dummyData["Implementation"];
-            renderResourceWorkloadChart(processData, processName);
-        }, 500);
-    }
-
-    function renderResourceWorkloadChart(resourceData, processName) {
-        const filtered = Object.entries(resourceData)
-            .filter(([responsibleName, data]) => {
-                return responsibleName &&
-                    responsibleName !== 'Unassigned' &&
-                    responsibleName !== '' &&
-                    responsibleName !== null;
-            })
-            .sort(([, a], [, b]) => b.plan_hours - a.plan_hours);
-
-        const responsibleNames = filtered.map(([name]) => name);
-        const planHours = filtered.map(([, data]) => data.plan_hours);
-        const taskCounts = filtered.map(([, data]) => data.tasks);
-
-        Highcharts.chart('resourceWorkloadContainer', {
-            chart: {
-                type: 'bar',
-                height: 450,
-                backgroundColor: '#ffffff',
-                borderRadius: 8,
-                style: {
-                    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
-                }
-            },
-            title: {
-                text: `Trial Record - ${processName}`,
-                align: 'center',
-                style: {
-                    fontSize: '18px',
-                    fontWeight: 'bold',
-                    color: '#2c3e50'
-                }
-            },
-            subtitle: {
-                text: `Showing ${filtered.length} resources for ${processName} process`,
-                align: 'center',
-                style: {
-                    fontSize: '12px',
-                    color: '#7f8c8d'
-                }
-            },
-            credits: {
-                enabled: false
-            },
-            xAxis: {
-                categories: responsibleNames,
-                crosshair: true,
-                labels: {
-                    style: {
-                        fontSize: '12px',
-                        fontWeight: '500',
-                        color: '#34495e'
-                    },
-                    rotation: -45
-                },
-                title: {
-                    text: 'Responsible Person',
-                    style: {
-                        fontSize: '14px',
-                        fontWeight: 'bold',
-                        color: '#2c3e50'
-                    }
-                },
-                gridLineWidth: 1,
-                gridLineColor: '#f0f0f0'
-            },
-            yAxis: [{
-                title: {
-                    text: 'Plan Hours',
-                    style: {
-                        fontSize: '14px',
-                        fontWeight: 'bold',
-                        color: '#3498db'
-                    }
-                },
-                labels: {
-                    format: '{value} hours',
-                    style: {
-                        color: '#3498db'
-                    }
-                },
-                gridLineColor: '#f8f9fa',
-                lineColor: '#3498db',
-                lineWidth: 2
-            }, {
-                title: {
-                    text: 'Task Count',
-                    style: {
-                        fontSize: '14px',
-                        fontWeight: 'bold',
-                        color: '#e74c3c'
-                    }
-                },
-                labels: {
-                    format: '{value} tasks',
-                    style: {
-                        color: '#e74c3c'
-                    }
-                },
-                gridLineColor: '#f8f9fa',
-                lineColor: '#e74c3c',
-                lineWidth: 2,
-                opposite: true
-            }],
-            tooltip: {
-                shared: true,
-                useHTML: true,
-                backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                borderColor: '#dee2e6',
-                borderRadius: 6,
-                borderWidth: 1,
-                shadow: true,
-                padding: 12,
-                style: {
-                    fontSize: '12px',
-                    lineHeight: '1.4'
-                },
-                formatter: function () {
-                    const points = this.points || [];
-                    const responsibleName = this.x;
-                    const data = resourceData[responsibleName];
-
-                    if (!data) {
-                        return `<b>${responsibleName}</b><br>No data available`;
-                    }
-
-                    let html = `
-                        <div style="min-width: 200px;">
-                            <div style="font-weight:bold; font-size:14px; margin-bottom:10px; padding-bottom:5px; border-bottom:2px solid #eee; color:#2c3e50">
-                                ${responsibleName}
-                            </div>
-                            <div style="display: grid; grid-template-columns: auto 1fr; gap: 5px 15px; align-items: center;">
-                    `;
-
-                    // Add Plan Hours
-                    html += `
-                        <div style="display: flex; align-items: center;">
-                            <span style="display:inline-block; width:10px; height:10px; background:#3498db; border-radius:2px; margin-right:8px;"></span>
-                            <span style="font-weight:600;">Plan Hours:</span>
-                        </div>
-                        <div style="text-align:right; font-weight:bold; color:#3498db">${data.plan_hours || 0}</div>
-                    `;
-
-                    // Add Task Count
-                    html += `
-                        <div style="display: flex; align-items: center;">
-                            <span style="display:inline-block; width:10px; height:10px; background:#e74c3c; border-radius:2px; margin-right:8px;"></span>
-                            <span style="font-weight:600;">Tasks:</span>
-                        </div>
-                        <div style="text-align:right; font-weight:bold; color:#e74c3c">${data.tasks || 0}</div>
-                    `;
-
-                    // Add Milestones if available
-                    if (data.milestones > 0) {
-                        html += `
-                            <div style="display: flex; align-items: center;">
-                                <span style="display:inline-block; width:10px; height:10px; background:#9b59b6; border-radius:2px; margin-right:8px;"></span>
-                                <span style="font-weight:600;">Milestones:</span>
-                            </div>
-                            <div style="text-align:right; font-weight:bold; color:#9b59b6">${data.milestones}</div>
-                        `;
-                    }
-
-                    html += `</div>`;
-                    html += `</div>`;
-                    return html;
-                }
-            },
-            legend: {
-                align: 'center',
-                verticalAlign: 'top',
-                layout: 'horizontal',
-                backgroundColor: '#f8f9fa',
-                borderColor: '#dee2e6',
-                borderWidth: 1,
-                borderRadius: 6,
-                padding: 10,
-                itemStyle: {
-                    fontSize: '12px',
-                    fontWeight: '500',
-                    color: '#2c3e50'
-                },
-                itemHoverStyle: {
-                    color: '#3498db'
-                }
-            },
-            plotOptions: {
-                series: {
-                    borderRadius: 3,
-                    pointPadding: 0.1,
-                    groupPadding: 0.15,
-                    borderWidth: 0,
-                    states: {
-                        hover: {
-                            brightness: 0.1,
-                            halo: {
-                                size: 0
-                            }
-                        }
-                    }
-                },
-                bar: {
-                    grouping: false,
-                    pointWidth: 25
-                },
-                spline: {
-                    marker: {
-                        enabled: true,
-                        radius: 4,
-                        symbol: 'circle',
-                        lineWidth: 2,
-                        lineColor: '#ffffff'
-                    }
-                }
-            },
-            series: [{
-                name: 'Plan Hours',
-                type: 'bar',
-                yAxis: 0,
-                data: planHours,
-                color: '#3498db',
-                tooltip: {
-                    valueSuffix: ' hours'
-                }
-            }, {
-                name: 'Tasks',
-                type: 'spline',
-                yAxis: 1,
-                data: taskCounts,
-                color: '#e74c3c',
-                lineWidth: 3,
-                marker: {
-                    fillColor: '#ffffff',
-                    lineColor: '#e74c3c',
-                    lineWidth: 2
-                },
-                tooltip: {
-                    valueSuffix: ' tasks'
-                }
-            }],
-            responsive: {
-                rules: [{
-                    condition: {
-                        maxWidth: 768
-                    },
-                    chartOptions: {
-                        legend: {
-                            layout: 'horizontal',
-                            align: 'center',
-                            verticalAlign: 'bottom'
-                        },
-                        xAxis: {
-                            labels: {
-                                rotation: -30
-                            }
-                        }
-                    }
-                }]
-            }
-        });
-    }
+    // Initialize charts
+    const statusChart = @json($statusChart);
+    const overallPercentage = {{ $overall }};
+    const groupedTasks = @json($groupedTasks);
+    
+    createOverallProgressChart('overallProgressChart', statusChart, overallPercentage);
+    createMilestoneDrilldownChart('container', groupedTasks);
 
     // Initialize Plan Hours vs Hours Spent visualization
     function initializeHoursVisualization() {
@@ -2159,6 +1955,7 @@
             const formattedName = getStyledMilestone(taskName, task.is_milestone);
             const isOverdue = isTaskOverdue(task.plan_end, task.actual_end);
 
+            // BAR 1: PLAN (jika ada plan dates)
             if (planStart && planEnd) {
                 projectTasks.push({
                     name: getStyledMilestone(taskName + " (Plan)", task.is_milestone),
@@ -2181,6 +1978,7 @@
                 });
             }
 
+            // BAR 2: ACTUAL (jika ada actual dates)
             if (actualStart) {
                 let actualColor, actualBorderColor, actualType;
 
@@ -2432,25 +2230,280 @@
         ganttContainer.parentNode.insertBefore(legendContainer, ganttContainer.nextSibling);
     }
 
-    // Initialize everything when DOM is loaded
+    // TRIAL CHART FUNCTIONS
+    let selectedProcessId = null;
+    const projectId = {{ $projectId }};
+    let trialData = [];
+
+    // Select Process untuk Trial Charts
+    document.getElementById('trialProcessFilter').addEventListener('change', function () {
+        selectedProcessId = this.value;
+        
+        if (selectedProcessId) {
+            document.getElementById('trialChartSection').classList.remove('d-none');
+            loadTrialData();
+        } else {
+            document.getElementById('trialChartSection').classList.add('d-none');
+        }
+    });
+
+    function loadTrialData() {
+        if (!selectedProcessId) return;
+
+        fetch("{{ route('trial.data') }}", {
+            method: "POST",
+            headers: {
+                "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                project_id: projectId,
+                process_id: selectedProcessId
+            })
+        })
+            .then(res => res.json())
+            .then(data => {
+                trialData = data;
+                renderTrialCharts(data);
+            })
+            .catch(err => console.error(err));
+    }
+
+    function renderTrialCharts(data) {
+        if (!data || data.length === 0) {
+            document.getElementById('trialChart1').innerHTML = '<div class="text-center text-muted p-5">No data available</div>';
+            document.getElementById('trialChart2').innerHTML = '<div class="text-center text-muted p-5">No data available</div>';
+            document.getElementById('trialChart3').innerHTML = '<div class="text-center text-muted p-5">No data available</div>';
+            return;
+        }
+
+        // Sort data by TRIAL_NO
+        const sortedData = [...data].sort((a, b) => {
+            return (a.trial_no || '').localeCompare(b.trial_no || '');
+        });
+
+        const trialNos = sortedData.map(item => item.trial_no || '');
+        const selectedProcessName = document.getElementById('trialProcessFilter').selectedOptions[0].text;
+        
+        // Grafik 1: %OK RATIO
+        const perctData = sortedData.map(item => parseFloat(item.perct) || 0);
+        const targetData = sortedData.map(item => parseFloat(item.target) || 0);
+
+        Highcharts.chart('trialChart1', {
+            chart: {
+                type: 'column',
+                height: 380
+            },
+            title: {
+                text: '%OK RATIO vs Target',
+                align: 'center',
+                style: {
+                    fontSize: '16px',
+                    fontWeight: 'bold'
+                }
+            },
+            subtitle: {
+                text: selectedProcessName,
+                align: 'center'
+            },
+            xAxis: {
+                categories: trialNos,
+                title: {
+                    text: 'Trial No'
+                },
+                crosshair: true
+            },
+            yAxis: {
+                min: 0,
+                title: {
+                    text: 'Percentage (%)'
+                },
+                labels: {
+                    format: '{value}%'
+                }
+            },
+            tooltip: {
+                headerFormat: '<span style="font-size:10px">Trial {point.key}</span><table>',
+                pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                    '<td style="padding:0"><b>{point.y:.2f}%</b></td></tr>',
+                footerFormat: '</table>',
+                shared: true,
+                useHTML: true
+            },
+            plotOptions: {
+                column: {
+                    pointPadding: 0.2,
+                    borderWidth: 0
+                }
+            },
+            series: [{
+                name: '%OK RATIO',
+                data: perctData,
+                color: '#4CAF50'
+            }, {
+                name: 'Target',
+                data: targetData,
+                type: 'line',
+                color: '#FF9800',
+                marker: {
+                    symbol: 'circle',
+                    radius: 6
+                }
+            }],
+            credits: {
+                enabled: false
+            }
+        });
+
+        // Grafik 2: CT (Cycle Time)
+        const ctData = sortedData.map(item => parseFloat(item.ct) || 0);
+        const ctTargetData = sortedData.map(item => parseFloat(item.ct_target) || 0);
+
+        Highcharts.chart('trialChart2', {
+            chart: {
+                type: 'column',
+                height: 380
+            },
+            title: {
+                text: 'Cycle Time (CT) vs Target',
+                align: 'center',
+                style: {
+                    fontSize: '16px',
+                    fontWeight: 'bold'
+                }
+            },
+            subtitle: {
+                text: selectedProcessName,
+                align: 'center'
+            },
+            xAxis: {
+                categories: trialNos,
+                title: {
+                    text: 'Trial No'
+                },
+                crosshair: true
+            },
+            yAxis: {
+                min: 0,
+                title: {
+                    text: 'Cycle Time'
+                }
+            },
+            tooltip: {
+                headerFormat: '<span style="font-size:10px">Trial {point.key}</span><table>',
+                pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                    '<td style="padding:0"><b>{point.y:.2f}</b></td></tr>',
+                footerFormat: '</table>',
+                shared: true,
+                useHTML: true
+            },
+            plotOptions: {
+                column: {
+                    pointPadding: 0.2,
+                    borderWidth: 0
+                }
+            },
+            series: [{
+                name: 'CT',
+                data: ctData,
+                color: '#2196F3'
+            }, {
+                name: 'CT Target',
+                data: ctTargetData,
+                type: 'line',
+                color: '#FF5722',
+                marker: {
+                    symbol: 'circle',
+                    radius: 6
+                }
+            }],
+            credits: {
+                enabled: false
+            }
+        });
+
+        // Grafik 3: BERAT
+        const beratData = sortedData.map(item => parseFloat(item.berat) || 0);
+        const beratTargetData = sortedData.map(item => parseFloat(item.berat_target) || 0);
+
+        Highcharts.chart('trialChart3', {
+            chart: {
+                type: 'column',
+                height: 380
+            },
+            title: {
+                text: 'Berat vs Target',
+                align: 'center',
+                style: {
+                    fontSize: '16px',
+                    fontWeight: 'bold'
+                }
+            },
+            subtitle: {
+                text: selectedProcessName,
+                align: 'center'
+            },
+            xAxis: {
+                categories: trialNos,
+                title: {
+                    text: 'Trial No'
+                },
+                crosshair: true
+            },
+            yAxis: {
+                min: 0,
+                title: {
+                    text: 'Berat'
+                }
+            },
+            tooltip: {
+                headerFormat: '<span style="font-size:10px">Trial {point.key}</span><table>',
+                pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                    '<td style="padding:0"><b>{point.y:.2f}</b></td></tr>',
+                footerFormat: '</table>',
+                shared: true,
+                useHTML: true
+            },
+            plotOptions: {
+                column: {
+                    pointPadding: 0.2,
+                    borderWidth: 0
+                }
+            },
+            series: [{
+                name: 'Berat',
+                data: beratData,
+                color: '#9C27B0'
+            }, {
+                name: 'Berat Target',
+                data: beratTargetData,
+                type: 'line',
+                color: '#795548',
+                marker: {
+                    symbol: 'circle',
+                    radius: 6
+                }
+            }],
+            credits: {
+                enabled: false
+            }
+        });
+    }
+
+    // Task Filtering - Hanya Filter Milestone
     document.addEventListener('DOMContentLoaded', function () {
-        // Initialize charts
-        const statusChart = @json($statusChart);
-        const overallPercentage = {{ $overall }};
-        const groupedTasks = @json($groupedTasks);
-        
-        createOverallProgressChart('overallProgressChart', statusChart, overallPercentage);
-        createMilestoneDrilldownChart('projectMilestoneChart', groupedTasks);
-        
         // Initialize Hours Visualization
         initializeHoursVisualization();
         
         // Initialize task filtering
         let currentMilestoneFilter = 'all';
+        
+        // Elements
         const taskGridContainer = document.getElementById('taskGridContainer');
         const visibleTaskCounter = document.getElementById('visibleTaskCounter');
         const milestoneFilter = document.getElementById('milestoneFilter');
         
+        // Simple filtering function
         function filterTasks() {
             let visibleTaskCount = 0;
             const taskGroups = document.querySelectorAll('.task-group-card');
@@ -2485,6 +2538,7 @@
             }
         }
 
+        // Event Listeners
         if (milestoneFilter) {
             milestoneFilter.addEventListener('change', function() {
                 currentMilestoneFilter = this.value;
@@ -2492,6 +2546,7 @@
             });
         }
 
+        // Initialize
         filterTasks();
 
         // Export menu functionality
@@ -2508,11 +2563,13 @@
                 exportMenu.classList.remove('show');
             });
 
+            // Fullscreen functionality
             document.getElementById('fullscreenBtn').addEventListener('click', function () {
                 if (chart) chart.fullscreen.toggle();
                 exportMenu.classList.remove('show');
             });
 
+            // Print functionality
             document.getElementById('printChartBtn').addEventListener('click', function () {
                 if (chart) {
                     chart.exportChart({
@@ -2525,6 +2582,7 @@
                 exportMenu.classList.remove('show');
             });
 
+            // Download PNG functionality
             document.getElementById('downloadPNGBtn').addEventListener('click', function () {
                 if (chart) {
                     chart.exportChart({
@@ -2537,6 +2595,7 @@
                 exportMenu.classList.remove('show');
             });
 
+            // Download JPEG functionality
             document.getElementById('downloadJPGBtn').addEventListener('click', function () {
                 if (chart) {
                     chart.exportChart({
@@ -2552,37 +2611,6 @@
 
         // Initialize Gantt Chart
         renderGanttChart();
-
-        // Initialize Process Filter buttons
-        const processButtons = document.querySelectorAll('.btn-process-filter');
-        
-        if (processButtons.length > 0) {
-            // Add click event to process buttons
-            processButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    // Remove active class from all buttons
-                    processButtons.forEach(btn => btn.classList.remove('active'));
-                    
-                    // Add active class to clicked button
-                    this.classList.add('active');
-                    
-                    // Get process ID and name
-                    const processId = this.getAttribute('data-process-id');
-                    const processName = this.getAttribute('data-process-name');
-                    
-                    // Load data with selected process filter
-                    loadResourceWorkload(processId);
-                });
-            });
-            
-            // Load data for first button (active)
-            const firstProcessId = processButtons[0].getAttribute('data-process-id');
-            loadResourceWorkload(firstProcessId);
-        } else {
-            // If no process buttons, show error
-            document.getElementById('resourceWorkloadContainer').innerHTML = 
-                '<div class="loading">No process data available</div>';
-        }
 
         // Invoice modal functionality
         const invoiceCard = document.getElementById('invoiceCard');
@@ -2638,6 +2666,47 @@
                         Swal.fire('Error', 'Failed to save invoice', 'error');
                     });
             });
+        }
+    });
+
+    // Add weekend plot bands plugin
+    Highcharts.addEvent(Highcharts.Axis, 'foundExtremes', e => {
+        if (e.target.options.custom && e.target.options.custom.weekendPlotBands) {
+            const axis = e.target,
+                chart = axis.chart,
+                day = 24 * 36e5,
+                isWeekend = t => /[06]/.test(chart.time.dateFormat('%w', t)),
+                weekendPlotBands = [];
+
+            let inWeekend = false;
+
+            for (
+                let x = Math.floor(axis.min / day) * day;
+                x <= Math.ceil(axis.max / day) * day;
+                x += day
+            ) {
+                const last = weekendPlotBands.at(-1);
+                if (isWeekend(x) && !inWeekend) {
+                    weekendPlotBands.push({
+                        from: x,
+                        color: {
+                            pattern: {
+                                path: 'M 0 10 L 10 0 M -1 1 L 1 -1 M 9 11 L 11 9',
+                                width: 10, height: 10,
+                                color: 'rgba(128,128,128,0.15)'
+                            }
+                        }
+                    });
+                    inWeekend = true;
+                }
+
+                if (!isWeekend(x) && inWeekend && last) {
+                    last.to = x;
+                    inWeekend = false;
+                }
+            }
+
+            axis.options.plotBands = weekendPlotBands;
         }
     });
 </script>

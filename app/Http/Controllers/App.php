@@ -8,6 +8,7 @@ use App\Models\Mapp;
 use App\Models\Mauth;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Validator;
 
 class App extends Controller
 {
@@ -1357,9 +1358,12 @@ class App extends Controller
         $budget = $project ? $project->budget : 0;
         $invoiceAmount = Maio::get_invoice_amount_by_project($id);
         $invoices = Maio::get_invoices_by_project($id);
-            $lov = Maio::get_lov();
-    $processList = $lov->where('init', 'process');
-    
+
+        // ===========================
+        // GET PROCESS LIST FOR TRIAL CHARTS
+        // ===========================
+        $lov = Maio::get_lov();
+        $process = $lov->where('init', 'process');
 
         // ===========================
         // REMAINING BUDGET
@@ -1538,12 +1542,11 @@ class App extends Controller
             'statusCount' => $statusCount,
             'statusChart' => $statusChart,
             'project' => $project,
-            'processList' => $processList,
+            'process' => $process, // Tambahkan process untuk trial charts
         ];
 
         return view('template.wrapper', $data);
     }
-
     public function addInvoice(Request $request)
     {
         $projectId = $request->input('project_id');
@@ -1594,52 +1597,85 @@ class App extends Controller
         return response()->json($data);
     }
 
-
     public function trial_store(Request $req)
     {
         try {
-            Mapp::insert_trial($req);
+            $user = session('user');
+            $userName = is_array($user)
+                ? ($user['NAME'] ?? $user['name'] ?? 'Guest')
+                : ($user->NAME ?? $user->name ?? 'Guest');
+
+            $req->merge(['pic' => $userName]);
+
+            $validator = Validator::make($req->all(), [
+                'project_id' => 'required',
+                'process_id' => 'required',
+                'trial_no' => 'required',
+                'trial_stat' => 'required',
+                'trial_machine' => 'required',
+                'trial_date' => 'required|date',
+                'picture' => 'required',
+                'picture.*' => 'file'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $result = Mapp::insert_trial($req);
+
+            if ($result['success']) {
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Trial berhasil disimpan',
+                    'files_count' => count($result['files'] ?? [])
+                ]);
+            }
 
             return response()->json([
-                'status' => true,
-                'message' => 'Trial berhasil disimpan'
-            ]);
+                'status' => false,
+                'message' => $result['message'] ?? 'Insert failed'
+            ], 500);
 
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
                 'message' => $e->getMessage()
-            ]);
+            ], 500);
         }
     }
 
     public function trial_standard(Request $request)
-{
-    $project_id = $request->project_id;
-    $process_id = $request->process_id;
+    {
+        $project_id = $request->project_id;
+        $process_id = $request->process_id;
 
-    $standards = Maio::get_standard_by_project_process($project_id, $process_id);
+        $standards = Maio::get_standard_by_project_process($project_id, $process_id);
 
-    $result = [
-        'target' => null,
-        'ct_target' => null,
-        'berat_target' => null
-    ];
+        $result = [
+            'target' => null,
+            'ct_target' => null,
+            'berat_target' => null
+        ];
 
-    foreach ($standards as $std) {
-        if ($std->stdproc_id == 77) {
-            $result['target'] = $std->value;
-        } elseif ($std->stdproc_id == 78) {
-            $result['ct_target'] = $std->value;
-        } elseif ($std->stdproc_id == 79) {
-            $result['berat_target'] = $std->value;
+        foreach ($standards as $std) {
+            if ($std->stdproc_id == 77) {
+                $result['target'] = $std->value;
+            } elseif ($std->stdproc_id == 78) {
+                $result['ct_target'] = $std->value;
+            } elseif ($std->stdproc_id == 79) {
+                $result['berat_target'] = $std->value;
+            }
         }
+
+        return response()->json($result);
     }
 
-    return response()->json($result);
-}
 
-    
 
 
     public function problem()

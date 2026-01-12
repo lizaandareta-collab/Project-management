@@ -12,7 +12,7 @@
                                 <em class="icon ni ni-plus"></em> Add Holiday
                             </button>
                         </div>
-                        
+
                         <div class="card card-bordered card-preview mt-3">
                             <div class="card-inner">
 

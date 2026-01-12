@@ -394,9 +394,85 @@ class Mapp
         }
     }
 
-    public static function insert_trial($req)
-    {
-        DB::connection('oracle')->table('PROMAN.TRIAL_RR')->insert([
+public static function insert_trial($req)
+{
+    try {
+        // Mulai transaction
+        DB::connection('oracle')->beginTransaction();
+        
+        // -----------------------
+        // 1. Upload file jika ada
+        // -----------------------
+        $softcopyIds = [];  // simpan ID softcopy
+        
+        if ($req->hasFile('picture')) {
+            foreach ($req->file('picture') as $file) {
+                // Generate ID softcopy
+                $softId = self::generate_id('softcopy');
+                
+                // Nama asli file dari user → CLIENT_NAME
+                $originalName = $file->getClientOriginalName();
+                $cleanClientName = preg_replace('/\s+/', '_', $originalName);
+                
+                // Generate nama unik untuk FILE_NAME
+                $rand = substr(md5(uniqid()), 0, 10);
+                $uniqueName = $rand . '_' . $cleanClientName;
+                
+                // Size file
+                $size = $file->getSize();
+                
+                // Ekstensi & tipe file
+                $ext = strtolower($file->getClientOriginalExtension());
+                
+                // Tentukan FILE_TYPE
+                if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif'])) {
+                    $type = 'image';
+                } elseif ($ext === 'pdf') {
+                    $type = 'pdf';
+                } elseif (in_array($ext, ['doc', 'docx'])) {
+                    $type = 'document';
+                } elseif (in_array($ext, ['xls', 'xlsx'])) {
+                    $type = 'spreadsheet';
+                } else {
+                    $type = 'other';
+                }
+                
+                // Path untuk penyimpanan
+                $filePath = 'activity';  // menggunakan 'activity' seperti contoh lain
+                $fullPath = $filePath . '/' . $uniqueName;
+                $savePath = public_path($fullPath);
+                
+                // Simpan file
+                $file->move(public_path($filePath), $uniqueName);
+                
+                // Perbarui ukuran file setelah disimpan
+                $size = filesize($savePath);
+                
+                // -----------------------
+                // Insert ke SOFTCOPY
+                // -----------------------
+                DB::connection('oracle')->table('PROMAN.SOFTCOPY')->insert([
+                    'ID' => $softId,
+                    'CLIENT_NAME' => $cleanClientName,
+                    'FILE_NAME' => $uniqueName,
+                    'FILE_PATH' => $filePath,
+                    'FULL_PATH' => $fullPath,
+                    'FILE_SIZE' => $size,
+                    'FILE_EXT' => $ext,
+                    'FILE_TYPE' => $type,
+                    'STATUS1' => 1,
+                    'SYSDATE1' => DB::raw('SYSDATE')
+                ]);
+                
+                // Simpan ID softcopy
+                $softcopyIds[] = $softId;
+            }
+        }
+        
+        // -----------------------
+        // 2. Insert ke TRIAL_RR
+        // -----------------------
+        $trialData = [
             'PROJECT_ID' => $req->project_id,
             'PROCESS_ID' => $req->process_id,
             'TRIAL_NO' => $req->trial_no,
@@ -411,11 +487,37 @@ class Mapp
             'CT_TARGET' => $req->ct_target,
             'BERAT' => $req->berat,
             'BERAT_TARGET' => $req->berat_target,
+            'PIC' => $req->pic,  // tambahkan PIC
             'SYSDATE1' => DB::raw('SYSDATE')
-        ]);
-
-        return true;
+        ];
+        
+        // Tambahkan SOFTCOPY_ID jika ada file
+        if (!empty($softcopyIds)) {
+            $trialData['SOFTCOPY_ID'] = json_encode($softcopyIds);
+        }
+        
+        DB::connection('oracle')->table('PROMAN.TRIAL_RR')->insert($trialData);
+        
+        // Commit transaction
+        DB::connection('oracle')->commit();
+        
+        return [
+            'success' => true,
+            'message' => 'Trial berhasil disimpan',
+            'files' => $softcopyIds
+        ];
+        
+    } catch (\Exception $e) {
+        // Rollback jika error
+        DB::connection('oracle')->rollBack();
+        
+        return [
+            'success' => false,
+            'message' => $e->getMessage()
+        ];
     }
+}
+
 
 
 
