@@ -130,14 +130,14 @@ class Maio
     }
 
     public static function get_standard_by_project_process($project_id, $process_id)
-{
-    return self::db()
-        ->table('PROMAN.STANDARD')
-        ->where('PROJECT_ID', $project_id)
-        ->where('PROCESS_ID', $process_id)
-        ->whereIn('STDPROC_ID', [77, 78, 79])
-        ->get();
-}
+    {
+        return self::db()
+            ->table('PROMAN.STANDARD')
+            ->where('PROJECT_ID', $project_id)
+            ->where('PROCESS_ID', $process_id)
+            ->whereIn('STDPROC_ID', [77, 78, 79])
+            ->get();
+    }
 
 
 

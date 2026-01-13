@@ -1322,7 +1322,7 @@
                         <div class="col-12">
                             <div class="card card-bordered">
                                 <div class="card-inner">
-                                    <div class="chart-title">%OK RATIO vs Target</div>
+                                    <div class="chart-title">%OK RATIO</div>
                                     <div id="trialChart1" class="chart-wrapper"></div>
                                 </div>
                             </div>
@@ -1332,7 +1332,7 @@
                         <div class="col-12">
                             <div class="card card-bordered">
                                 <div class="card-inner">
-                                    <div class="chart-title">Cycle Time (CT) vs Target</div>
+                                    <div class="chart-title">Cycle Time (CT)</div>
                                     <div id="trialChart2" class="chart-wrapper"></div>
                                 </div>
                             </div>
@@ -1342,7 +1342,7 @@
                         <div class="col-12">
                             <div class="card card-bordered">
                                 <div class="card-inner">
-                                    <div class="chart-title">Berat vs Target</div>
+                                    <div class="chart-title">Berat</div>
                                     <div id="trialChart3" class="chart-wrapper"></div>
                                 </div>
                             </div>
@@ -2295,7 +2295,7 @@
                 height: 380
             },
             title: {
-                text: '%OK RATIO vs Target',
+                text: '%OK RATIO',
                 align: 'center',
                 style: {
                     fontSize: '16px',
@@ -2365,7 +2365,7 @@
                 height: 380
             },
             title: {
-                text: 'Cycle Time (CT) vs Target',
+                text: 'Cycle Time (CT)',
                 align: 'center',
                 style: {
                     fontSize: '16px',
@@ -2432,7 +2432,7 @@
                 height: 380
             },
             title: {
-                text: 'Berat vs Target',
+                text: 'Berat',
                 align: 'center',
                 style: {
                     fontSize: '16px',

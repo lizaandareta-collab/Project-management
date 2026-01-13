@@ -275,7 +275,7 @@
                             <div class="col-12">
                                 <div class="card card-bordered">
                                     <div class="card-inner">
-                                        <div class="chart-title">%OK RATIO vs Target</div>
+                                        <div class="chart-title">%OK RATIO</div>
                                         <div id="chart1" class="chart-wrapper"></div>
                                     </div>
                                 </div>
@@ -284,7 +284,7 @@
                             <div class="col-12">
                                 <div class="card card-bordered">
                                     <div class="card-inner">
-                                        <div class="chart-title">Cycle Time (CT) vs Target</div>
+                                        <div class="chart-title">Cycle Time (CT)</div>
                                         <div id="chart2" class="chart-wrapper"></div>
                                     </div>
                                 </div>
@@ -293,7 +293,7 @@
                             <div class="col-12">
                                 <div class="card card-bordered">
                                     <div class="card-inner">
-                                        <div class="chart-title">Berat vs Target</div>
+                                        <div class="chart-title">Berat</div>
                                         <div id="chart3" class="chart-wrapper"></div>
                                     </div>
                                 </div>
@@ -581,8 +581,8 @@
                     <td>${row.trial_date ? row.trial_date.split(' ')[0] : ''}</td>
                     <td>${row.actual || ''}</td>
                     <td>${row.ok || ''}</td>
-                    <td>${targetVal.toFixed(2)} %</td>
-                    <td class="${perctClass}">${perctVal.toFixed(2)} %</td>
+                    <td>${targetVal.toFixed(2)}%</td>
+                    <td class="${perctClass}">${perctVal.toFixed(2)}%</td>
                     <td>${row.ct_target || ''}</td>
                     <td class="${ctClass}">${row.ct || ''}</td>
                     <td>${row.berat_target || ''}</td>
@@ -621,7 +621,7 @@
                     data: 'target',
                     render: function(data) {
                         const val = parseFloat(data) || 0;
-                        return val.toFixed(2) + ' %';
+                        return val.toFixed(2) + '%';
                     }
                 },
                 { 
@@ -630,7 +630,7 @@
                         const perctVal = parseFloat(data) || 0;
                         const targetVal = parseFloat(row.target) || 0;
                         const className = perctVal >= targetVal ? 'text-success-bold' : 'text-danger-bold';
-                        return `<span class="${className}">${perctVal.toFixed(2)} %</span>`;
+                        return `<span class="${className}">${perctVal.toFixed(2)}%</span>`;
                     }
                 },
                 { data: 'ct_target' },
@@ -721,7 +721,7 @@
                     first: "First",
                     last: "Last",
                     next: "Next",
-                    previous: "Previous"
+                    previous: "Prev"
                 }
             },
             initComplete: function() {
@@ -806,7 +806,7 @@
                 height: 380
             },
             title: {
-                text: '%OK RATIO vs Target',
+                text: '%OK RATIO',
                 align: 'center'
             },
             subtitle: {
@@ -869,7 +869,7 @@
                 height: 380
             },
             title: {
-                text: 'Cycle Time (CT) vs Target',
+                text: 'Cycle Time (CT)',
                 align: 'center'
             },
             subtitle: {
@@ -929,7 +929,7 @@
                 height: 380
             },
             title: {
-                text: 'Berat vs Target',
+                text: 'Berat',
                 align: 'center'
             },
             subtitle: {
