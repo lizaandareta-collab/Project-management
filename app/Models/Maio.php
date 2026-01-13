@@ -155,6 +155,16 @@ class Maio
         }
     }
 
+    public static function get_softcopy_by_ids(array $ids)
+{
+    return self::db()
+        ->table('PROMAN.SOFTCOPY')
+        ->whereIn('ID', $ids)
+        ->get()
+        ->keyBy('id'); // key = ID
+}
+
+
 
     public static function get_client()
     {

@@ -394,130 +394,291 @@ class Mapp
         }
     }
 
-public static function insert_trial($req)
-{
-    try {
-        // Mulai transaction
-        DB::connection('oracle')->beginTransaction();
-        
-        // -----------------------
-        // 1. Upload file jika ada
-        // -----------------------
-        $softcopyIds = [];  // simpan ID softcopy
-        
-        if ($req->hasFile('picture')) {
-            foreach ($req->file('picture') as $file) {
-                // Generate ID softcopy
-                $softId = self::generate_id('softcopy');
-                
-                // Nama asli file dari user → CLIENT_NAME
-                $originalName = $file->getClientOriginalName();
-                $cleanClientName = preg_replace('/\s+/', '_', $originalName);
-                
-                // Generate nama unik untuk FILE_NAME
-                $rand = substr(md5(uniqid()), 0, 10);
-                $uniqueName = $rand . '_' . $cleanClientName;
-                
-                // Size file
-                $size = $file->getSize();
-                
-                // Ekstensi & tipe file
-                $ext = strtolower($file->getClientOriginalExtension());
-                
-                // Tentukan FILE_TYPE
-                if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif'])) {
-                    $type = 'image';
-                } elseif ($ext === 'pdf') {
-                    $type = 'pdf';
-                } elseif (in_array($ext, ['doc', 'docx'])) {
-                    $type = 'document';
-                } elseif (in_array($ext, ['xls', 'xlsx'])) {
-                    $type = 'spreadsheet';
-                } else {
-                    $type = 'other';
-                }
-                
-                // Path untuk penyimpanan
-                $filePath = 'activity';  // menggunakan 'activity' seperti contoh lain
-                $fullPath = $filePath . '/' . $uniqueName;
-                $savePath = public_path($fullPath);
-                
-                // Simpan file
-                $file->move(public_path($filePath), $uniqueName);
-                
-                // Perbarui ukuran file setelah disimpan
-                $size = filesize($savePath);
-                
-                // -----------------------
-                // Insert ke SOFTCOPY
-                // -----------------------
-                DB::connection('oracle')->table('PROMAN.SOFTCOPY')->insert([
-                    'ID' => $softId,
-                    'CLIENT_NAME' => $cleanClientName,
-                    'FILE_NAME' => $uniqueName,
-                    'FILE_PATH' => $filePath,
-                    'FULL_PATH' => $fullPath,
-                    'FILE_SIZE' => $size,
-                    'FILE_EXT' => $ext,
-                    'FILE_TYPE' => $type,
-                    'STATUS1' => 1,
-                    'SYSDATE1' => DB::raw('SYSDATE')
-                ]);
-                
-                // Simpan ID softcopy
-                $softcopyIds[] = $softId;
-            }
-        }
-        
-        // -----------------------
-        // 2. Insert ke TRIAL_RR
-        // -----------------------
-        $trialData = [
-            'PROJECT_ID' => $req->project_id,
-            'PROCESS_ID' => $req->process_id,
-            'TRIAL_NO' => $req->trial_no,
-            'TRIAL_STAT' => $req->trial_stat,
-            'TRIAL_MACHINE' => $req->trial_machine,
-            'TRIAL_DATE' => $req->trial_date,
-            'ACTUAL' => $req->actual,
-            'OK' => $req->ok,
-            'PERCT' => $req->perct,
-            'TARGET' => $req->target,
-            'CT' => $req->ct,
-            'CT_TARGET' => $req->ct_target,
-            'BERAT' => $req->berat,
-            'BERAT_TARGET' => $req->berat_target,
-            'PIC' => $req->pic,  // tambahkan PIC
-            'SYSDATE1' => DB::raw('SYSDATE')
-        ];
-        
-        // Tambahkan SOFTCOPY_ID jika ada file
-        if (!empty($softcopyIds)) {
-            $trialData['SOFTCOPY_ID'] = json_encode($softcopyIds);
-        }
-        
-        DB::connection('oracle')->table('PROMAN.TRIAL_RR')->insert($trialData);
-        
-        // Commit transaction
-        DB::connection('oracle')->commit();
-        
-        return [
-            'success' => true,
-            'message' => 'Trial berhasil disimpan',
-            'files' => $softcopyIds
-        ];
-        
-    } catch (\Exception $e) {
-        // Rollback jika error
-        DB::connection('oracle')->rollBack();
-        
-        return [
-            'success' => false,
-            'message' => $e->getMessage()
-        ];
-    }
-}
+    // public static function insert_trial($req)
+    // {
+    //     try {
+    //         // Mulai transaction
+    //         DB::connection('oracle')->beginTransaction();
 
+    //         // -----------------------
+    //         // 1. Upload file jika ada
+    //         // -----------------------
+    //         $softcopyIds = [];  // simpan ID softcopy
+
+    //         if ($req->hasFile('picture')) {
+    //             foreach ($req->file('picture') as $file) {
+    //                 // Generate ID softcopy
+    //                 $softId = self::generate_id('softcopy');
+
+    //                 // Nama asli file dari user → CLIENT_NAME
+    //                 $originalName = $file->getClientOriginalName();
+    //                 $cleanClientName = preg_replace('/\s+/', '_', $originalName);
+
+    //                 // Generate nama unik untuk FILE_NAME
+    //                 $rand = substr(md5(uniqid()), 0, 10);
+    //                 $uniqueName = $rand . '_' . $cleanClientName;
+
+    //                 // Size file
+    //                 $size = $file->getSize();
+
+    //                 // Ekstensi & tipe file
+    //                 $ext = strtolower($file->getClientOriginalExtension());
+
+    //                 // Tentukan FILE_TYPE
+    //                 if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif'])) {
+    //                     $type = 'image';
+    //                 } elseif ($ext === 'pdf') {
+    //                     $type = 'pdf';
+    //                 } elseif (in_array($ext, ['doc', 'docx'])) {
+    //                     $type = 'document';
+    //                 } elseif (in_array($ext, ['xls', 'xlsx'])) {
+    //                     $type = 'spreadsheet';
+    //                 } else {
+    //                     $type = 'other';
+    //                 }
+
+    //                 // Path untuk penyimpanan
+    //                 $filePath = 'activity';  // menggunakan 'activity' seperti contoh lain
+    //                 $fullPath = $filePath . '/' . $uniqueName;
+    //                 $savePath = public_path($fullPath);
+
+    //                 // Simpan file
+    //                 $file->move(public_path($filePath), $uniqueName);
+
+    //                 // Perbarui ukuran file setelah disimpan
+    //                 $size = filesize($savePath);
+
+    //                 // -----------------------
+    //                 // Insert ke SOFTCOPY
+    //                 // -----------------------
+    //                 DB::connection('oracle')->table('PROMAN.SOFTCOPY')->insert([
+    //                     'ID' => $softId,
+    //                     'CLIENT_NAME' => $cleanClientName,
+    //                     'FILE_NAME' => $uniqueName,
+    //                     'FILE_PATH' => $filePath,
+    //                     'FULL_PATH' => $fullPath,
+    //                     'FILE_SIZE' => $size,
+    //                     'FILE_EXT' => $ext,
+    //                     'FILE_TYPE' => $type,
+    //                     'STATUS1' => 1,
+    //                     'SYSDATE1' => DB::raw('SYSDATE')
+    //                 ]);
+
+    //                 // Simpan ID softcopy
+    //                 $softcopyIds[] = $softId;
+    //             }
+    //         }
+
+    //         // -----------------------
+    //         // 2. Insert ke TRIAL_RR
+    //         // -----------------------
+    //         $trialData = [
+    //             'PROJECT_ID' => $req->project_id,
+    //             'PROCESS_ID' => $req->process_id,
+    //             'TRIAL_NO' => $req->trial_no,
+    //             'TRIAL_STAT' => $req->trial_stat,
+    //             'TRIAL_MACHINE' => $req->trial_machine,
+    //             'TRIAL_DATE' => $req->trial_date,
+    //             'ACTUAL' => $req->actual,
+    //             'OK' => $req->ok,
+    //             'PERCT' => $req->perct,
+    //             'TARGET' => $req->target,
+    //             'CT' => $req->ct,
+    //             'CT_TARGET' => $req->ct_target,
+    //             'BERAT' => $req->berat,
+    //             'BERAT_TARGET' => $req->berat_target,
+    //             'PIC' => $req->pic,  // tambahkan PIC
+    //             'SYSDATE1' => DB::raw('SYSDATE')
+    //         ];
+
+    //         // Tambahkan SOFTCOPY_ID jika ada file
+    //         if (!empty($softcopyIds)) {
+    //             $trialData['SOFTCOPY_ID'] = json_encode($softcopyIds);
+    //         }
+
+    //         DB::connection('oracle')->table('PROMAN.TRIAL_RR')->insert($trialData);
+
+    //         // Commit transaction
+    //         DB::connection('oracle')->commit();
+
+    //         return [
+    //             'success' => true,
+    //             'message' => 'Trial berhasil disimpan',
+    //             'files' => $softcopyIds
+    //         ];
+
+    //     } catch (\Exception $e) {
+    //         // Rollback jika error
+    //         DB::connection('oracle')->rollBack();
+
+    //         return [
+    //             'success' => false,
+    //             'message' => $e->getMessage()
+    //         ];
+    //     }
+    // }
+
+    public static function insert_trial($req)
+    {
+        try {
+            DB::connection('oracle')->beginTransaction();
+
+            /*
+            |--------------------------------------------------------------------------
+            | 1. UPLOAD FILE (SOFTCOPY)
+            |--------------------------------------------------------------------------
+            */
+            $softcopyIds = [];
+
+            if ($req->hasFile('picture')) {
+                foreach ($req->file('picture') as $file) {
+
+                    $softId = self::generate_id('softcopy');
+
+                    $originalName = $file->getClientOriginalName();
+                    $cleanClientName = preg_replace('/\s+/', '_', $originalName);
+
+                    $rand = substr(md5(uniqid()), 0, 10);
+                    $uniqueName = $rand . '_' . $cleanClientName;
+
+                    $ext = strtolower($file->getClientOriginalExtension());
+
+                    if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif'])) {
+                        $type = 'image';
+                    } elseif ($ext === 'pdf') {
+                        $type = 'pdf';
+                    } elseif (in_array($ext, ['doc', 'docx'])) {
+                        $type = 'document';
+                    } elseif (in_array($ext, ['xls', 'xlsx'])) {
+                        $type = 'spreadsheet';
+                    } else {
+                        $type = 'other';
+                    }
+
+                    $filePath = 'activity';
+                    $fullPath = $filePath . '/' . $uniqueName;
+
+                    $file->move(public_path($filePath), $uniqueName);
+                    $size = filesize(public_path($fullPath));
+
+                    DB::connection('oracle')->table('PROMAN.SOFTCOPY')->insert([
+                        'ID' => $softId,
+                        'CLIENT_NAME' => $cleanClientName,
+                        'FILE_NAME' => $uniqueName,
+                        'FILE_PATH' => $filePath,
+                        'FULL_PATH' => $fullPath,
+                        'FILE_SIZE' => $size,
+                        'FILE_EXT' => $ext,
+                        'FILE_TYPE' => $type,
+                        'STATUS1' => 1,
+                        'SYSDATE1' => DB::raw('SYSDATE')
+                    ]);
+
+                    $softcopyIds[] = $softId;
+                }
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | 2. INSERT TRIAL_RR
+            |--------------------------------------------------------------------------
+            */
+            DB::connection('oracle')->table('PROMAN.TRIAL_RR')->insert([
+                'PROJECT_ID' => $req->project_id,
+                'PROCESS_ID' => $req->process_id,
+                'STDPROC_ID' => $req->stdproc_id,
+                'TRIAL_NO' => $req->trial_no,
+                'TRIAL_STAT' => $req->trial_stat,
+                'TRIAL_MACHINE' => $req->trial_machine,
+                'TRIAL_DATE' => $req->trial_date,
+                'ACTUAL' => $req->actual,
+                'OK' => $req->ok,
+                'PERCT' => $req->perct,
+                'TARGET' => $req->target,
+                'CT' => $req->ct,
+                'CT_TARGET' => $req->ct_target,
+                'BERAT' => $req->berat,
+                'BERAT_TARGET' => $req->berat_target,
+                'PIC' => $req->pic,
+                'SOFTCOPY_ID' => !empty($softcopyIds) ? json_encode($softcopyIds) : null,
+                'SYSDATE1' => DB::raw('SYSDATE')
+            ]);
+
+            /*
+            |--------------------------------------------------------------------------
+            | 3. AMBIL TRIAL_RR YANG BARU (UNTUK ID)
+            |--------------------------------------------------------------------------
+            */
+            $trial = DB::connection('oracle')
+                ->table('PROMAN.TRIAL_RR')
+                ->where('PROJECT_ID', $req->project_id)
+                ->where('PROCESS_ID', $req->process_id)
+                ->where('TRIAL_NO', $req->trial_no)
+                ->orderByDesc('ID')
+                ->first();
+
+            if (!$trial) {
+                throw new \Exception('TRIAL_RR tidak ditemukan');
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | 4. INSERT TRIAL_RR_DET (INI FIX UTAMA)
+            |--------------------------------------------------------------------------
+            */
+            DB::connection('oracle')->insert("
+            INSERT INTO PROMAN.TRIAL_RR_DET
+            (
+                PROJECT_ID,
+                PROCESS_ID,
+                STDPROC_ID,
+                PIC,
+                TRIAL_NO,
+                DEFECT_ID,
+                TRANS_TYPE,
+                PERCT,
+                STATUS1,
+                SYSDATE1
+            )
+            SELECT
+                :project_id,
+                :process_id,
+                :stdproc_id,
+                :pic,
+                :trial_rr_id,
+                d.ID,
+                d.DEF_MAKING,
+                :perct,
+                1,
+                SYSDATE
+            FROM PROMAN.DEFECT d
+            WHERE d.DEF_TYPE = :process_id
+              AND NVL(d.ISACTIVE,1) = 1
+        ", [
+                'project_id' => $trial->project_id,
+                'process_id' => $trial->process_id,
+                'stdproc_id' => $trial->stdproc_id,
+                'pic' => $trial->pic,
+                'trial_rr_id' => $trial->id,
+                'perct' => $trial->perct
+            ]);
+
+            DB::connection('oracle')->commit();
+
+            return [
+                'success' => true,
+                'message' => 'Trial RR & Trial RR Detail berhasil disimpan',
+                'files' => $softcopyIds
+            ];
+
+        } catch (\Exception $e) {
+            DB::connection('oracle')->rollBack();
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
 
 
 

@@ -51,7 +51,7 @@ class Auth extends Controller
 
         if ($user && isset($user['npk'])) {
             session(['user' => $user]);
-            return redirect('/dashboard')->with('success', 'Login berhasil tanpa password!');
+            return redirect('/project')->with('success', 'Login berhasil tanpa password!');
         } else {
             return back()->withErrors(['npk' => 'NPK tidak terdaftar!']);
         }
@@ -64,16 +64,19 @@ class Auth extends Controller
     }
 
 
-    public function dashboard()
+    public function project()
     {
         if (!session()->has('user')) {
             return redirect('/pm')->withErrors(['Silakan login terlebih dahulu.']);
         }
 
         $data = [
-            'title' => 'Dashboard',
-            'content' => 'pm.dashboard'
+            'title' => 'Project',
+            'content' => 'pm.project'
         ];
         return view('template.wrapper', $data);
     }
 }
+
+
+

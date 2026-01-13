@@ -385,7 +385,7 @@
         <div class="modal-content">
             <form id="addMilestoneForm">
                 @csrf
-                <input type="hidden" name="project_id" value="{{ request()->segment(2) }}">
+                <input type="hidden" name="project_id" value="{{ request()->route('id') }}">
 
                 <div class="modal-header">
                     <h5 class="modal-title" id="addMilestoneModalLabel">Add New Milestone Task</h5>
@@ -438,7 +438,7 @@
                 @csrf
                 <input type="hidden" id="task_id" name="task_id">
                 <input type="hidden" id="field_type" name="field_type">
-                <input type="hidden" name="project_id" value="{{ request()->segment(2) }}">
+                <input type="hidden" name="project_id" value="{{ request()->route('id') }}">
 
                 <div class="modal-header">
                     <h5 class="modal-title" id="editSingleFieldModalLabel">Edit Field</h5>
@@ -473,7 +473,7 @@
 
                 <input type="hidden" name="inputby" value="{{ $inputby }}">
                 <input type="hidden" id="remarks_task_id" name="task_id">
-                <input type="hidden" id="remarks_project_id" name="project_id" value="{{ request()->segment(2) }}">
+                <input type="hidden" id="remarks_project_id" name="project_id" value="{{ request()->route('id') }}">
                 <input type="hidden" id="remarks_activity" name="activity">
 
                 <div class="modal-header">

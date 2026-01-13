@@ -10,7 +10,7 @@ Route::middleware(['web'])->group(function () {
 
     Route::get('/pm', [Auth::class, 'login'])->name('login');
     Route::post('/pm', [Auth::class, 'zzz_login']);
-    Route::get('/dashboard', [Auth::class, 'dashboard'])->name('dashboard');
+    Route::get('/project', [Auth::class, 'project'])->name('project');
     Route::get('/logout', [Auth::class, 'logout'])->name('logout');
 
     Route::get('/', [App::class, 'homepage'])->name('homepage');
@@ -45,9 +45,10 @@ Route::middleware(['web'])->group(function () {
     Route::get('/trial/{id}', [App::class, 'trial'])->name('trial');
     Route::post('/trial/store', [App::class, 'trial_store'])->name('trial.store');
     Route::post('/trial/data', [App::class, 'trial_data'])->name('trial.data');
-    Route::post('/trial/standard', [App::class, 'trial_standard'])
-        ->name('trial.standard');
-
+    Route::post('/trial/standard', [App::class, 'trial_standard'])->name('trial.standard');
+    
+    Route::get('/trailreport', [App::class, 'trailreport'])->name('trailreport');
+    
     Route::get('/task/{id}', [App::class, 'task'])->name('task');
     Route::get('/test-holiday', [App::class, 'testHoliday']);
     Route::post('/zzz_task_add', [App::class, 'zzz_task_add'])->name('zzz_task_add');

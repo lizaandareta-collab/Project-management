@@ -181,7 +181,7 @@
         font-size: 14px;
     }
 
-        /* Kurangi jarak bawah tabel */
+    /* Kurangi jarak bawah tabel */
     #trialTableCard {
         margin-bottom: 10px !important;
     }
@@ -196,7 +196,6 @@
     #chartSection {
         margin-top: 10px !important;
     }
-
 </style>
 
 <div class="nk-content">
@@ -220,8 +219,7 @@
                                 <div class="process-wrapper">
                                     <?php foreach ($process as $p) { ?>
                                     <button type="button" class="btn btn-outline-primary btn-process"
-                                        data-process-id="<?= $p->lov_id ?>" 
-                                        data-process-name="<?= $p->description ?>">
+                                        data-process-id="<?= $p->lov_id ?>" data-process-name="<?= $p->description ?>">
                                         <?= $p->description ?>
                                     </button>
                                     <?php } ?>
@@ -233,7 +231,8 @@
                         <div class="card card-bordered card-preview d-none" id="trialTableCard">
                             <div class="card-inner">
                                 <div class="nk-block-head mb-3">
-                                    <div class="nk-block-head-content d-flex justify-content-between align-items-center">
+                                    <div
+                                        class="nk-block-head-content d-flex justify-content-between align-items-center">
                                         <h6 class="mb-0">%OK RATIO - <span id="selectedProcess"></span></h6>
                                         <button type="button" class="btn btn-primary d-none" id="btnAddTrial">
                                             <em class="icon ni ni-plus"></em> Add Trial
@@ -317,7 +316,7 @@
                         <h5 class="modal-title">Add Trial</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
-                   <div class="modal-body row g-3">
+                    <div class="modal-body row g-3">
                         <!-- Row 1 -->
                         <div class="col-md-3">
                             <label class="form-label">Trial <span class="text-danger">*</span></label>
@@ -335,7 +334,7 @@
                             <label class="form-label">Date <span class="text-danger">*</span></label>
                             <input type="date" name="trial_date" class="form-control" required>
                         </div>
-                        
+
                         <!-- Row 2 -->
                         <div class="col-md-3">
                             <label class="form-label">Process</label>
@@ -354,7 +353,7 @@
                             <label class="form-label">%</label>
                             <input type="number" step="0.01" name="perct" id="perct" class="form-control" readonly>
                         </div>
-                        
+
                         <!-- Row 3 -->
                         <div class="col-md-3">
                             <label class="form-label">CT Target</label>
@@ -372,10 +371,11 @@
                             <label class="form-label">Berat</label>
                             <input type="number" step="0.01" name="berat" class="form-control">
                         </div>
-                        
+
                         <!-- Tambahkan hidden input untuk PIC -->
-                        <input type="hidden" name="pic" id="pic" value="{{ session('user.NAME') ?? session('user.name') ?? 'Guest' }}">
-                        
+                        <input type="hidden" name="pic" id="pic"
+                            value="{{ session('user.NAME') ?? session('user.name') ?? 'Guest' }}">
+
                         <!-- Row 5 - File Upload yang Sederhana -->
                         <div class="col-12">
                             <label class="form-label">Upload Files/Fotos <span class="text-danger">*</span></label>
@@ -403,37 +403,37 @@
 <script src="{{ asset('assets/js/export-data-chart.js') }}"></script>
 <script src="{{ asset('assets/js/accessibility-chart.js') }}"></script>
 <script src="{{ asset('assets/js/adaptive-chart.js') }}"></script>
+
 <script>
     let selectedProcessId = null;
     const projectId = "{{ request()->route('id') }}";
     let trialDataTable = null;
-    
-    document.addEventListener('DOMContentLoaded', function() {
-    const fileInput = document.getElementById('fileInput');
 
-    fileInput.addEventListener('change', function() {
-        // sengaja kosong
-        // upload tetap jalan
+    document.addEventListener('DOMContentLoaded', function () {
+        const fileInput = document.getElementById('fileInput');
+
+        fileInput.addEventListener('change', function () {
+
+        });
     });
-});
 
-    
+
     /* ===============================
        SELECT PROCESS
     ================================ */
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         // Pastikan semua button kembali ke state normal saat halaman dimuat
         document.querySelectorAll('.btn-process').forEach(btn => {
             btn.classList.remove('btn-primary');
         });
-        
+
         // Tambahkan event listener ke semua button process
         document.querySelectorAll('.btn-process').forEach(btn => {
             btn.addEventListener('click', function () {
                 // Reset semua button
                 document.querySelectorAll('.btn-process')
                     .forEach(b => b.classList.remove('btn-primary'));
-                
+
                 // Set active button
                 this.classList.add('btn-primary');
 
@@ -491,26 +491,26 @@
                 process_id: selectedProcessId
             })
         })
-        .then(res => {
-            if (!res.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return res.json();
-        })
-        .then(data => {
-            updateDataTable(data);
-            renderCharts(data);
-        })
-        .catch(err => {
-            console.error('Error loading trial data:', err);
-            tableBody.innerHTML = `
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return res.json();
+            })
+            .then(data => {
+                updateDataTable(data);
+                renderCharts(data);
+            })
+            .catch(err => {
+                console.error('Error loading trial data:', err);
+                tableBody.innerHTML = `
                 <tr>
                     <td colspan="14" class="text-center text-danger py-4">
                         Error loading data. Please try again.
                     </td>
                 </tr>
             `;
-        });
+            });
     }
 
     /* ===============================
@@ -524,7 +524,7 @@
         }
 
         const tableBody = document.querySelector('#trialDataTable tbody');
-        
+
         if (!data || data.length === 0) {
             tableBody.innerHTML = `
                 <tr>
@@ -533,7 +533,7 @@
                     </td>
                 </tr>
             `;
-            
+
             // Inisialisasi DataTable kosong
             initDataTable([]);
             return;
@@ -550,51 +550,52 @@
             const beratTargetVal = parseFloat(row.berat_target) || 0;
 
             // Tentukan class untuk warna
-            const perctClass = !isNaN(perctVal) && !isNaN(targetVal) && perctVal >= targetVal 
-                ? 'text-success-bold' 
+            const perctClass = !isNaN(perctVal) && !isNaN(targetVal) && perctVal >= targetVal
+                ? 'text-success-bold'
                 : 'text-danger-bold';
-            
+
             const ctClass = !isNaN(ctVal) && !isNaN(ctTargetVal) && ctVal < ctTargetVal
                 ? 'text-success-bold'
                 : 'text-danger-bold';
-            
+
             const beratClass = !isNaN(beratVal) && !isNaN(beratTargetVal) && beratVal < beratTargetVal
                 ? 'text-success-bold'
                 : 'text-danger-bold';
-            
-            // Format files info
-            let filesInfo = '-';
-            if (row.softcopy_id) {
-                try {
-                    const files = JSON.parse(row.softcopy_id);
-                    filesInfo = `${files.length} file(s)`;
-                } catch (e) {
-                    filesInfo = row.softcopy_id;
-                }
+
+            let filesHtml = '-';
+
+            if (row.files && row.files.length > 0) {
+                filesHtml = row.files.map(f => `
+                <a href="${f.url}" target="_blank" class="d-block text-primary">
+                     ${f.name}
+                </a>
+            `).join('');
             }
 
             html += `
-                <tr>
-                    <td>${row.trial_no || ''}</td>
-                    <td>${row.trial_stat || ''}</td>
-                    <td>${row.trial_machine || ''}</td>
-                    <td>${row.trial_date ? row.trial_date.split(' ')[0] : ''}</td>
-                    <td>${row.actual || ''}</td>
-                    <td>${row.ok || ''}</td>
-                    <td>${targetVal.toFixed(2)}%</td>
-                    <td class="${perctClass}">${perctVal.toFixed(2)}%</td>
-                    <td>${row.ct_target || ''}</td>
-                    <td class="${ctClass}">${row.ct || ''}</td>
-                    <td>${row.berat_target || ''}</td>
-                    <td class="${beratClass}">${beratVal.toFixed(1)}</td>
-                    <td>${row.pic || ''}</td>
-                    <td>${filesInfo}</td>
-                </tr>
-            `;
+            <tr>
+                <td>${row.trial_no || ''}</td>
+                <td>${row.trial_stat || ''}</td>
+                <td>${row.trial_machine || ''}</td>
+                <td>${row.trial_date ? row.trial_date.split(' ')[0] : ''}</td>
+                <td>${row.actual || ''}</td>
+                <td>${row.ok || ''}</td>
+                <td>${targetVal.toFixed(2)}%</td>
+                <td class="${perctClass}">${perctVal.toFixed(2)}%</td>
+                <td>${row.ct_target || ''}</td>
+                <td class="${ctClass}">${row.ct || ''}</td>
+                <td>${row.berat_target || ''}</td>
+                <td class="${beratClass}">${beratVal.toFixed(1)}</td>
+                <td>${row.pic || ''}</td>
+                <td>${filesHtml}</td>
+                
+            </tr>
+        `;
+
         });
 
         tableBody.innerHTML = html;
-        
+
         // Inisialisasi DataTable dengan data
         initDataTable(data);
     }
@@ -609,24 +610,24 @@
                 { data: 'trial_no' },
                 { data: 'trial_stat' },
                 { data: 'trial_machine' },
-                { 
+                {
                     data: 'trial_date',
-                    render: function(data) {
+                    render: function (data) {
                         return data ? data.split(' ')[0] : '';
                     }
                 },
                 { data: 'actual' },
                 { data: 'ok' },
-                { 
+                {
                     data: 'target',
-                    render: function(data) {
+                    render: function (data) {
                         const val = parseFloat(data) || 0;
                         return val.toFixed(2) + '%';
                     }
                 },
-                { 
+                {
                     data: 'perct',
-                    render: function(data, type, row) {
+                    render: function (data, type, row) {
                         const perctVal = parseFloat(data) || 0;
                         const targetVal = parseFloat(row.target) || 0;
                         const className = perctVal >= targetVal ? 'text-success-bold' : 'text-danger-bold';
@@ -634,9 +635,9 @@
                     }
                 },
                 { data: 'ct_target' },
-                { 
+                {
                     data: 'ct',
-                    render: function(data, type, row) {
+                    render: function (data, type, row) {
                         const ctVal = parseFloat(data) || 0;
                         const ctTargetVal = parseFloat(row.ct_target) || 0;
                         const className = ctVal < ctTargetVal ? 'text-success-bold' : 'text-danger-bold';
@@ -644,9 +645,9 @@
                     }
                 },
                 { data: 'berat_target' },
-                { 
+                {
                     data: 'berat',
-                    render: function(data, type, row) {
+                    render: function (data, type, row) {
                         const beratVal = parseFloat(data) || 0;
                         const beratTargetVal = parseFloat(row.berat_target) || 0;
                         const className = beratVal < beratTargetVal ? 'text-success-bold' : 'text-danger-bold';
@@ -654,18 +655,21 @@
                     }
                 },
                 { data: 'pic' },
-                { 
-                    data: 'softcopy_id',
-                    render: function(data) {
-                        if (!data) return '-';
-                        try {
-                            const files = JSON.parse(data);
-                            return `${files.length} file(s)`;
-                        } catch (e) {
-                            return data;
-                        }
+                {
+                    data: 'files',
+                    orderable: false,
+                    searchable: false,
+                    render: function (data) {
+                        if (!data || data.length === 0) return '-';
+
+                        return data.map(f => `
+                        <a href="${f.url}" target="_blank" class="d-block text-primary">
+                            ${f.name}
+                        </a>
+                    `).join('');
                     }
                 }
+
             ],
             pageLength: 10,
             lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
@@ -724,7 +728,7 @@
                     previous: "Prev"
                 }
             },
-            initComplete: function() {
+            initComplete: function () {
                 // Custom layout styling
                 $('.dt-header-row').css({
                     'display': 'flex',
@@ -733,13 +737,13 @@
                     'margin-bottom': '10px',
                     'flex-wrap': 'wrap'
                 });
-                
+
                 $('.dt-search-col').css({
                     'flex': '1',
                     'min-width': '200px',
                     'text-align': 'left'
                 });
-                
+
                 $('.dt-buttons-col').css({
                     'flex': '2',
                     'min-width': '300px',
@@ -748,13 +752,13 @@
                     'justify-content': 'center',
                     'gap': '5px'
                 });
-                
+
                 $('.dt-length-col').css({
                     'flex': '1',
                     'min-width': '200px',
                     'text-align': 'right'
                 });
-                
+
                 $('.dt-footer-row').css({
                     'display': 'flex',
                     'justify-content': 'space-between',
@@ -762,14 +766,14 @@
                     'margin-top': '10px'
                 });
             },
-            drawCallback: function() {
+            drawCallback: function () {
                 // Pastikan footer layout tetap
                 $('.dataTables_info').css({
                     'text-align': 'left',
                     'float': 'left',
                     'padding-top': '0.5em'
                 });
-                
+
                 $('.dataTables_paginate').css({
                     'text-align': 'right',
                     'float': 'right'
@@ -795,7 +799,7 @@
         });
 
         const trialNos = sortedData.map(item => item.trial_no || '');
-        
+
         // Grafik 1: %OK RATIO
         const perctData = sortedData.map(item => parseFloat(item.perct) || 0);
         const targetData = sortedData.map(item => parseFloat(item.target) || 0);
@@ -995,14 +999,14 @@
                 process_id: selectedProcessId
             })
         })
-        .then(res => res.json())
-        .then(data => {
-            document.getElementById('target_view').value = formatModalTarget(data.target);
-            document.getElementById('target_real').value = parseFloat(data.target).toFixed(2);
-            document.querySelector('input[name="ct_target"]').value = data.ct_target || '';
-            document.querySelector('input[name="berat_target"]').value = data.berat_target || '';
-        })
-        .catch(err => console.error('Error loading standard target:', err));
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('target_view').value = formatModalTarget(data.target);
+                document.getElementById('target_real').value = parseFloat(data.target).toFixed(2);
+                document.querySelector('input[name="ct_target"]').value = data.ct_target || '';
+                document.querySelector('input[name="berat_target"]').value = data.berat_target || '';
+            })
+            .catch(err => console.error('Error loading standard target:', err));
     }
 
     /* ===============================
@@ -1017,18 +1021,18 @@
             });
             return;
         }
-        
+
         // Reset form dan files
         document.getElementById('formAddTrial').reset();
         document.getElementById('fileList').innerHTML = '';
         document.getElementById('fileInput').value = '';
-        
+
         // Set PIC dari session (jika ada input hidden)
         const picInput = document.getElementById('pic');
         if (picInput) {
             picInput.value = "{{ session('user.NAME') ?? session('user.name') ?? 'Guest' }}";
         }
-        
+
         loadStandardTarget();
         new bootstrap.Modal(document.getElementById('modalAddTrial')).show();
     });
@@ -1038,15 +1042,15 @@
     ================================ */
     document.getElementById('formAddTrial').addEventListener('submit', function (e) {
         e.preventDefault();
-        
+
         // Disable submit button
         const submitBtn = document.getElementById('btnSubmit');
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...';
-        
+
         // Buat FormData
         const formData = new FormData(this);
-        
+
         fetch("{{ route('trial.store') }}", {
             method: "POST",
             body: formData,
@@ -1055,51 +1059,51 @@
                 'Accept': 'application/json'
             }
         })
-        .then(async res => {
-            const contentType = res.headers.get("content-type");
-            
-            // Cek jika response adalah HTML (error)
-            if (contentType && contentType.indexOf("text/html") !== -1) {
-                const htmlText = await res.text();
-                throw new Error('Server returned HTML instead of JSON');
-            }
-            
-            return res.json();
-        })
-        .then(res => {
-            if (res.status) {
-                // Success
-                loadTrialData();
-                bootstrap.Modal.getInstance(document.getElementById('modalAddTrial')).hide();
-                this.reset();
-                document.getElementById('fileList').innerHTML = '';
-                
-                // Show success message menggunakan SweetAlert2
+            .then(async res => {
+                const contentType = res.headers.get("content-type");
+
+                // Cek jika response adalah HTML (error)
+                if (contentType && contentType.indexOf("text/html") !== -1) {
+                    const htmlText = await res.text();
+                    throw new Error('Server returned HTML instead of JSON');
+                }
+
+                return res.json();
+            })
+            .then(res => {
+                if (res.status) {
+                    // Success
+                    loadTrialData();
+                    bootstrap.Modal.getInstance(document.getElementById('modalAddTrial')).hide();
+                    this.reset();
+                    document.getElementById('fileList').innerHTML = '';
+
+                    // Show success message menggunakan SweetAlert2
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: 'Trial data saved successfully!',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                } else {
+                    // Server returned error
+                    throw new Error(res.message || 'Failed to save trial');
+                }
+            })
+            .catch(err => {
+                console.error('Error adding trial:', err);
                 Swal.fire({
-                    icon: 'success',
-                    title: 'Success',
-                    text: 'Trial data saved successfully!',
-                    timer: 1500,
-                    showConfirmButton: false
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error: ' + err.message
                 });
-            } else {
-                // Server returned error
-                throw new Error(res.message || 'Failed to save trial');
-            }
-        })
-        .catch(err => {
-            console.error('Error adding trial:', err);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Error: ' + err.message
+            })
+            .finally(() => {
+                // Re-enable submit button
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Save';
             });
-        })
-        .finally(() => {
-            // Re-enable submit button
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = 'Save';
-        });
     });
 
     /* ===============================

@@ -1587,15 +1587,59 @@ class App extends Controller
         return view('template.wrapper', $data);
     }
 
-    public function trial_data(Request $request)
-    {
-        $project_id = $request->project_id;
-        $process_id = $request->process_id;
+public function trial_data(Request $request)
+{
+    $project_id = $request->project_id;
+    $process_id = $request->process_id;
 
-        $data = Maio::get_trial_rr($project_id, $process_id);
+    $trials = Maio::get_trial_rr($project_id, $process_id);
 
-        return response()->json($data);
+    // Kumpulkan semua softcopy_id
+    $allSoftIds = [];
+
+    foreach ($trials as $row) {
+        if (!empty($row->softcopy_id)) {
+            $ids = json_decode($row->softcopy_id, true);
+            if (is_array($ids)) {
+                $allSoftIds = array_merge($allSoftIds, $ids);
+            }
+        }
     }
+
+    $allSoftIds = array_unique($allSoftIds);
+
+    // Ambil data softcopy
+    $softcopies = $allSoftIds
+        ? Maio::get_softcopy_by_ids($allSoftIds)
+        : collect();
+
+    // Inject softcopy ke tiap trial
+    foreach ($trials as $row) {
+        $row->files = [];
+
+        if (!empty($row->softcopy_id)) {
+            $ids = json_decode($row->softcopy_id, true);
+
+            if (is_array($ids)) {
+                foreach ($ids as $id) {
+                    if (isset($softcopies[$id])) {
+                        $sc = $softcopies[$id];
+
+                        $row->files[] = [
+                            'name' => $sc->client_name,
+                            'url'  => url($sc->full_path)
+                        ];
+                    }
+                }
+            }
+        }
+    }
+
+    return response()->json($trials);
+}
+
+
+    
 
     public function trial_store(Request $req)
     {
@@ -1675,8 +1719,14 @@ class App extends Controller
         return response()->json($result);
     }
 
-
-
+    public function trailreport()
+    {
+        $data = [
+            'title' => 'Trail Report',
+            'content' => 'pm.trailreport'
+        ];
+        return view('template.wrapper', $data);
+    }
 
     public function problem()
     {
@@ -1688,20 +1738,3 @@ class App extends Controller
     }
 
 }
-
-// public function zzz_updateStatus(Request $request)
-// {
-//     $update = Mapp::updateStatus($request);
-
-//     if ($update['success']) {
-//         return response()->json([
-//             'success' => true,
-//             'message' => 'Status berhasil diperbarui!'
-//         ]);
-//     } else {
-//         return response()->json([
-//             'success' => false,
-//             'message' => $update['message']
-//         ]);
-//     }
-// }

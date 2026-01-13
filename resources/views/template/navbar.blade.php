@@ -1,7 +1,7 @@
 <div class="nk-sidebar" data-content="sidebarMenu">
     <div class="nk-sidebar-bar">
         <div class="nk-apps-brand">
-            <a href="{{ route('dashboard') }}" class="logo-link">
+            <a href="{{ route('project') }}" class="logo-link">
                 <img class="logo-light logo-img" src="{{ asset('images/pakoakuina.jpeg') }}"
                     srcset="{{ asset('images/pakoakuina.jpeg') }} 2x" alt="logo">
                 <img class="logo-dark logo-img" src="{{ asset('images/pakoakuina.jpeg') }}"
@@ -40,12 +40,7 @@
             <div class="nk-menu-content menu-active" data-content="navHospital">
                 <h5 class="title">Project Management 4W</h5>
                 <ul class="nk-menu">
-                    <li class="nk-menu-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                        <a href="{{ route('dashboard') }}" class="nk-menu-link">
-                            <span class="nk-menu-icon"><em class="icon ni ni-dashboard-fill"></em></span>
-                            <span class="nk-menu-text">dashboard</span>
-                        </a>
-                    </li>
+                    
                     <!-- <li class="nk-menu-item {{ request()->routeIs('project') ? 'active' : '' }}">
                         <a href="{{ route('project') }}" class="nk-menu-link">
                             <span class="nk-menu-icon">

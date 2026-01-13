@@ -1300,7 +1300,7 @@
                 <!-- TRIAL CHART SECTION -->
                 <div class="gantt-section" style="margin-top: 20px;">
                     <div class="gantt-header">
-                        <h3 class="gantt-title">Trial Performance Analysis</h3>
+                        <h3 class="gantt-title">Trial Record</h3>
                     </div>
 
                     <!-- Select Process untuk Trial Charts -->
