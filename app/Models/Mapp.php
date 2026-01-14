@@ -627,41 +627,50 @@ class Mapp
             |--------------------------------------------------------------------------
             */
             DB::connection('oracle')->insert("
-            INSERT INTO PROMAN.TRIAL_RR_DET
-            (
-                PROJECT_ID,
-                PROCESS_ID,
-                STDPROC_ID,
-                PIC,
-                TRIAL_NO,
-                DEFECT_ID,
-                TRANS_TYPE,
-                PERCT,
-                STATUS1,
-                SYSDATE1
-            )
-            SELECT
-                :project_id,
-                :process_id,
-                :stdproc_id,
-                :pic,
-                :trial_rr_id,
-                d.ID,
-                d.DEF_MAKING,
-                :perct,
-                1,
-                SYSDATE
-            FROM PROMAN.DEFECT d
-            WHERE d.DEF_TYPE = :process_id
-              AND NVL(d.ISACTIVE,1) = 1
-        ", [
+                INSERT INTO PROMAN.TRIAL_RR_DET
+                (
+                    PROJECT_ID,
+                    PROCESS_ID,
+                    STDPROC_ID,
+                    PIC,
+                    TRIAL_NO,
+                    DEFECT_ID,
+                    TRANS_TYPE,
+                    \"ORDER\",
+                    PERCT,
+                    OK,
+                    ACTUAL,
+                    STATUS1,
+                    SYSDATE1
+                )
+                SELECT
+                    :project_id,
+                    :process_id,
+                    :stdproc_id,
+                    :pic,
+                    :trial_rr_id,
+                    d.ID,
+                    d.DEF_MAKING,
+                    d.\"ORDER\",
+                    :perct,
+                    :ok,
+                    :actual,
+                    1,
+                    SYSDATE
+                FROM PROMAN.DEFECT d
+                WHERE d.DEF_TYPE = :process_id
+                AND NVL(d.ISACTIVE,1) = 1
+            ", [
                 'project_id' => $trial->project_id,
                 'process_id' => $trial->process_id,
                 'stdproc_id' => $trial->stdproc_id,
                 'pic' => $trial->pic,
                 'trial_rr_id' => $trial->id,
-                'perct' => $trial->perct
+                'perct' => $trial->perct,
+                'ok' => $trial->ok,
+                'actual' => $trial->actual,
             ]);
+
 
             DB::connection('oracle')->commit();
 
@@ -680,8 +689,9 @@ class Mapp
         }
     }
 
-
-
+    public static function insert_quant(){
+        
+    }
 
 
 

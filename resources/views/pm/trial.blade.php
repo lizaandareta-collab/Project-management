@@ -259,6 +259,7 @@
                                                 <th>Berat</th>
                                                 <th>PIC</th>
                                                 <th>Files</th>
+                                                <th>#</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -573,24 +574,61 @@
             }
 
             html += `
-            <tr>
-                <td>${row.trial_no || ''}</td>
-                <td>${row.trial_stat || ''}</td>
-                <td>${row.trial_machine || ''}</td>
-                <td>${row.trial_date ? row.trial_date.split(' ')[0] : ''}</td>
-                <td>${row.actual || ''}</td>
-                <td>${row.ok || ''}</td>
-                <td>${targetVal.toFixed(2)}%</td>
-                <td class="${perctClass}">${perctVal.toFixed(2)}%</td>
-                <td>${row.ct_target || ''}</td>
-                <td class="${ctClass}">${row.ct || ''}</td>
-                <td>${row.berat_target || ''}</td>
-                <td class="${beratClass}">${beratVal.toFixed(1)}</td>
-                <td>${row.pic || ''}</td>
-                <td>${filesHtml}</td>
-                
-            </tr>
-        `;
+<tr>
+    <td>${row.trial_no || ''}</td>
+    <td>${row.trial_stat || ''}</td>
+    <td>${row.trial_machine || ''}</td>
+    <td>${row.trial_date ? row.trial_date.split(' ')[0] : ''}</td>
+    <td>${row.actual || ''}</td>
+    <td>${row.ok || ''}</td>
+    <td>${targetVal.toFixed(2)}%</td>
+    <td class="${perctClass}">${perctVal.toFixed(2)}%</td>
+    <td>${row.ct_target || ''}</td>
+    <td class="${ctClass}">${row.ct || ''}</td>
+    <td>${row.berat_target || ''}</td>
+    <td class="${beratClass}">${beratVal.toFixed(1)}</td>
+    <td>${row.pic || ''}</td>
+    <td>${filesHtml}</td>
+
+    <!-- ACTION DROPDOWN -->
+    <td class="text-center">
+        <div class="dropdown">
+            <a href="javascript:void(0)" class="btn btn-sm btn-icon btn-trigger" data-bs-toggle="dropdown">
+                <em class="icon ni ni-more-h"></em>
+            </a>
+            <div class="dropdown-menu dropdown-menu-end">
+                <ul class="link-list-opt no-bdr">
+                    <li>
+                        <a href="javascript:void(0)">
+                            <em class="icon ni ni-eye"></em>
+                            <span>View Details</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="javascript:void(0)">
+                            <em class="icon ni ni-edit"></em>
+                            <span>Edit Record</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="javascript:void(0)">
+                            <em class="icon ni ni-download"></em>
+                            <span>Download Certificate</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="javascript:void(0)">
+                            <em class="icon ni ni-printer"></em>
+                            <span>Print Report</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </td>
+</tr>
+`;
+
 
         });
 
@@ -663,12 +701,46 @@
                         if (!data || data.length === 0) return '-';
 
                         return data.map(f => `
-                        <a href="${f.url}" target="_blank" class="d-block text-primary">
-                            ${f.name}
-                        </a>
-                    `).join('');
+            <a href="${f.url}" target="_blank" class="d-block text-primary">
+                ${f.name}
+            </a>
+        `).join('');
                     }
-                }
+                },
+
+                {
+    data: null,
+    orderable: false,
+    searchable: false,
+    className: 'text-center',
+    render: function (data, type, row) {
+
+        const projectId = "{{ request()->route('id') }}";
+        const processId = row.process_id ?? selectedProcessId;
+
+        const reportUrl = `/trial_report/${projectId}/${processId}`;
+
+        return `
+        <div class="dropdown">
+            <a href="javascript:void(0)" class="btn btn-sm btn-icon btn-trigger" data-bs-toggle="dropdown">
+                <em class="icon ni ni-more-h"></em>
+            </a>
+            <div class="dropdown-menu dropdown-menu-end">
+                <ul class="link-list-opt no-bdr">
+                    <li>
+                        <a href="${reportUrl}">
+                            <em class="icon ni ni-eye"></em>
+                            <span>View Report</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        `;
+    }
+}
+
+
 
             ],
             pageLength: 10,
@@ -1130,3 +1202,4 @@
         okInput.addEventListener('input', calculatePercent);
     }
 </script>
+perbaikan view di trial nya gimana?

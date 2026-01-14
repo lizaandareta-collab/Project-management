@@ -139,8 +139,6 @@ class Maio
             ->get();
     }
 
-
-
     public static function get_trial_rr($project_id, $process_id)
     {
         try {
@@ -155,16 +153,37 @@ class Maio
         }
     }
 
+    public static function get_trial_rr_det_report($project_id, $process_id, $trial_no)
+    {
+        return self::db()
+            ->table('PROMAN.TRIAL_RR_DET as D')
+            ->leftJoin('PROMAN.DEFECT as DF', 'DF.ID', '=', 'D.DEFECT_ID')
+            ->select(
+                'D.PROJECT_ID',
+                'D.PROCESS_ID',
+                'D.TRANS_TYPE',
+                'D.OK',
+                'D.NG',
+                'D.PERCT',
+                'DF.DEFECT as DEFECT_NAME'
+            )
+ ->where('D.PROJECT_ID', $project_id)
+->where('D.PROCESS_ID', $process_id)
+->where('D.TRIAL_NO', $trial_no)
+
+            ->get();
+    }
+
+
+
     public static function get_softcopy_by_ids(array $ids)
-{
-    return self::db()
-        ->table('PROMAN.SOFTCOPY')
-        ->whereIn('ID', $ids)
-        ->get()
-        ->keyBy('id'); // key = ID
-}
-
-
+    {
+        return self::db()
+            ->table('PROMAN.SOFTCOPY')
+            ->whereIn('ID', $ids)
+            ->get()
+            ->keyBy('id');
+    }
 
     public static function get_client()
     {

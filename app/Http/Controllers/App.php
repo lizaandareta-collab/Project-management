@@ -1587,59 +1587,59 @@ class App extends Controller
         return view('template.wrapper', $data);
     }
 
-public function trial_data(Request $request)
-{
-    $project_id = $request->project_id;
-    $process_id = $request->process_id;
+    public function trial_data(Request $request)
+    {
+        $project_id = $request->project_id;
+        $process_id = $request->process_id;
 
-    $trials = Maio::get_trial_rr($project_id, $process_id);
+        $trials = Maio::get_trial_rr($project_id, $process_id);
 
-    // Kumpulkan semua softcopy_id
-    $allSoftIds = [];
+        // Kumpulkan semua softcopy_id
+        $allSoftIds = [];
 
-    foreach ($trials as $row) {
-        if (!empty($row->softcopy_id)) {
-            $ids = json_decode($row->softcopy_id, true);
-            if (is_array($ids)) {
-                $allSoftIds = array_merge($allSoftIds, $ids);
+        foreach ($trials as $row) {
+            if (!empty($row->softcopy_id)) {
+                $ids = json_decode($row->softcopy_id, true);
+                if (is_array($ids)) {
+                    $allSoftIds = array_merge($allSoftIds, $ids);
+                }
             }
         }
-    }
 
-    $allSoftIds = array_unique($allSoftIds);
+        $allSoftIds = array_unique($allSoftIds);
 
-    // Ambil data softcopy
-    $softcopies = $allSoftIds
-        ? Maio::get_softcopy_by_ids($allSoftIds)
-        : collect();
+        // Ambil data softcopy
+        $softcopies = $allSoftIds
+            ? Maio::get_softcopy_by_ids($allSoftIds)
+            : collect();
 
-    // Inject softcopy ke tiap trial
-    foreach ($trials as $row) {
-        $row->files = [];
+        // Inject softcopy ke tiap trial
+        foreach ($trials as $row) {
+            $row->files = [];
 
-        if (!empty($row->softcopy_id)) {
-            $ids = json_decode($row->softcopy_id, true);
+            if (!empty($row->softcopy_id)) {
+                $ids = json_decode($row->softcopy_id, true);
 
-            if (is_array($ids)) {
-                foreach ($ids as $id) {
-                    if (isset($softcopies[$id])) {
-                        $sc = $softcopies[$id];
+                if (is_array($ids)) {
+                    foreach ($ids as $id) {
+                        if (isset($softcopies[$id])) {
+                            $sc = $softcopies[$id];
 
-                        $row->files[] = [
-                            'name' => $sc->client_name,
-                            'url'  => url($sc->full_path)
-                        ];
+                            $row->files[] = [
+                                'name' => $sc->client_name,
+                                'url' => url($sc->full_path)
+                            ];
+                        }
                     }
                 }
             }
         }
+
+        return response()->json($trials);
     }
 
-    return response()->json($trials);
-}
 
 
-    
 
     public function trial_store(Request $req)
     {
@@ -1719,14 +1719,49 @@ public function trial_data(Request $request)
         return response()->json($result);
     }
 
-    public function trailreport()
-    {
-        $data = [
-            'title' => 'Trail Report',
-            'content' => 'pm.trailreport'
-        ];
-        return view('template.wrapper', $data);
+public function trailreport($project, $process, $trial)
+{
+    $rows = Maio::get_trial_rr_det_report($project, $process, $trial);
+
+    $report = [
+        'category' => '',
+        'ok' => null,
+        'ok_percent' => null,
+        'defects' => []
+    ];
+
+    foreach ($rows as $row) {
+
+        if ($row->trans_type && empty($report['category'])) {
+            $report['category'] = $row->trans_type;
+        }
+
+        if (!is_null($row->ok)) {
+            $report['ok'] = $row->ok;
+            $report['ok_percent'] = $row->perct;
+        }
+
+        if (!empty($row->defect_name)) {
+            $report['defects'][$row->defect_name] = $row->ng;
+        }
     }
+
+    return view('template.wrapper', [
+        'title'      => 'Trail Report',
+        'content'    => 'pm.trailreport',
+        'project_id' => $project,
+        'process_id' => $process,
+        'trial'      => $trial,
+        'report'     => $report
+    ]);
+}
+
+
+
+
+
+
+
 
     public function problem()
     {
