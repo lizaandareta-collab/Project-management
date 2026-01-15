@@ -223,6 +223,7 @@
                                         <?= $p->description ?>
                                     </button>
                                     <?php } ?>
+
                                 </div>
                             </div>
                         </div>
@@ -269,6 +270,8 @@
                                 </div>
                             </div>
                         </div>
+
+                        
 
                         <!-- Grafik Section -->
                         <div class="row g-4 mb-4 d-none" id="chartSection">
@@ -321,7 +324,7 @@
                         <!-- Row 1 -->
                         <div class="col-md-3">
                             <label class="form-label">Trial <span class="text-danger">*</span></label>
-                            <input type="text" name="trial_no" class="form-control" required>
+                            <input type="text" name="trial_no" id="trial_no" class="form-control" readonly>
                         </div>
                         <div class="col-md-3">
                             <label class="form-label">Casting (Status Trial) <span class="text-danger">*</span></label>
@@ -708,19 +711,20 @@
                     }
                 },
 
+                // ✅ TAMBAHKAN SETELAH INI
                 {
-    data: null,
-    orderable: false,
-    searchable: false,
-    className: 'text-center',
-    render: function (data, type, row) {
+                    data: null,
+                    orderable: false,
+                    searchable: false,
+                    className: 'text-center',
+                    render: function (data, type, row) {
+                        const projectId = "{{ request()->route('id') }}";
+                        const processId = selectedProcessId;
+                        const trialId = row.id; // pastikan API kirim "id"
 
-        const projectId = "{{ request()->route('id') }}";
-        const processId = row.process_id ?? selectedProcessId;
+                        const url = `/trailreport/${projectId}/${processId}/${trialId}`;
 
-        const reportUrl = `/trial_report/${projectId}/${processId}`;
-
-        return `
+                        return `
         <div class="dropdown">
             <a href="javascript:void(0)" class="btn btn-sm btn-icon btn-trigger" data-bs-toggle="dropdown">
                 <em class="icon ni ni-more-h"></em>
@@ -728,7 +732,7 @@
             <div class="dropdown-menu dropdown-menu-end">
                 <ul class="link-list-opt no-bdr">
                     <li>
-                        <a href="${reportUrl}">
+                        <a href="${url}">
                             <em class="icon ni ni-eye"></em>
                             <span>View Report</span>
                         </a>
@@ -736,10 +740,10 @@
                 </ul>
             </div>
         </div>
-        `;
-    }
-}
+    `;
+                    }
 
+                }
 
 
             ],
@@ -1081,6 +1085,29 @@
             .catch(err => console.error('Error loading standard target:', err));
     }
 
+    function loadNextTrialNo() {
+    fetch("{{ route('trial.next_no') }}", {
+        method: "POST",
+        headers: {
+            "X-CSRF-TOKEN": "{{ csrf_token() }}",
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            project_id: projectId,
+            process_id: selectedProcessId
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById('trial_no').value = data.trial_no;
+    })
+    .catch(err => {
+        console.error('Error loading next trial no:', err);
+        document.getElementById('trial_no').value = '';
+    });
+}
+
+
     /* ===============================
        ADD TRIAL BUTTON
     ================================ */
@@ -1106,6 +1133,7 @@
         }
 
         loadStandardTarget();
+        loadNextTrialNo();
         new bootstrap.Modal(document.getElementById('modalAddTrial')).show();
     });
 
@@ -1202,4 +1230,3 @@
         okInput.addEventListener('input', calculatePercent);
     }
 </script>
-perbaikan view di trial nya gimana?

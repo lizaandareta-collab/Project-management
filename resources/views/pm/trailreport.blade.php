@@ -11,12 +11,8 @@
                         <div class="nk-block-head">
                             <div class="nk-block-head-content">
                                 <h4 class="nk-block-title mb-0">
-    Trial Report
-    - {{ $project_name ?? 'Project' }}
-    - {{ $process_name ?? 'Process' }}
-    - Trial {{ $trial }}
-</h4>
-
+                                    Trial Record &amp; Report
+                                </h4>
                             </div>
                         </div>
 
@@ -26,8 +22,10 @@
 
                                 <!-- SEARCH -->
                                 <div class="d-flex justify-content-between mb-3">
-                                    <input type="text" id="reportFreshSearch" class="form-control form-control-sm w-25"
-                                        placeholder="Search...">
+                                    <input type="text"
+                                           id="reportFreshSearch"
+                                           class="form-control form-control-sm w-25"
+                                           placeholder="Search...">
                                 </div>
 
                                 <!-- TABLE -->
@@ -43,65 +41,60 @@
                                         </thead>
                                         <tbody>
 
-                                           @php
-                                                $totalQty = 0;
-                                                $totalPercent = 0;
-                                            @endphp
-
-
                                             <!-- CASTING -->
                                             <tr data-category="casting" class="category-row fw-bold">
-                                                <td rowspan="8" class="fw-bold text-center align-middle">
-                                                    {{ $report['category'] ?? 'Casting' }}
+                                                <td rowspan="8"
+                                                    class="fw-bold text-center align-middle">
+                                                    Casting
                                                 </td>
                                                 <td>OK</td>
-                                                <td class="text-end fw-bold">
-                                                    {{ $report['ok'] ?? '' }}
-                                                </td>
-                                                <td class="text-end text-danger fw-bold">
-                                                    {{ isset($report['ok_percent']) ? number_format($report['ok_percent'], 2, ',', '.') . '%' : '' }}
-                                                </td>
-
+                                                <td class="text-end fw-bold">78</td>
+                                                <td class="text-end text-danger fw-bold">78,00%</td>
                                             </tr>
 
-                                            @php
-                                                $totalQty += $report['ok'] ?? 0;
-                                                $totalPercent += $report['ok_percent'] ?? 0;
-                                            @endphp
+                                            <tr data-category="casting">
+                                                <td>Trial Shot</td>
+                                                <td class="text-end">22</td>
+                                                <td class="text-end">22,00%</td>
+                                            </tr>
 
+                                            <tr data-category="casting">
+                                                <td>Kassa</td>
+                                                <td class="text-end">0</td>
+                                                <td class="text-end">0,00%</td>
+                                            </tr>
 
-                                            @foreach ($report['defects'] as $label => $qty)
-                                                <tr data-category="casting">
-                                                    <td>{{ $label }}</td>
-                                                    <td class="text-end">
-                                                        {{ $qty ?? '' }}
-                                                    </td>
-                                                    <td class="text-end">
-                                                        {{ isset($qty) ? number_format($qty, 2, ',', '.') . '%' : '' }}
-                                                    </td>
+                                            <tr data-category="casting">
+                                                <td>X-ray</td>
+                                                <td class="text-end">0</td>
+                                                <td class="text-end">0,00%</td>
+                                            </tr>
 
-                                                </tr>
+                                            <tr data-category="casting">
+                                                <td>Tsukentsu</td>
+                                                <td class="text-end">0</td>
+                                                <td class="text-end">0,00%</td>
+                                            </tr>
 
-                                                @php
-                                                    $totalQty += $qty ?? 0;
-                                                    $totalPercent += $qty ?? 0;
-                                                @endphp
+                                            <tr data-category="casting">
+                                                <td>Hubutsu</td>
+                                                <td class="text-end">0</td>
+                                                <td class="text-end">0,00%</td>
+                                            </tr>
 
-                                            @endforeach
+                                            <tr data-category="casting">
+                                                <td>Others</td>
+                                                <td class="text-end">0</td>
+                                                <td class="text-end">0,00%</td>
+                                            </tr>
 
                                             <tr data-category="casting" class="fw-bold">
                                                 <td>Jumlah</td>
-                                                <td class="text-end">
-                                                    {{ $totalQty }}
-                                                </td>
-                                                <td class="text-end">
-                                                    {{ number_format($totalPercent, 2, ',', '.') }}%
-                                                </td>
-
+                                                <td class="text-end">100</td>
+                                                <td class="text-end">100,00%</td>
                                             </tr>
 
                                         </tbody>
-
                                     </table>
                                 </div>
 
@@ -119,42 +112,42 @@
 </div>
 
 <script>
-    document.getElementById('reportFreshSearch').addEventListener('keyup', function () {
-        const keyword = this.value.toLowerCase();
-        const rows = document.querySelectorAll('#reportFreshTable tbody tr');
+document.getElementById('reportFreshSearch').addEventListener('keyup', function () {
+    const keyword = this.value.toLowerCase();
+    const rows = document.querySelectorAll('#reportFreshTable tbody tr');
 
-        let categoryHasMatch = {};
+    let categoryHasMatch = {};
 
-        // reset
-        rows.forEach(row => row.style.display = 'none');
+    // reset
+    rows.forEach(row => row.style.display = 'none');
 
-        // filter rows
-        rows.forEach(row => {
-            const category = row.dataset.category;
-            const cells = row.querySelectorAll('td');
+    // filter rows
+    rows.forEach(row => {
+        const category = row.dataset.category;
+        const cells = row.querySelectorAll('td');
 
-            if (cells.length < 3) return;
+        if (cells.length < 3) return;
 
-            const searchableText = (
-                cells[cells.length - 3].innerText + ' ' +
-                cells[cells.length - 2].innerText + ' ' +
-                cells[cells.length - 1].innerText
-            ).toLowerCase();
+        const searchableText = (
+            cells[cells.length - 3].innerText + ' ' +
+            cells[cells.length - 2].innerText + ' ' +
+            cells[cells.length - 1].innerText
+        ).toLowerCase();
 
-            if (searchableText.includes(keyword) || keyword === '') {
-                row.style.display = '';
-                categoryHasMatch[category] = true;
-            }
-        });
-
-        // show category header if any child visible
-        rows.forEach(row => {
-            if (row.classList.contains('category-row')) {
-                const category = row.dataset.category;
-                if (categoryHasMatch[category]) {
-                    row.style.display = '';
-                }
-            }
-        });
+        if (searchableText.includes(keyword) || keyword === '') {
+            row.style.display = '';
+            categoryHasMatch[category] = true;
+        }
     });
+
+    // show category header if any child visible
+    rows.forEach(row => {
+        if (row.classList.contains('category-row')) {
+            const category = row.dataset.category;
+            if (categoryHasMatch[category]) {
+                row.style.display = '';
+            }
+        }
+    });
+});
 </script>

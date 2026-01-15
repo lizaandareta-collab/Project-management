@@ -120,14 +120,14 @@ class Maio
         }
     }
 
-    public static function get_standard()
-    {
-        try {
-            return self::db()->table('PROMAN.STANDARD')->get();
-        } catch (\Exception $e) {
-            return [];
-        }
-    }
+    // public static function get_standard()
+    // {
+    //     try {
+    //         return self::db()->table('PROMAN.STANDARD')->get();
+    //     } catch (\Exception $e) {
+    //         return [];
+    //     }
+    // }
 
     public static function get_standard_by_project_process($project_id, $process_id)
     {
@@ -138,6 +138,18 @@ class Maio
             ->whereIn('STDPROC_ID', [77, 78, 79])
             ->get();
     }
+
+    public static function has_standard_target($project_id, $process_id)
+    {
+        return self::db()
+            ->table('PROMAN.STANDARD')
+            ->where('PROJECT_ID', $project_id)
+            ->where('PROCESS_ID', $process_id)
+            ->whereIn('STDPROC_ID', [77, 78, 79])
+            ->whereNotNull('VALUE')
+            ->exists();
+    }
+
 
     public static function get_trial_rr($project_id, $process_id)
     {
@@ -153,26 +165,39 @@ class Maio
         }
     }
 
-    public static function get_trial_rr_det_report($project_id, $process_id, $trial_no)
+    public static function get_last_trial_no($project_id, $process_id)
     {
         return self::db()
-            ->table('PROMAN.TRIAL_RR_DET as D')
-            ->leftJoin('PROMAN.DEFECT as DF', 'DF.ID', '=', 'D.DEFECT_ID')
-            ->select(
-                'D.PROJECT_ID',
-                'D.PROCESS_ID',
-                'D.TRANS_TYPE',
-                'D.OK',
-                'D.NG',
-                'D.PERCT',
-                'DF.DEFECT as DEFECT_NAME'
-            )
- ->where('D.PROJECT_ID', $project_id)
-->where('D.PROCESS_ID', $process_id)
-->where('D.TRIAL_NO', $trial_no)
-
-            ->get();
+            ->table('PROMAN.TRIAL_RR')
+            ->where('PROJECT_ID', $project_id)
+            ->where('PROCESS_ID', $process_id)
+            ->orderByDesc('ID')
+            ->value('TRIAL_NO');
     }
+
+
+
+
+    //     public static function get_trial_rr_det_report($project_id, $process_id, $trial_no)
+//     {
+//         return self::db()
+//             ->table('PROMAN.TRIAL_RR_DET as D')
+//             ->leftJoin('PROMAN.DEFECT as DF', 'DF.ID', '=', 'D.DEFECT_ID')
+//             ->select(
+//                 'D.PROJECT_ID',
+//                 'D.PROCESS_ID',
+//                 'D.TRANS_TYPE',
+//                 'D.OK',
+//                 'D.NG',
+//                 'D.PERCT',
+//                 'DF.DEFECT as DEFECT_NAME'
+//             )
+//  ->where('D.PROJECT_ID', $project_id)
+// ->where('D.PROCESS_ID', $process_id)
+// ->where('D.TRIAL_NO', $trial_no)
+
+    //             ->get();
+//     }
 
 
 

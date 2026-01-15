@@ -126,7 +126,10 @@
                 </div>
 
                 <div class="modal-footer d-flex">
-                    <button class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+
                     <button type="submit" class="btn btn-primary ms-auto">Update</button>
                 </div>
 

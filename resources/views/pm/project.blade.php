@@ -278,17 +278,17 @@
 
                     <div class="mb-3">
                         <label class="form-label">OK Ratio Target (%)</label>
-                        <input type="number" class="form-control std-value" data-stdproc="77">
+                        <input type="text" class="form-control std-value decimal-input" data-stdproc="77">
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">CT Target (second)</label>
-                        <input type="number" class="form-control std-value" data-stdproc="78">
+                        <input type="text" class="form-control std-value decimal-input" data-stdproc="78">
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Berat Target (kg - 2 angka dibelakang koma)</label>
-                        <input type="number" class="form-control std-value" data-stdproc="79">
+                        <input type="text" class="form-control std-value decimal-input" data-stdproc="79">
                     </div>
                 </div>
 
@@ -542,6 +542,12 @@
     stdModal.addEventListener('hidden.bs.modal', function () {
         overlay.classList.add('d-none');
     });
+
+    document.querySelectorAll('.decimal-input').forEach(input => {
+    input.addEventListener('input', function () {
+        this.value = this.value.replace(',', '.');
+    });
+});
 
 
 </script>

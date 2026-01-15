@@ -1575,7 +1575,12 @@ class App extends Controller
             abort(404);
 
         $lov = Maio::get_lov();
-        $process = $lov->where('init', 'process');
+        $processAll = $lov->where('init', 'process');
+
+        // FILTER PROCESS YANG PUNYA TARGET
+        $process = $processAll->filter(function ($p) use ($id) {
+            return Maio::has_standard_target($id, $p->lov_id);
+        });
 
         $data = [
             'title' => 'Trial Record',
@@ -1586,6 +1591,7 @@ class App extends Controller
 
         return view('template.wrapper', $data);
     }
+
 
     public function trial_data(Request $request)
     {
@@ -1719,42 +1725,84 @@ class App extends Controller
         return response()->json($result);
     }
 
-public function trailreport($project, $process, $trial)
-{
-    $rows = Maio::get_trial_rr_det_report($project, $process, $trial);
+    public function trial_next_no(Request $request)
+    {
+        $project_id = $request->project_id;
+        $process_id = $request->process_id;
 
-    $report = [
-        'category' => '',
-        'ok' => null,
-        'ok_percent' => null,
-        'defects' => []
-    ];
+        $last = Maio::get_last_trial_no($project_id, $process_id);
 
-    foreach ($rows as $row) {
+        $nextNo = 1;
 
-        if ($row->trans_type && empty($report['category'])) {
-            $report['category'] = $row->trans_type;
+        if ($last) {
+            // Ambil angka dari "TRIAL 3"
+            preg_match('/(\d+)/', $last, $match);
+            $nextNo = isset($match[1]) ? ((int) $match[1] + 1) : 1;
         }
 
-        if (!is_null($row->ok)) {
-            $report['ok'] = $row->ok;
-            $report['ok_percent'] = $row->perct;
-        }
-
-        if (!empty($row->defect_name)) {
-            $report['defects'][$row->defect_name] = $row->ng;
-        }
+        return response()->json([
+            'trial_no' => 'TRIAL ' . $nextNo
+        ]);
     }
 
-    return view('template.wrapper', [
-        'title'      => 'Trail Report',
-        'content'    => 'pm.trailreport',
-        'project_id' => $project,
-        'process_id' => $process,
-        'trial'      => $trial,
-        'report'     => $report
-    ]);
-}
+
+
+
+    public function trailreport($project, $process, $id)
+    {
+        $data = [
+            'title' => 'Trail Report',
+            'content' => 'pm.trailreport',
+            'project_id' => $project,
+            'process_id' => $process,
+            'trial_id' => $id,
+        ];
+
+        return view('template.wrapper', $data);
+    }
+
+
+    // public function trailreport($project, $process, $trial)
+// {
+//     $rows = Maio::get_trial_rr_det_report($project, $process, $trial);
+
+    //     $report = [
+//         'category' => '',
+//         'ok' => null,
+//         'ok_percent' => null,
+//         'defects' => []
+//     ];
+
+    //     foreach ($rows as $row) {
+//         if ($row->trans_type && empty($report['category'])) {
+//             $report['category'] = $row->trans_type;
+//         }
+
+    //         if (!is_null($row->ok)) {
+//             $report['ok'] = $row->ok;
+//             $report['ok_percent'] = $row->perct;
+//         }
+
+    //         if (!empty($row->defect_name)) {
+//             $report['defects'][$row->defect_name] = $row->ng;
+//         }
+//     }
+
+    //     // Ambil data nama dari request (akan dikirim dari halaman sebelumnya)
+//     $project_name = request('project_name', 'Project');
+//     $process_name = request('process_name', 'Process');
+
+    //     return view('template.wrapper', [
+//         'title' => 'Trail Report',
+//         'content' => 'pm.trailreport',
+//         'project_id' => $project,
+//         'process_id' => $process,
+//         'trial' => $trial,
+//         'project_name' => $project_name,
+//         'process_name' => $process_name,
+//         'report' => $report
+//     ]);
+// }
 
 
 
