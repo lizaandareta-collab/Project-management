@@ -163,22 +163,49 @@
         vertical-align: middle;
     }
 
-    .status-open-box { background-color: #1f77b4; }
-    .status-inprogress-box { background-color: #00a591; }
-    .status-completed-box { background-color: #9acd32; }
-    .status-onhold-box { background-color: #f0ad4e; }
-    .status-cancelled-box { background-color: #d9534f; }
-    .status-nostatus-box { background-color: #34495e; }
+    .status-open-box {
+        background-color: #1f77b4;
+    }
+
+    .status-inprogress-box {
+        background-color: #00a591;
+    }
+
+    .status-completed-box {
+        background-color: #9acd32;
+    }
+
+    .status-onhold-box {
+        background-color: #f0ad4e;
+    }
+
+    .status-cancelled-box {
+        background-color: #d9534f;
+    }
+
+    .status-nostatus-box {
+        background-color: #34495e;
+    }
 
     /* PLAN HOURS vs HOURS SPENT - IMPROVED VISUALIZATION */
-    .hours-visualization-container {
+    /* .hours-visualization-container {
         display: flex;
         justify-content: space-between;
         align-items: flex-end;
         height: 140px;
         margin-top: 15px;
         padding: 0 10px;
+    } */
+
+    .hours-visualization-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        height: 100%;
+        margin-top: auto;
+        padding: 0 10px;
     }
+
 
     .hours-column {
         display: flex;
@@ -861,7 +888,7 @@
         padding: 15px;
         background: white;
         border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
     .chart-title {
@@ -922,7 +949,7 @@
         .tasks-grouped-container {
             grid-template-columns: repeat(2, 1fr);
         }
-        
+
         .card-row {
             grid-template-columns: repeat(2, 1fr);
         }
@@ -975,26 +1002,65 @@
         .hours-bar-container {
             width: 50px;
         }
-        
+
         .chart-box {
             height: 240px;
         }
-        
+
         .center-percentage {
             font-size: 24px;
         }
-        
+
         .center-text {
             font-size: 11px;
         }
-        
+
         #container {
             height: 350px;
         }
-        
+
         .chart-wrapper {
             height: 350px;
         }
+    }
+
+    /* Select Process Area */
+    .process-wrapper {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    /* Default button */
+    .btn-process {
+        border-radius: 20px;
+        padding: 6px 16px;
+        font-size: 13px;
+        font-weight: 500;
+        white-space: nowrap;
+        transition: background-color .2s ease, color .2s ease, border-color .2s ease;
+    }
+
+    /* Hover = hijau gelap */
+    .btn-process:hover {
+        background-color: #0fac81;
+        border-color: #0fac81;
+        color: #fff !important;
+    }
+
+    /* Focus */
+    .btn-process:focus {
+        background-color: #0fac81;
+        border-color: #0fac81;
+        color: #fff !important;
+        box-shadow: none;
+    }
+
+    /* Active (yang diklik) */
+    .btn-process.btn-primary {
+        background-color: #0fac81;
+        border-color: #0fac81;
+        color: #fff !important;
     }
 </style>
 
@@ -1046,13 +1112,36 @@
                                 <span class="status-open-box"></span>
                                 <span>Click bars to view activities (Subactivities not counted)</span>
                             </div> -->
+                            <!-- Legend di bawah chart -->
+                            <div class="progress-legend">
+                                <div class="legend-item">
+                                    <span class="legend-color" style="background-color: #1f77b4;"></span>
+                                    <span>Open</span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-color" style="background-color: #00a591;"></span>
+                                    <span>In Progress</span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-color" style="background-color: #9acd32;"></span>
+                                    <span>Completed</span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-color" style="background-color: #f0ad4e;"></span>
+                                    <span>On Hold</span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-color" style="background-color: #d9534f;"></span>
+                                    <span>Cancelled</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     <!-- CARD 3 - PLAN HOURS vs HOURS SPENT -->
                     <div class="dash-card">
                         <div class="card-title">PLAN HOURS VS HOURS SPENT</div>
-                        
+
                         <!-- Visualization container -->
                         <div class="hours-visualization-container" id="hoursVisualization">
                             <!-- Plan Hours Column -->
@@ -1064,7 +1153,7 @@
                                 </div>
                                 <div class="hours-label">PLAN HOURS</div>
                             </div>
-                            
+
                             <!-- Hours Spent Column -->
                             <div class="hours-column">
                                 <div class="hours-bar-container">
@@ -1105,7 +1194,8 @@
                         <div class="export-menu-container" id="exportMenuContainer">
                             <button class="export-menu-btn" id="exportMenuBtn">
                                 <svg viewBox="0 0 24 24">
-                                    <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+                                    <path
+                                        d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
                                 </svg>
                             </button>
                             <div class="export-menu" id="exportMenu">
@@ -1188,7 +1278,8 @@
                                             <div class="milestone-header">
                                                 <div class="milestone-title">
                                                     <span class="status-bullet {{ $parentStatusBullet }}"></span>
-                                                    <strong class="{{ $parentCategoryClass }}">{{ $milestoneData['parent']->milestone_task ?? 'Unnamed Milestone' }}</strong>
+                                                    <strong
+                                                        class="{{ $parentCategoryClass }}">{{ $milestoneData['parent']->milestone_task ?? 'Unnamed Milestone' }}</strong>
                                                     <span class="milestone-badge">{{ $parentStatusText }}</span>
                                                 </div>
                                                 <div class="milestone-meta">
@@ -1222,7 +1313,8 @@
                                                             <span class="status-bullet {{ $activityStatusBullet }}"></span>
                                                             <div class="activity-content">
                                                                 <div class="activity-title">
-                                                                    <span class="{{ $activityCategoryClass }}">{{ $activityData['activity']->milestone_task ?? 'Unnamed Activity' }}</span>
+                                                                    <span
+                                                                        class="{{ $activityCategoryClass }}">{{ $activityData['activity']->milestone_task ?? 'Unnamed Activity' }}</span>
                                                                 </div>
                                                                 <div class="activity-meta">
                                                                     @if($activityData['activity']->plan_start)
@@ -1261,7 +1353,8 @@
                                                                     <span class="status-bullet {{ $subStatusBullet }}"></span>
                                                                     <div class="subactivity-content">
                                                                         <div class="subactivity-title">
-                                                                            <span class="{{ $subCategoryClass }}">{{ $subactivity->milestone_task ?? 'Unnamed Sub-activity' }}</span>
+                                                                            <span
+                                                                                class="{{ $subCategoryClass }}">{{ $subactivity->milestone_task ?? 'Unnamed Sub-activity' }}</span>
                                                                         </div>
                                                                         <div class="subactivity-meta">
                                                                             @if($subactivity->plan_start)
@@ -1298,57 +1391,61 @@
                 </div>
 
                 <!-- TRIAL CHART SECTION -->
-                <div class="gantt-section" style="margin-top: 20px;">
-                    <div class="gantt-header">
-                        <h3 class="gantt-title">Trial Record</h3>
-                    </div>
-
-                    <!-- Select Process untuk Trial Charts -->
-                    <div class="filter-controls">
-                        <div class="filter-group">
-                            <div class="filter-label">Select Process</div>
-                            <select class="filter-select" id="trialProcessFilter">
-                                <option value="">Select Process</option>
-                                @foreach($process as $p)
-                                    <option value="{{ $p->lov_id }}">{{ $p->description }}</option>
-                                @endforeach
-                            </select>
+                @if($hasTrialProcess)
+                    <div class="gantt-section" style="margin-top: 20px;">
+                        <div class="gantt-header">
+                            <h3 class="gantt-title">Trial Record</h3>
                         </div>
-                    </div>
 
-                    <!-- Grafik Section -->
-                    <div class="row g-4 mb-4 d-none" id="trialChartSection">
-                        <!-- Grafik 1: %OK RATIO -->
-                        <div class="col-12">
-                            <div class="card card-bordered">
-                                <div class="card-inner">
-                                    <div class="chart-title">%OK RATIO</div>
-                                    <div id="trialChart1" class="chart-wrapper"></div>
+                        <!-- Select Process untuk Trial Charts -->
+                        <div class="card card-bordered mb-3">
+                            <div class="card-inner">
+                                <label class="form-label fw-bold mb-2">Select Process</label>
+                                <div class="process-wrapper">
+                                    @foreach($process as $p)
+                                        <button type="button" class="btn btn-outline-primary btn-process"
+                                            data-process-id="{{ $p->lov_id }}" data-process-name="{{ $p->description }}">
+                                            {{ $p->description }}
+                                        </button>
+                                    @endforeach
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Grafik 2: CT -->
-                        <div class="col-12">
-                            <div class="card card-bordered">
-                                <div class="card-inner">
-                                    <div class="chart-title">Cycle Time (CT)</div>
-                                    <div id="trialChart2" class="chart-wrapper"></div>
+                        <!-- Grafik Section -->
+                        <div class="row g-4 mb-4 d-none" id="trialChartSection">
+                            <!-- Grafik 1: %OK RATIO -->
+                            <div class="col-12">
+                                <div class="card card-bordered">
+                                    <div class="card-inner">
+                                        <div class="chart-title">%OK RATIO</div>
+                                        <div id="trialChart1" class="chart-wrapper"></div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Grafik 3: BERAT -->
-                        <div class="col-12">
-                            <div class="card card-bordered">
-                                <div class="card-inner">
-                                    <div class="chart-title">Berat</div>
-                                    <div id="trialChart3" class="chart-wrapper"></div>
+                            <!-- Grafik 2: CT -->
+                            <div class="col-12">
+                                <div class="card card-bordered">
+                                    <div class="card-inner">
+                                        <div class="chart-title">Cycle Time (CT)</div>
+                                        <div id="trialChart2" class="chart-wrapper"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Grafik 3: BERAT -->
+                            <div class="col-12">
+                                <div class="card card-bordered">
+                                    <div class="card-inner">
+                                        <div class="chart-title">Berat</div>
+                                        <div id="trialChart3" class="chart-wrapper"></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                @endif
             </div>
         </div>
     </div>
@@ -1520,23 +1617,23 @@
                 margin: [0, 0, 0, 0],
                 spacing: [0, 0, 0, 0],
                 events: {
-                    load: function() {
+                    load: function () {
                         const centerX = this.plotWidth / 2;
                         const centerY = this.plotHeight / 2;
-                        
+
                         this.renderer.label(
                             `<div class="center-percentage">${overallPercentage}%</div>
                              <div class="center-text">OVERALL<br>PROGRESS</div>`,
                             centerX - 40,
                             centerY - 25
                         )
-                        .css({
-                            textAlign: 'center',
-                            width: '80px',
-                            height: '50px',
-                            color: '#2c3e50'
-                        })
-                        .add();
+                            .css({
+                                textAlign: 'center',
+                                width: '80px',
+                                height: '50px',
+                                color: '#2c3e50'
+                            })
+                            .add();
                     }
                 }
             },
@@ -1624,21 +1721,21 @@
         // Siapkan data untuk main chart (milestone)
         const mainSeriesData = [];
         const drilldownSeries = [];
-        
+
         // Proses data dari groupedTasks
         Object.entries(groupedTasks).forEach(([milestoneId, milestoneData]) => {
             if (milestoneData['parent']) {
                 const milestoneName = milestoneData['parent'].milestone_task || 'Unnamed Milestone';
                 const milestoneStatus = milestoneData['parent'].status || 0;
                 const milestoneColor = getStatusColor(milestoneStatus);
-                
+
                 // Hitung total ACTIVITIES untuk milestone ini (TANPA subactivities)
                 let totalActivities = 0;
                 const drilldownData = [];
-                
+
                 // Kumpulkan activities untuk tooltip
                 const activitiesList = [];
-                
+
                 // Hitung dari activities saja (Level 2) - TANPA subactivities
                 if (milestoneData['activities']) {
                     Object.entries(milestoneData['activities']).forEach(([activityId, activityData]) => {
@@ -1647,7 +1744,7 @@
                             const activityName = activityData['activity'].milestone_task || 'Unnamed Activity';
                             const activityStatus = activityData['activity'].status || 0;
                             const activityColor = getStatusColor(activityStatus);
-                            
+
                             // Tambahkan ke drilldown data - HANYA activity
                             drilldownData.push({
                                 name: activityName,
@@ -1656,7 +1753,7 @@
                                 status: activityStatus,
                                 statusText: getStatusTextFromNumber(activityStatus)
                             });
-                            
+
                             // Tambahkan ke activities list untuk tooltip
                             activitiesList.push({
                                 name: activityName,
@@ -1666,7 +1763,7 @@
                         }
                     });
                 }
-                
+
                 // Tambahkan ke main series dengan data tambahan untuk tooltip
                 mainSeriesData.push({
                     name: milestoneName,
@@ -1678,7 +1775,7 @@
                     activitiesList: activitiesList,
                     totalActivities: totalActivities
                 });
-                
+
                 // Tambahkan ke drilldown series
                 drilldownSeries.push({
                     name: milestoneName,
@@ -1696,13 +1793,13 @@
                 type: 'bar',
                 height: 400,
                 events: {
-                    drilldown: function(e) {
+                    drilldown: function (e) {
                         // Saat drilldown, tetap gunakan warna yang sama
                         if (e.seriesOptions) {
                             e.seriesOptions.color = e.point.color;
                         }
                     },
-                    drillup: function(e) {
+                    drillup: function (e) {
                         // Reset saat drillup
                         this.series[0].update({
                             colorByPoint: true
@@ -1762,7 +1859,7 @@
                     fontSize: '12px',
                     padding: '10px'
                 },
-                formatter: function() {
+                formatter: function () {
                     // Jika ini adalah DRILLDOWN (activity individual)
                     if (this.series.userOptions && this.series.userOptions.isDrilldown) {
                         // Tooltip untuk activity individual
@@ -1780,14 +1877,14 @@
                                 Milestone Status: <b style="color:${this.point.color}">${this.point.statusText}</b><br/>
                                 Total Activities: <b>${this.point.totalActivities}</b>
                         `;
-                        
+
                         // Jika ada activities, tampilkan list-nya
                         if (this.point.activitiesList && this.point.activitiesList.length > 0) {
                             tooltipHTML += `
                                 <hr style="margin:8px 0; border:none; border-top:1px solid #eee;">
                                 <div style="font-weight:600; margin-bottom:5px;">Activities:</div>
                             `;
-                            
+
                             this.point.activitiesList.forEach((activity, index) => {
                                 tooltipHTML += `
                                     <div style="margin-left:8px; margin-bottom:3px; display:flex; align-items:center; gap:5px;">
@@ -1798,7 +1895,7 @@
                                 `;
                             });
                         }
-                        
+
                         tooltipHTML += `</div>`;
                         return tooltipHTML;
                     }
@@ -1844,7 +1941,7 @@
     const statusChart = @json($statusChart);
     const overallPercentage = {{ $overall }};
     const groupedTasks = @json($groupedTasks);
-    
+
     createOverallProgressChart('overallProgressChart', statusChart, overallPercentage);
     createMilestoneDrilldownChart('container', groupedTasks);
 
@@ -1854,28 +1951,28 @@
         const hoursSpent = parseFloat({{ $hoursSpent }}) || 0;
         const maxValue = Math.max(planHours, hoursSpent, 1);
         const containerHeight = 100;
-        
+
         const planHeight = (planHours / maxValue) * (containerHeight * 0.8);
         const spentHeight = (hoursSpent / maxValue) * (containerHeight * 0.8);
-        
+
         const planBar = document.getElementById('planHoursBar');
         const spentBar = document.getElementById('hoursSpentBar');
-        
+
         if (planBar) {
             planBar.style.height = Math.max(20, planHeight) + 'px';
         }
-        
+
         if (spentBar) {
             spentBar.style.height = Math.max(20, spentHeight) + 'px';
         }
-        
+
         const planLabel = document.getElementById('planHoursLabel');
         const spentLabel = document.getElementById('hoursSpentLabel');
-        
+
         if (planLabel) {
             planLabel.style.top = (planHeight > 25 ? '-25px' : '-30px');
         }
-        
+
         if (spentLabel) {
             spentLabel.style.top = (spentHeight > 25 ? '-25px' : '-30px');
         }
@@ -2236,19 +2333,38 @@
     let trialData = [];
 
     // Select Process untuk Trial Charts
-    document.getElementById('trialProcessFilter').addEventListener('change', function () {
-        selectedProcessId = this.value;
-        
-        if (selectedProcessId) {
+    document.querySelectorAll('.btn-process').forEach(btn => {
+        btn.addEventListener('click', function () {
+            // Reset semua button
+            document.querySelectorAll('.btn-process')
+                .forEach(b => b.classList.remove('btn-primary'));
+
+            // Set active button
+            this.classList.add('btn-primary');
+
+            selectedProcessId = this.dataset.processId;
             document.getElementById('trialChartSection').classList.remove('d-none');
             loadTrialData();
-        } else {
-            document.getElementById('trialChartSection').classList.add('d-none');
-        }
+        });
     });
 
     function loadTrialData() {
         if (!selectedProcessId) return;
+
+        // Reset chart containers dengan loading
+        ['trialChart1', 'trialChart2', 'trialChart3'].forEach(id => {
+            const container = document.getElementById(id);
+            if (container) {
+                container.innerHTML = `
+                <div class="text-center text-muted p-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Loading chart data...</p>
+                </div>
+            `;
+            }
+        });
 
         fetch("{{ route('trial.data') }}", {
             method: "POST",
@@ -2266,14 +2382,22 @@
                 trialData = data;
                 renderTrialCharts(data);
             })
-            .catch(err => console.error(err));
+            .catch(err => {
+                console.error('Error loading trial data:', err);
+                ['trialChart1', 'trialChart2', 'trialChart3'].forEach(id => {
+                    const container = document.getElementById(id);
+                    if (container) {
+                        container.innerHTML = '<div class="text-center text-danger p-5">Error loading chart data</div>';
+                    }
+                });
+            });
     }
 
     function renderTrialCharts(data) {
         if (!data || data.length === 0) {
-            document.getElementById('trialChart1').innerHTML = '<div class="text-center text-muted p-5">No data available</div>';
-            document.getElementById('trialChart2').innerHTML = '<div class="text-center text-muted p-5">No data available</div>';
-            document.getElementById('trialChart3').innerHTML = '<div class="text-center text-muted p-5">No data available</div>';
+            ['trialChart1', 'trialChart2', 'trialChart3'].forEach(id => {
+                document.getElementById(id).innerHTML = '<div class="text-center text-muted p-5">No trial data available</div>';
+            });
             return;
         }
 
@@ -2283,8 +2407,9 @@
         });
 
         const trialNos = sortedData.map(item => item.trial_no || '');
-        const selectedProcessName = document.getElementById('trialProcessFilter').selectedOptions[0].text;
-        
+        const selectedButton = document.querySelector('.btn-process.btn-primary');
+        const selectedProcessName = selectedButton ? selectedButton.dataset.processName : '';
+
         // Grafik 1: %OK RATIO
         const perctData = sortedData.map(item => parseFloat(item.perct) || 0);
         const targetData = sortedData.map(item => parseFloat(item.target) || 0);
@@ -2494,30 +2619,30 @@
     document.addEventListener('DOMContentLoaded', function () {
         // Initialize Hours Visualization
         initializeHoursVisualization();
-        
+
         // Initialize task filtering
         let currentMilestoneFilter = 'all';
-        
+
         // Elements
         const taskGridContainer = document.getElementById('taskGridContainer');
         const visibleTaskCounter = document.getElementById('visibleTaskCounter');
         const milestoneFilter = document.getElementById('milestoneFilter');
-        
+
         // Simple filtering function
         function filterTasks() {
             let visibleTaskCount = 0;
             const taskGroups = document.querySelectorAll('.task-group-card');
-            
+
             taskGroups.forEach(group => {
                 const milestoneId = group.getAttribute('data-milestone-id');
-                
+
                 if (currentMilestoneFilter === 'all' || milestoneId === currentMilestoneFilter) {
                     group.classList.remove('hidden');
-                    
+
                     const milestoneCard = group.querySelector('.task-milestone-card');
                     const activityCards = group.querySelectorAll('.task-activity-card');
                     const subactivityCards = group.querySelectorAll('.task-subactivity-card');
-                    
+
                     if (milestoneCard) visibleTaskCount++;
                     visibleTaskCount += activityCards.length;
                     visibleTaskCount += subactivityCards.length;
@@ -2525,9 +2650,9 @@
                     group.classList.add('hidden');
                 }
             });
-            
+
             visibleTaskCounter.textContent = `(${visibleTaskCount} tasks)`;
-            
+
             const noTasksMessage = document.querySelector('.no-tasks');
             if (noTasksMessage) {
                 if (visibleTaskCount === 0) {
@@ -2540,7 +2665,7 @@
 
         // Event Listeners
         if (milestoneFilter) {
-            milestoneFilter.addEventListener('change', function() {
+            milestoneFilter.addEventListener('change', function () {
                 currentMilestoneFilter = this.value;
                 filterTasks();
             });

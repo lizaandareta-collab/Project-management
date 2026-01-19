@@ -196,6 +196,24 @@
     #chartSection {
         margin-top: 10px !important;
     }
+
+    /* Report Fresh Table Styling */
+    #reportFreshTable {
+        font-size: 14px;
+    }
+
+    #reportFreshTable th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+    }
+
+    #reportFreshTable .category-row {
+        background-color: #e9ecef;
+    }
+
+    #reportFreshTable td {
+        vertical-align: middle;
+    }
 </style>
 
 <div class="nk-content">
@@ -260,7 +278,6 @@
                                                 <th>Berat</th>
                                                 <th>PIC</th>
                                                 <th>Files</th>
-                                                <th>#</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -271,7 +288,39 @@
                             </div>
                         </div>
 
-                        
+                        <!-- Report Fresh Section -->
+                        <div class="card card-bordered card-preview d-none" id="reportFreshCard">
+                            <div class="card-inner">
+                                <div class="nk-block-head mb-3">
+                                    <div class="nk-block-head-content">
+                                        <h6 class="mb-0">Report Fresh - <span id="selectedProcessReport"></span></h6>
+                                    </div>
+                                </div>
+
+                                <!-- Search -->
+                                <div class="d-flex justify-content-between mb-3">
+                                    <input type="text" id="reportFreshSearch" class="form-control form-control-sm w-25"
+                                        placeholder="Search...">
+                                </div>
+
+                                <!-- Report Fresh Table -->
+                                <div class="table-responsive">
+                                    <table class="table table-bordered nowrap" id="reportFreshTable">
+                                        <thead class="text-center">
+                                            <tr>
+                                                <th>Category</th>
+                                                <th>Report Fresh</th>
+                                                <th>Quant.</th>
+                                                <th>%</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Data akan diisi via JS -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
 
                         <!-- Grafik Section -->
                         <div class="row g-4 mb-4 d-none" id="chartSection">
@@ -445,7 +494,9 @@
                 const processName = this.dataset.processName;
 
                 document.getElementById('selectedProcess').innerText = ' ' + processName;
+                document.getElementById('selectedProcessReport').innerText = ' ' + processName;
                 document.getElementById('trialTableCard').classList.remove('d-none');
+                document.getElementById('reportFreshCard').classList.remove('d-none');
                 document.getElementById('btnAddTrial').classList.remove('d-none');
                 document.getElementById('chartSection').classList.remove('d-none');
 
@@ -456,6 +507,7 @@
                 }
 
                 loadTrialData();
+                loadReportFreshData();
             });
         });
     });
@@ -475,7 +527,7 @@
         const tableBody = document.querySelector('#trialDataTable tbody');
         tableBody.innerHTML = `
             <tr>
-                <td colspan="14" class="text-center py-4">
+                <td colspan="13" class="text-center py-4">
                     <div class="spinner-border text-primary" role="status">
                         <span class="visually-hidden">Loading...</span>
                     </div>
@@ -509,12 +561,153 @@
                 console.error('Error loading trial data:', err);
                 tableBody.innerHTML = `
                 <tr>
-                    <td colspan="14" class="text-center text-danger py-4">
+                    <td colspan="13" class="text-center text-danger py-4">
                         Error loading data. Please try again.
                     </td>
                 </tr>
             `;
             });
+    }
+
+    /* ===============================
+       LOAD REPORT FRESH DATA
+    ================================ */
+    function loadReportFreshData() {
+        if (!selectedProcessId) return;
+
+        const tableBody = document.querySelector('#reportFreshTable tbody');
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="4" class="text-center py-4">
+                    <div class="spinner-border spinner-border-sm text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <span class="ms-2">Loading report fresh data...</span>
+                </td>
+            </tr>
+        `;
+
+        // Untuk sekarang kita akan menggunakan data statis seperti contoh
+        // Anda bisa mengganti ini dengan API call ke backend nanti
+        setTimeout(() => {
+            renderReportFreshTable();
+        }, 500);
+    }
+
+    /* ===============================
+       RENDER REPORT FRESH TABLE
+    ================================ */
+    function renderReportFreshTable() {
+        const tableBody = document.querySelector('#reportFreshTable tbody');
+
+        // Data statis contoh - Anda bisa mengganti dengan data dinamis dari API
+        const reportData = {
+            casting: {
+                total: 100,
+                items: [
+                    { name: 'OK', value: 78, percentage: 78.00 },
+                    { name: 'Trial Shot', value: 22, percentage: 22.00 },
+                    { name: 'Kassa', value: 0, percentage: 0.00 },
+                    { name: 'X-ray', value: 0, percentage: 0.00 },
+                    { name: 'Tsukentsu', value: 0, percentage: 0.00 },
+                    { name: 'Hubutsu', value: 0, percentage: 0.00 },
+                    { name: 'Others', value: 0, percentage: 0.00 }
+                ]
+            }
+            // Anda bisa menambahkan kategori lain di sini
+        };
+
+        let html = '';
+
+        Object.keys(reportData).forEach(category => {
+            const categoryData = reportData[category];
+
+            // Header kategori
+            html += `
+                <tr data-category="${category}" class="category-row fw-bold">
+                    <td rowspan="${categoryData.items.length + 1}" 
+                        class="fw-bold text-center align-middle">
+                        ${category.charAt(0).toUpperCase() + category.slice(1)}
+                    </td>
+                    <td>${categoryData.items[0].name}</td>
+                    <td class="text-end fw-bold">${categoryData.items[0].value}</td>
+                    <td class="text-end text-danger fw-bold">${categoryData.items[0].percentage.toFixed(2)}%</td>
+                </tr>
+            `;
+
+            // Item lainnya
+            for (let i = 1; i < categoryData.items.length; i++) {
+                html += `
+                    <tr data-category="${category}">
+                        <td>${categoryData.items[i].name}</td>
+                        <td class="text-end">${categoryData.items[i].value}</td>
+                        <td class="text-end">${categoryData.items[i].percentage.toFixed(2)}%</td>
+                    </tr>
+                `;
+            }
+
+            // Total
+            html += `
+                <tr data-category="${category}" class="fw-bold">
+                    <td>Jumlah</td>
+                    <td class="text-end">${categoryData.total}</td>
+                    <td class="text-end">100,00%</td>
+                </tr>
+            `;
+        });
+
+        tableBody.innerHTML = html;
+
+        // Initialize search functionality
+        initReportFreshSearch();
+    }
+
+    /* ===============================
+       INITIALIZE REPORT FRESH SEARCH
+    ================================ */
+    function initReportFreshSearch() {
+        const searchInput = document.getElementById('reportFreshSearch');
+
+        if (searchInput) {
+            searchInput.addEventListener('keyup', function () {
+                const keyword = this.value.toLowerCase();
+                const rows = document.querySelectorAll('#reportFreshTable tbody tr');
+
+                let categoryHasMatch = {};
+
+                // reset
+                rows.forEach(row => row.style.display = 'none');
+
+                // filter rows
+                rows.forEach(row => {
+                    const category = row.dataset.category;
+                    const cells = row.querySelectorAll('td');
+
+                    if (cells.length < 3) return;
+
+                    const searchableText = (
+                        cells[cells.length - 3].innerText + ' ' +
+                        cells[cells.length - 2].innerText + ' ' +
+                        cells[cells.length - 1].innerText
+                    ).toLowerCase();
+
+                    if (searchableText.includes(keyword) || keyword === '') {
+                        row.style.display = '';
+                        categoryHasMatch[category] = true;
+                    }
+                });
+
+                // show category header if any child visible
+                rows.forEach(row => {
+                    if (row.classList.contains('category-row')) {
+                        const category = row.dataset.category;
+                        if (categoryHasMatch[category]) {
+                            row.style.display = '';
+                        }
+                    }
+                });
+            });
+        }
     }
 
     /* ===============================
@@ -532,7 +725,7 @@
         if (!data || data.length === 0) {
             tableBody.innerHTML = `
                 <tr>
-                    <td colspan="14" class="text-center text-muted py-4">
+                    <td colspan="13" class="text-center text-muted py-4">
                         No trial data available
                     </td>
                 </tr>
@@ -593,42 +786,6 @@
     <td>${row.pic || ''}</td>
     <td>${filesHtml}</td>
 
-    <!-- ACTION DROPDOWN -->
-    <td class="text-center">
-        <div class="dropdown">
-            <a href="javascript:void(0)" class="btn btn-sm btn-icon btn-trigger" data-bs-toggle="dropdown">
-                <em class="icon ni ni-more-h"></em>
-            </a>
-            <div class="dropdown-menu dropdown-menu-end">
-                <ul class="link-list-opt no-bdr">
-                    <li>
-                        <a href="javascript:void(0)">
-                            <em class="icon ni ni-eye"></em>
-                            <span>View Details</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="javascript:void(0)">
-                            <em class="icon ni ni-edit"></em>
-                            <span>Edit Record</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="javascript:void(0)">
-                            <em class="icon ni ni-download"></em>
-                            <span>Download Certificate</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="javascript:void(0)">
-                            <em class="icon ni ni-printer"></em>
-                            <span>Print Report</span>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </td>
 </tr>
 `;
 
@@ -710,42 +867,6 @@
         `).join('');
                     }
                 },
-
-                // ✅ TAMBAHKAN SETELAH INI
-                {
-                    data: null,
-                    orderable: false,
-                    searchable: false,
-                    className: 'text-center',
-                    render: function (data, type, row) {
-                        const projectId = "{{ request()->route('id') }}";
-                        const processId = selectedProcessId;
-                        const trialId = row.id; // pastikan API kirim "id"
-
-                        const url = `/trailreport/${projectId}/${processId}/${trialId}`;
-
-                        return `
-        <div class="dropdown">
-            <a href="javascript:void(0)" class="btn btn-sm btn-icon btn-trigger" data-bs-toggle="dropdown">
-                <em class="icon ni ni-more-h"></em>
-            </a>
-            <div class="dropdown-menu dropdown-menu-end">
-                <ul class="link-list-opt no-bdr">
-                    <li>
-                        <a href="${url}">
-                            <em class="icon ni ni-eye"></em>
-                            <span>View Report</span>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    `;
-                    }
-
-                }
-
-
             ],
             pageLength: 10,
             lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
@@ -1086,26 +1207,26 @@
     }
 
     function loadNextTrialNo() {
-    fetch("{{ route('trial.next_no') }}", {
-        method: "POST",
-        headers: {
-            "X-CSRF-TOKEN": "{{ csrf_token() }}",
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            project_id: projectId,
-            process_id: selectedProcessId
+        fetch("{{ route('trial.next_no') }}", {
+            method: "POST",
+            headers: {
+                "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                project_id: projectId,
+                process_id: selectedProcessId
+            })
         })
-    })
-    .then(res => res.json())
-    .then(data => {
-        document.getElementById('trial_no').value = data.trial_no;
-    })
-    .catch(err => {
-        console.error('Error loading next trial no:', err);
-        document.getElementById('trial_no').value = '';
-    });
-}
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('trial_no').value = data.trial_no;
+            })
+            .catch(err => {
+                console.error('Error loading next trial no:', err);
+                document.getElementById('trial_no').value = '';
+            });
+    }
 
 
     /* ===============================

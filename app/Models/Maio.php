@@ -175,8 +175,7 @@ class Maio
             ->value('TRIAL_NO');
     }
 
-
-
+    
 
     //     public static function get_trial_rr_det_report($project_id, $process_id, $trial_no)
 //     {
@@ -297,7 +296,7 @@ class Maio
                 ->select(
                     'pt.ID',
                     'pt.TASK_ID',
-                    'pt.PARENT_TASK', // TAMBAHKAN INI
+                    'pt.PARENT_TASK',
                     'p.PROJECT_NAME',
                     'pt.MILESTONE_TASK',
                     'pt.RESPONSIBLE',

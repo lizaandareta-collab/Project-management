@@ -1351,202 +1351,208 @@ class App extends Controller
     //     return view('template.wrapper', $data);
 // }
 
-    public function projectdash($id)
-    {
-        $tasks = Maio::get_project_task($id);
-        $project = Maio::get_project_by_id($id);
-        $budget = $project ? $project->budget : 0;
-        $invoiceAmount = Maio::get_invoice_amount_by_project($id);
-        $invoices = Maio::get_invoices_by_project($id);
+public function projectdash($id)
+{
+    $tasks = Maio::get_project_task($id);
+    $project = Maio::get_project_by_id($id);
+    $budget = $project ? $project->budget : 0;
+    $invoiceAmount = Maio::get_invoice_amount_by_project($id);
+    $invoices = Maio::get_invoices_by_project($id);
 
-        // ===========================
-        // GET PROCESS LIST FOR TRIAL CHARTS
-        // ===========================
-        $lov = Maio::get_lov();
-        $process = $lov->where('init', 'process');
+    // ===========================
+    // GET PROCESS LIST FOR TRIAL CHARTS - HANYA YANG ADA TARGET
+    // ===========================
+    $lov = Maio::get_lov();
+    $processAll = $lov->where('init', 'process');
+    
+    // Filter hanya process yang punya target untuk project ini
+    $process = $processAll->filter(function ($p) use ($id) {
+        return Maio::has_standard_target($id, $p->lov_id);
+    });
 
-        // ===========================
-        // REMAINING BUDGET
-        // ===========================
-        $remainingBudget = $budget - $invoiceAmount;
+    // ===========================
+    // REMAINING BUDGET
+    // ===========================
+    $remainingBudget = $budget - $invoiceAmount;
 
-        // ===========================
-        // OVERALL PROGRESS (MS = 21)
-        // ===========================
-        $totalActivity = $tasks->filter(function ($t) {
-            return $t->is_milestone == 21;
-        })->count();
+    // ===========================
+    // OVERALL PROGRESS (MS = 21)
+    // ===========================
+    $totalActivity = $tasks->filter(function ($t) {
+        return $t->is_milestone == 21;
+    })->count();
 
-        $finishActivity = $tasks->filter(function ($t) {
-            return $t->is_milestone == 21 && $t->status == 3;
-        })->count();
+    $finishActivity = $tasks->filter(function ($t) {
+        return $t->is_milestone == 21 && $t->status == 3;
+    })->count();
 
-        $finishMilestone = $tasks->filter(function ($t) {
-            return $t->is_milestone == 20 && $t->status == 3;
-        })->count();
+    $finishMilestone = $tasks->filter(function ($t) {
+        return $t->is_milestone == 20 && $t->status == 3;
+    })->count();
 
-        $overall = ($totalActivity > 0)
-            ? round((($finishMilestone + $finishActivity) / $totalActivity) * 100)
-            : 0;
+    $overall = ($totalActivity > 0)
+        ? round((($finishMilestone + $finishActivity) / $totalActivity) * 100)
+        : 0;
 
-        // ================================
-        // PROJECT MILESTONE (MS = 20)
-        // ================================
-        $milestoneTotal = $tasks->filter(function ($t) {
-            return $t->is_milestone == 20;
-        })->count();
+    // ================================
+    // PROJECT MILESTONE (MS = 20)
+    // ================================
+    $milestoneTotal = $tasks->filter(function ($t) {
+        return $t->is_milestone == 20;
+    })->count();
 
-        $milestoneFinish = $tasks->filter(function ($t) {
-            return $t->is_milestone == 20 && $t->status == 3;
-        })->count();
+    $milestoneFinish = $tasks->filter(function ($t) {
+        return $t->is_milestone == 20 && $t->status == 3;
+    })->count();
 
-        $milestoneProgress = ($milestoneTotal > 0)
-            ? round(($milestoneFinish / $milestoneTotal) * 100)
-            : 0;
+    $milestoneProgress = ($milestoneTotal > 0)
+        ? round(($milestoneFinish / $milestoneTotal) * 100)
+        : 0;
 
-        // ==========================
-        // TASK COMPLETE (MS = 21)
-        // ==========================
-        $taskTotal = $tasks->filter(function ($t) {
-            return $t->is_milestone == 21;
-        })->count();
+    // ==========================
+    // TASK COMPLETE (MS = 21)
+    // ==========================
+    $taskTotal = $tasks->filter(function ($t) {
+        return $t->is_milestone == 21;
+    })->count();
 
-        $taskFinish = $tasks->filter(function ($t) {
-            return $t->is_milestone == 21 && $t->status == 3;
-        })->count();
+    $taskFinish = $tasks->filter(function ($t) {
+        return $t->is_milestone == 21 && $t->status == 3;
+    })->count();
 
-        $taskComplete = ($taskTotal > 0)
-            ? round(($taskFinish / $taskTotal) * 100)
-            : 0;
+    $taskComplete = ($taskTotal > 0)
+        ? round(($taskFinish / $taskTotal) * 100)
+        : 0;
 
-        // ============================
-        // PLAN HOURS & HOURS SPENT
-        // ============================
-        $planHours = $tasks->sum('plan_hour');
-        $hoursSpent = $tasks->sum('actual_hour');
+    // ============================
+    // PLAN HOURS & HOURS SPENT
+    // ============================
+    $planHours = $tasks->sum('plan_hour');
+    $hoursSpent = $tasks->sum('actual_hour');
 
-        // ============================
-        // TASK BY STATUS
-        // ============================
-        $statusCount = [
-            'open' => $tasks->where('status', 1)->count(),
-            'inProgress' => $tasks->where('status', 2)->count(),
-            'completed' => $tasks->where('status', 3)->count(),
-            'onHold' => $tasks->where('status', 4)->count(),
-            'cancelled' => $tasks->where('status', 5)->count(),
-            'noStatus' => $tasks->filter(function ($task) {
-                $status = $task->status ?? null;
-                return is_null($status) || $status === '' || $status == 0 || !is_numeric($status);
-            })->count()
-        ];
+    // ============================
+    // TASK BY STATUS
+    // ============================
+    $statusCount = [
+        'open' => $tasks->where('status', 1)->count(),
+        'inProgress' => $tasks->where('status', 2)->count(),
+        'completed' => $tasks->where('status', 3)->count(),
+        'onHold' => $tasks->where('status', 4)->count(),
+        'cancelled' => $tasks->where('status', 5)->count(),
+        'noStatus' => $tasks->filter(function ($task) {
+            $status = $task->status ?? null;
+            return is_null($status) || $status === '' || $status == 0 || !is_numeric($status);
+        })->count()
+    ];
 
-        $statusChart = [
-            'open' => $tasks->where('status', 1)->count(),
-            'inProgress' => $tasks->where('status', 2)->count(),
-            'completed' => $tasks->where('status', 3)->count(),
-            'onHold' => $tasks->where('status', 4)->count(),
-            'cancelled' => $tasks->where('status', 5)->count(),
-        ];
+    $statusChart = [
+        'open' => $tasks->where('status', 1)->count(),
+        'inProgress' => $tasks->where('status', 2)->count(),
+        'completed' => $tasks->where('status', 3)->count(),
+        'onHold' => $tasks->where('status', 4)->count(),
+        'cancelled' => $tasks->where('status', 5)->count(),
+    ];
 
-        // ============================
-        // KELOMPOKKAN TASK BERDASARKAN STRUKTUR 3 LEVEL
-        // ============================
-        $groupedTasks = [];
+    // ============================
+    // KELOMPOKKAN TASK BERDASARKAN STRUKTUR 3 LEVEL
+    // ============================
+    $groupedTasks = [];
 
-        // 1. LEVEL 1: Milestone utama (is_milestone = 20, parent_task = NULL)
-        foreach ($tasks as $task) {
-            if ($task->is_milestone == 20 && empty($task->parent_task)) {
-                $taskId = $task->task_id ?? $task->id;
-                $groupedTasks[$taskId] = [
-                    'parent' => $task,
-                    'activities' => [] // Level 2 activities
+    // 1. LEVEL 1: Milestone utama (is_milestone = 20, parent_task = NULL)
+    foreach ($tasks as $task) {
+        if ($task->is_milestone == 20 && empty($task->parent_task)) {
+            $taskId = $task->task_id ?? $task->id;
+            $groupedTasks[$taskId] = [
+                'parent' => $task,
+                'activities' => [] // Level 2 activities
+            ];
+        }
+    }
+
+    // 2. LEVEL 2: Activities (is_milestone = 21) yang punya parent di Level 1
+    foreach ($tasks as $task) {
+        if ($task->is_milestone == 21 && !empty($task->parent_task)) {
+            $parentId = $task->parent_task;
+            if (isset($groupedTasks[$parentId])) {
+                $activityId = $task->task_id ?? $task->id;
+                $groupedTasks[$parentId]['activities'][$activityId] = [
+                    'activity' => $task,
+                    'subactivities' => [] // Level 3 subactivities
                 ];
             }
         }
-
-        // 2. LEVEL 2: Activities (is_milestone = 21) yang punya parent di Level 1
-        foreach ($tasks as $task) {
-            if ($task->is_milestone == 21 && !empty($task->parent_task)) {
-                $parentId = $task->parent_task;
-                if (isset($groupedTasks[$parentId])) {
-                    $activityId = $task->task_id ?? $task->id;
-                    $groupedTasks[$parentId]['activities'][$activityId] = [
-                        'activity' => $task,
-                        'subactivities' => [] // Level 3 subactivities
-                    ];
-                }
-            }
-        }
-
-        // 3. LEVEL 3: Sub-activities (is_milestone = 70) yang punya parent di Level 2
-        foreach ($tasks as $task) {
-            if ($task->is_milestone == 70 && !empty($task->parent_task)) {
-                $parentId = $task->parent_task;
-
-                // Cari parent activity di setiap milestone
-                foreach ($groupedTasks as $milestoneId => $milestoneData) {
-                    if (isset($milestoneData['activities'][$parentId])) {
-                        $groupedTasks[$milestoneId]['activities'][$parentId]['subactivities'][] = $task;
-                        break;
-                    }
-                }
-            }
-        }
-
-        // 4. Handle task yang tidak punya parent atau struktur tidak lengkap
-        // Activities tanpa parent milestone (jadikan milestone sendiri)
-        foreach ($tasks as $task) {
-            if ($task->is_milestone == 21 && empty($task->parent_task)) {
-                $taskId = $task->task_id ?? $task->id;
-                if (!isset($groupedTasks[$taskId])) {
-                    $groupedTasks[$taskId] = [
-                        'parent' => $task,
-                        'activities' => []
-                    ];
-                }
-            }
-        }
-
-        // Sub-activities tanpa parent activity (jadikan activity sendiri)
-        foreach ($tasks as $task) {
-            if ($task->is_milestone == 70 && empty($task->parent_task)) {
-                $taskId = $task->task_id ?? $task->id;
-                if (!isset($groupedTasks[$taskId])) {
-                    $groupedTasks[$taskId] = [
-                        'parent' => $task,
-                        'activities' => []
-                    ];
-                }
-            }
-        }
-
-        $projectName = isset($project->project_name) ? $project->project_name : 'Unknown Project';
-        $title = 'Project Dashboard - ' . $projectName;
-
-        // Kirim semua data ke view
-        $data = [
-            'title' => $title,
-            'content' => 'pm.projectdash',
-            'overall' => $overall,
-            'milestoneProgress' => $milestoneProgress,
-            'projectId' => $id,
-            'tasks' => $tasks,
-            'groupedTasks' => $groupedTasks, // Data terkelompok 3 level
-            'taskComplete' => $taskComplete,
-            'planHours' => $planHours,
-            'hoursSpent' => $hoursSpent,
-            'budget' => $budget,
-            'invoiceAmount' => $invoiceAmount,
-            'invoices' => $invoices,
-            'remainingBudget' => $remainingBudget,
-            'statusCount' => $statusCount,
-            'statusChart' => $statusChart,
-            'project' => $project,
-            'process' => $process, // Tambahkan process untuk trial charts
-        ];
-
-        return view('template.wrapper', $data);
     }
+
+    // 3. LEVEL 3: Sub-activities (is_milestone = 70) yang punya parent di Level 2
+    foreach ($tasks as $task) {
+        if ($task->is_milestone == 70 && !empty($task->parent_task)) {
+            $parentId = $task->parent_task;
+
+            // Cari parent activity di setiap milestone
+            foreach ($groupedTasks as $milestoneId => $milestoneData) {
+                if (isset($milestoneData['activities'][$parentId])) {
+                    $groupedTasks[$milestoneId]['activities'][$parentId]['subactivities'][] = $task;
+                    break;
+                }
+            }
+        }
+    }
+
+    // 4. Handle task yang tidak punya parent atau struktur tidak lengkap
+    // Activities tanpa parent milestone (jadikan milestone sendiri)
+    foreach ($tasks as $task) {
+        if ($task->is_milestone == 21 && empty($task->parent_task)) {
+            $taskId = $task->task_id ?? $task->id;
+            if (!isset($groupedTasks[$taskId])) {
+                $groupedTasks[$taskId] = [
+                    'parent' => $task,
+                    'activities' => []
+                ];
+            }
+        }
+    }
+
+    // Sub-activities tanpa parent activity (jadikan activity sendiri)
+    foreach ($tasks as $task) {
+        if ($task->is_milestone == 70 && empty($task->parent_task)) {
+            $taskId = $task->task_id ?? $task->id;
+            if (!isset($groupedTasks[$taskId])) {
+                $groupedTasks[$taskId] = [
+                    'parent' => $task,
+                    'activities' => []
+                ];
+            }
+        }
+    }
+
+    $projectName = isset($project->project_name) ? $project->project_name : 'Unknown Project';
+    $title = 'Project Dashboard - ' . $projectName;
+
+    // Kirim semua data ke view
+    $data = [
+        'title' => $title,
+        'content' => 'pm.projectdash',
+        'overall' => $overall,
+        'milestoneProgress' => $milestoneProgress,
+        'projectId' => $id,
+        'tasks' => $tasks,
+        'groupedTasks' => $groupedTasks, // Data terkelompok 3 level
+        'taskComplete' => $taskComplete,
+        'planHours' => $planHours,
+        'hoursSpent' => $hoursSpent,
+        'budget' => $budget,
+        'invoiceAmount' => $invoiceAmount,
+        'invoices' => $invoices,
+        'remainingBudget' => $remainingBudget,
+        'statusCount' => $statusCount,
+        'statusChart' => $statusChart,
+        'project' => $project,
+        'process' => $process, // Kirim hanya process yang ada target
+        'hasTrialProcess' => count($process) > 0, // Flag untuk menampilkan section trial
+    ];
+
+    return view('template.wrapper', $data);
+}
     public function addInvoice(Request $request)
     {
         $projectId = $request->input('project_id');
@@ -1644,7 +1650,7 @@ class App extends Controller
         return response()->json($trials);
     }
 
-
+    
 
 
     public function trial_store(Request $req)
@@ -1744,9 +1750,7 @@ class App extends Controller
             'trial_no' => 'TRIAL ' . $nextNo
         ]);
     }
-
-
-
+    
 
     public function trailreport($project, $process, $id)
     {

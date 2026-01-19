@@ -49,6 +49,7 @@ Route::middleware(['web'])->group(function () {
     Route::post('/trial/next-no', [App::class, 'trial_next_no'])->name('trial.next_no');
     Route::post('/trial/report-data', [App::class, 'trial_report_data'])
     ->name('trial.report.data');
+    
 
     // Route::get('/trial_report/{project}/{process}/{trial}', [App::class, 'trailreport'])
 //     ->name('trailreport');

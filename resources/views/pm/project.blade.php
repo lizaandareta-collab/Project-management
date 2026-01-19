@@ -544,10 +544,10 @@
     });
 
     document.querySelectorAll('.decimal-input').forEach(input => {
-    input.addEventListener('input', function () {
-        this.value = this.value.replace(',', '.');
+        input.addEventListener('input', function () {
+            this.value = this.value.replace(',', '.');
+        });
     });
-});
 
 
 </script>
