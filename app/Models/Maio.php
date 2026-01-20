@@ -158,12 +158,13 @@ class Maio
                 ->table('PROMAN.TRIAL_RR')
                 ->where('PROJECT_ID', $project_id)
                 ->where('PROCESS_ID', $process_id)
-                ->orderBy('TRIAL_DATE', 'DESC')
+                ->orderByDesc('ID') 
                 ->get();
         } catch (\Exception $e) {
-            return [];
+            return collect(); 
         }
     }
+
 
     public static function get_last_trial_no($project_id, $process_id)
     {
@@ -174,6 +175,30 @@ class Maio
             ->orderByDesc('ID')
             ->value('TRIAL_NO');
     }
+
+   public static function get_trial_rr_det($project_id, $process_id, $trial_id)
+{
+    return self::db()
+        ->table('PROMAN.TRIAL_RR_DET as d')
+        ->leftJoin(
+            'PROMAN.DEFECT as f',
+            'f.ID',
+            '=',
+            'd.DEFECT_ID'
+        )
+        ->where('d.PROJECT_ID', $project_id)
+        ->where('d.PROCESS_ID', $process_id)
+        ->where('d.TRIAL_NO', $trial_id) // ID dari TRIAL_RR
+        ->select([
+            'd.TRANS_TYPE',
+            'd.DEFECT_ID',
+            'f.DEFECT as DEFECT_NAME', // 🔥 TEXT DEFECT
+            'd.NG',
+            'd.PERCT'
+        ])
+        ->get();
+}
+
 
     
 

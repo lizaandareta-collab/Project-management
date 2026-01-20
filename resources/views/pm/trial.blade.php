@@ -214,6 +214,16 @@
     #reportFreshTable td {
         vertical-align: middle;
     }
+    /* Garis bawah OK → putih (kolom Category saja) */
+/* table.table-bordered tr.ok-row td:first-child {
+    border-bottom: 1px solid #fff !important;
+} */
+
+/* Garis atas baris setelah OK → putih (kolom Category saja) */
+/* table.table-bordered tr.after-ok td:first-child {
+    border-top: 1px solid #fff !important;
+} */
+
 </style>
 
 <div class="nk-content">
@@ -575,92 +585,138 @@
     function loadReportFreshData() {
         if (!selectedProcessId) return;
 
-        const tableBody = document.querySelector('#reportFreshTable tbody');
-        tableBody.innerHTML = `
-            <tr>
-                <td colspan="4" class="text-center py-4">
-                    <div class="spinner-border spinner-border-sm text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                    <span class="ms-2">Loading report fresh data...</span>
-                </td>
-            </tr>
-        `;
+        const tbody = document.querySelector('#reportFreshTable tbody');
+        tbody.innerHTML = `<tr><td colspan="20" class="text-center text-muted">Loading...</td></tr>`;
 
-        // Untuk sekarang kita akan menggunakan data statis seperti contoh
-        // Anda bisa mengganti ini dengan API call ke backend nanti
-        setTimeout(() => {
-            renderReportFreshTable();
-        }, 500);
+        fetch("{{ route('trial.report_multi') }}", {
+            method: "POST",
+            headers: {
+                "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                project_id: projectId,
+                process_id: selectedProcessId
+            })
+        })
+            .then(res => res.json())
+            .then(data => renderReportFreshTable(data))
+            .catch(err => {
+                console.error(err);
+                tbody.innerHTML = `<tr><td colspan="20" class="text-center text-danger">Error loading report</td></tr>`;
+            });
     }
+
 
     /* ===============================
        RENDER REPORT FRESH TABLE
     ================================ */
-    function renderReportFreshTable() {
-        const tableBody = document.querySelector('#reportFreshTable tbody');
+function renderReportFreshTable(data) {
+    const table = document.querySelector('#reportFreshTable');
+    const tbody = table.querySelector('tbody');
+    tbody.innerHTML = '';
 
-        // Data statis contoh - Anda bisa mengganti dengan data dinamis dari API
-        const reportData = {
-            casting: {
-                total: 100,
-                items: [
-                    { name: 'OK', value: 78, percentage: 78.00 },
-                    { name: 'Trial Shot', value: 22, percentage: 22.00 },
-                    { name: 'Kassa', value: 0, percentage: 0.00 },
-                    { name: 'X-ray', value: 0, percentage: 0.00 },
-                    { name: 'Tsukentsu', value: 0, percentage: 0.00 },
-                    { name: 'Hubutsu', value: 0, percentage: 0.00 },
-                    { name: 'Others', value: 0, percentage: 0.00 }
-                ]
-            }
-            // Anda bisa menambahkan kategori lain di sini
-        };
+    if (!data || !data.columns || data.columns.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="20" class="text-center text-muted">No data</td>
+            </tr>`;
+        return;
+    }
 
-        let html = '';
+    const columns = data.columns;
+    const rows = data.data || {};
+    const categories = data.categories || [];
 
-        Object.keys(reportData).forEach(category => {
-            const categoryData = reportData[category];
+    /* ===== HEADER ===== */
+    table.querySelector('thead').outerHTML = `
+        <thead class="text-center">
+            <tr>
+                <th rowspan="2">Category</th>
+                <th rowspan="2">Report Fresh</th>
+                ${columns.map(c => `<th colspan="2">${c}</th>`).join('')}
+            </tr>
+            <tr>
+                ${columns.map(() => `<th>Quant.</th><th>%</th>`).join('')}
+            </tr>
+        </thead>
+    `;
 
-            // Header kategori
-            html += `
-                <tr data-category="${category}" class="category-row fw-bold">
-                    <td rowspan="${categoryData.items.length + 1}" 
-                        class="fw-bold text-center align-middle">
-                        ${category.charAt(0).toUpperCase() + category.slice(1)}
+    let html = '';
+
+    /* ======================
+       OK ROW (tambahkan class ok-row)
+    ====================== */
+    html += `
+        <tr class="fw-bold ok-row">
+            <td></td>
+            <td class="fw-bold">OK</td>
+            ${columns.map(col => {
+                const item = rows.OK?.OK?.[col] ?? { quant: 0, percent: 0 };
+                const target = data.targets?.[col] ?? 0;
+                const cls = item.percent >= target
+                    ? 'text-success-bold'
+                    : 'text-danger-bold';
+                return `
+                    <td class="text-end fw-bold">${item.quant}</td>
+                    <td class="text-end fw-bold ${cls}">
+                        ${Number(item.percent).toFixed(2)}%
                     </td>
-                    <td>${categoryData.items[0].name}</td>
-                    <td class="text-end fw-bold">${categoryData.items[0].value}</td>
-                    <td class="text-end text-danger fw-bold">${categoryData.items[0].percentage.toFixed(2)}%</td>
-                </tr>
-            `;
-
-            // Item lainnya
-            for (let i = 1; i < categoryData.items.length; i++) {
-                html += `
-                    <tr data-category="${category}">
-                        <td>${categoryData.items[i].name}</td>
-                        <td class="text-end">${categoryData.items[i].value}</td>
-                        <td class="text-end">${categoryData.items[i].percentage.toFixed(2)}%</td>
-                    </tr>
                 `;
-            }
+            }).join('')}
+        </tr>
+    `;
 
-            // Total
+    /* ======================
+       CATEGORY (TRANS_TYPE)
+    ====================== */
+    categories.forEach(category => {
+        const defects = rows[category] || {};
+        const defectKeys = Object.keys(defects);
+        const rowspan = defectKeys.length;
+
+        defectKeys.forEach((defect, i) => {
             html += `
-                <tr data-category="${category}" class="fw-bold">
-                    <td>Jumlah</td>
-                    <td class="text-end">${categoryData.total}</td>
-                    <td class="text-end">100,00%</td>
+                <tr class="${i === 0 ? 'after-ok' : ''}">
+                    ${i === 0 ? `
+                        <td rowspan="${rowspan}" class="text-center align-middle fw-bold">
+                            ${category}
+                        </td>` : ``}
+                    <td>${defect}</td>
+                    ${columns.map(col => {
+                        const item = defects[defect]?.[col] ?? { quant: 0, percent: 0 };
+                        return `
+                            <td class="text-end">${item.quant}</td>
+                            <td class="text-end">${Number(item.percent).toFixed(2)}%</td>
+                        `;
+                    }).join('')}
                 </tr>
             `;
         });
+    });
 
-        tableBody.innerHTML = html;
+    /* ======================
+       JUMLAH
+    ====================== */
+    html += `
+        <tr class="fw-bold border-top jumlah-row">
+            <td colspan="2" class="fw-bold">Jumlah</td>
+            ${columns.map(col => {
+                const item = rows.Jumlah?.Jumlah?.[col] ?? { quant: 0, percent: 100 };
+                return `
+                    <td class="text-end fw-bold">${item.quant}</td>
+                    <td class="text-end fw-bold">${Number(item.percent).toFixed(2)}%</td>
+                `;
+            }).join('')}
+        </tr>
+    `;
 
-        // Initialize search functionality
-        initReportFreshSearch();
-    }
+    tbody.innerHTML = html;
+}
+
+
+
+
 
     /* ===============================
        INITIALIZE REPORT FRESH SEARCH

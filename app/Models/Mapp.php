@@ -637,7 +637,6 @@ class Mapp
                     DEFECT_ID,
                     TRANS_TYPE,
                     \"ORDER\",
-                    PERCT,
                     OK,
                     ACTUAL,
                     STATUS1,
@@ -652,7 +651,6 @@ class Mapp
                     d.ID,
                     d.DEF_MAKING,
                     d.\"ORDER\",
-                    :perct,
                     :ok,
                     :actual,
                     1,
@@ -666,10 +664,10 @@ class Mapp
                 'stdproc_id' => $trial->stdproc_id,
                 'pic' => $trial->pic,
                 'trial_rr_id' => $trial->id,
-                'perct' => $trial->perct,
                 'ok' => $trial->ok,
                 'actual' => $trial->actual,
             ]);
+
 
 
             DB::connection('oracle')->commit();
@@ -689,8 +687,9 @@ class Mapp
         }
     }
 
-    public static function insert_quant(){
-        
+    public static function insert_quant()
+    {
+
     }
 
 
