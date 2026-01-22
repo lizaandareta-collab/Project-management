@@ -48,17 +48,18 @@ Route::middleware(['web'])->group(function () {
     Route::post('/trial/standard', [App::class, 'trial_standard'])->name('trial.standard');
     Route::post('/trial/next-no', [App::class, 'trial_next_no'])->name('trial.next_no');
     Route::post('/trial/report-data', [App::class, 'trial_report_data'])
-    ->name('trial.report.data');
+        ->name('trial.report.data');
     Route::post('/trial/report-multi', [App::class, 'trial_report_multi'])->name('trial.report_multi');
+    Route::post('/trial/report-detail', [App::class, 'trial_report_detail'])->name('trial.report.detail');
+    Route::post('/trial/update-detail', [App::class, 'trial_update_detail'])->name('trial.update.detail');
 
-    
 
     // Route::get('/trial_report/{project}/{process}/{trial}', [App::class, 'trailreport'])
 //     ->name('trailreport');
-Route::get(
-    '/trailreport/{project}/{process}/{id}',
-    [App::class, 'trailreport']
-)->name('trailreport');
+    Route::get(
+        '/trailreport/{project}/{process}/{id}',
+        [App::class, 'trailreport']
+    )->name('trailreport');
 
     Route::post('/trial_report/insert-quant', [App::class, 'insertQuant']);
 

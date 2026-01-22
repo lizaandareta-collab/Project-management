@@ -687,11 +687,24 @@ class Mapp
         }
     }
 
-    public static function insert_quant()
-    {
-
+    public static function update_trial_detail($req)
+{
+    try {
+        DB::connection('oracle')->table('PROMAN.TRIAL_RR_DET')
+            ->where('PROJECT_ID', $req->project_id)
+            ->where('PROCESS_ID', $req->process_id)
+            ->where('TRIAL_NO', $req->trial_id)
+            ->where('DEFECT_ID', $req->defect_id)
+            ->update([
+                'NG' => $req->ng,
+                'PERCT' => $req->perct
+            ]);
+        
+        return true;
+    } catch (\Exception $e) {
+        throw $e;
     }
-
+}
 
 
     // public static function insert_task($req)

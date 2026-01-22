@@ -176,25 +176,43 @@ class Maio
             ->value('TRIAL_NO');
     }
 
-   public static function get_trial_rr_det($project_id, $process_id, $trial_id)
+public static function get_trial_rr_det($project_id, $process_id, $trial_id)
 {
     return self::db()
         ->table('PROMAN.TRIAL_RR_DET as d')
-        ->leftJoin(
-            'PROMAN.DEFECT as f',
-            'f.ID',
-            '=',
-            'd.DEFECT_ID'
-        )
+        ->leftJoin('PROMAN.DEFECT as f', 'f.ID', '=', 'd.DEFECT_ID')
         ->where('d.PROJECT_ID', $project_id)
         ->where('d.PROCESS_ID', $process_id)
-        ->where('d.TRIAL_NO', $trial_id) // ID dari TRIAL_RR
+        ->where('d.TRIAL_NO', $trial_id)
+        ->orderBy('d.ID') 
         ->select([
             'd.TRANS_TYPE',
             'd.DEFECT_ID',
-            'f.DEFECT as DEFECT_NAME', // 🔥 TEXT DEFECT
+            'f.DEFECT as DEFECT_NAME',
             'd.NG',
             'd.PERCT'
+        ])
+        ->get();
+}
+
+public static function get_trial_rr_det_all($project_id, $process_id, $trial_id)
+{
+    return self::db()
+        ->table('PROMAN.TRIAL_RR_DET as d')
+        ->leftJoin('PROMAN.DEFECT as f', 'f.ID', '=', 'd.DEFECT_ID')
+        ->where('d.PROJECT_ID', $project_id)
+        ->where('d.PROCESS_ID', $process_id)
+        ->where('d.TRIAL_NO', $trial_id)
+        ->orderBy('d.ID')
+        ->select([
+            'd.ID',
+            'd.TRANS_TYPE',
+            'd.DEFECT_ID',
+            'f.DEFECT as DEFECT_NAME',
+            'd.NG',
+            'd.PERCT',
+            'd.OK',
+            'd.ACTUAL'
         ])
         ->get();
 }

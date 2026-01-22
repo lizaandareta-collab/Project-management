@@ -214,16 +214,44 @@
     #reportFreshTable td {
         vertical-align: middle;
     }
-    /* Garis bawah OK → putih (kolom Category saja) */
-/* table.table-bordered tr.ok-row td:first-child {
-    border-bottom: 1px solid #fff !important;
-} */
 
-/* Garis atas baris setelah OK → putih (kolom Category saja) */
-/* table.table-bordered tr.after-ok td:first-child {
-    border-top: 1px solid #fff !important;
-} */
+    /* Edit Cell Styling - HANYA untuk Quant */
+    .edit-cell {
+        cursor: pointer;
+        position: relative;
+        min-height: 40px;
+    }
 
+    .edit-cell:hover {
+        background-color: #f8f9fa;
+    }
+
+    .edit-cell .edit-icon {
+        display: none;
+        position: absolute;
+        right: 5px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+    }
+
+    .edit-cell:hover .edit-icon {
+        display: block;
+    }
+
+    .percent-cell {
+        cursor: default;
+        position: relative;
+        min-height: 40px;
+    }
+
+    .edit-input {
+        width: 80px;
+        padding: 2px 5px;
+        border: 1px solid #dee2e6;
+        border-radius: 3px;
+        text-align: right;
+    }
 </style>
 
 <div class="nk-content">
@@ -251,7 +279,6 @@
                                         <?= $p->description ?>
                                     </button>
                                     <?php } ?>
-
                                 </div>
                             </div>
                         </div>
@@ -278,7 +305,7 @@
                                                 <th>Casting (Status Trial)</th>
                                                 <th>Machine</th>
                                                 <th>Date</th>
-                                                <th>Process</th>
+                                                <th>Process (QTY)</th>
                                                 <th>OK</th>
                                                 <th>OK Ratio Target</th>
                                                 <th>%</th>
@@ -303,7 +330,7 @@
                             <div class="card-inner">
                                 <div class="nk-block-head mb-3">
                                     <div class="nk-block-head-content">
-                                        <h6 class="mb-0">Report Fresh - <span id="selectedProcessReport"></span></h6>
+                                        <h6 class="mb-0">Report - <span id="selectedProcessReport"></span></h6>
                                     </div>
                                 </div>
 
@@ -400,7 +427,7 @@
 
                         <!-- Row 2 -->
                         <div class="col-md-3">
-                            <label class="form-label">Process</label>
+                            <label class="form-label">Process (QTY)</label>
                             <input type="number" name="actual" class="form-control">
                         </div>
                         <div class="col-md-3">
@@ -459,6 +486,102 @@
             </form>
         </div>
     </div>
+
+    <!-- Modal Edit Detail - Sederhana seperti Add Trial -->
+    <div class="modal fade" id="modalEditDetail" tabindex="-1">
+        <div class="modal-dialog modal-md">
+            <form id="formEditDetail">
+                @csrf
+                <input type="hidden" name="project_id" value="{{ request()->route('id') }}">
+                <input type="hidden" id="editProcessId" name="process_id">
+                <input type="hidden" id="editTrialId" name="trial_id">
+                <input type="hidden" id="editDefectId" name="defect_id">
+                <input type="hidden" id="editTransType">
+                <input type="hidden" id="editDefectName">
+                <input type="hidden" id="editActualQty">
+                <input type="hidden" id="editColumnName">
+                <input type="hidden" id="editCurrentValue">
+                <input type="hidden" id="editMaxValue">
+                <input type="hidden" id="editTrialKey">
+                
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Edit Detail</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body row g-3">
+                        <!-- Row 1 -->
+                        <div class="col-md-6">
+                            <label class="form-label">Trial</label>
+                            <input type="text" id="editTrialInfoDisplay" class="form-control" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Defect</label>
+                            <input type="text" id="editDefectNameDisplay" class="form-control" readonly>
+                        </div>
+
+                        <!-- Row 2 -->
+                        <div class="col-md-6">
+                            <label class="form-label">Category</label>
+                            <input type="text" id="editTransTypeDisplay" class="form-control" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Process Qty</label>
+                            <input type="text" id="editActualQtyDisplay" class="form-control" readonly>
+                        </div>
+
+                        <!-- Row 3 -->
+                        <div class="col-md-6">
+                            <label class="form-label">NG</label>
+                            <div class="input-group">
+                                <input type="number" 
+                                       id="editNgValue" 
+                                       name="ng" 
+                                       class="form-control" 
+                                       step="0.01"
+                                       min="0"
+                                       required
+                                       autocomplete="off">
+                                <span class="input-group-text">pcs</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">%</label>
+                            <div class="input-group">
+                                <input type="number" 
+                                       id="editPerctValue" 
+                                       name="perct" 
+                                       class="form-control" 
+                                       step="0.01"
+                                       min="0"
+                                       max="100"
+                                       readonly>
+                                <span class="input-group-text">%</span>
+                            </div>
+                        </div>
+
+                        <!-- Row 4 -->
+                        <div class="col-md-6">
+                            <label class="form-label">Current NG</label>
+                            <input type="text" id="editCurrentNgDisplay" class="form-control" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Max NG Allowed</label>
+                            <input type="text" id="editMaxNgDisplay" class="form-control" readonly>
+                        </div>
+                    </div>
+                    <div class="modal-footer d-flex">
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
+                            Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary ms-auto" id="btnUpdateDetail">
+                            Save
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 <!-- Highcharts Libraries -->
@@ -471,20 +594,28 @@
     let selectedProcessId = null;
     const projectId = "{{ request()->route('id') }}";
     let trialDataTable = null;
-
-    document.addEventListener('DOMContentLoaded', function () {
-        const fileInput = document.getElementById('fileInput');
-
-        fileInput.addEventListener('change', function () {
-
-        });
-    });
-
+    let reportFreshData = null;
 
     /* ===============================
-       SELECT PROCESS
+       INITIALIZE
     ================================ */
     document.addEventListener('DOMContentLoaded', function () {
+        // Event listener untuk file input
+        const fileInput = document.getElementById('fileInput');
+        if (fileInput) {
+            fileInput.addEventListener('change', function () {
+                const fileList = document.getElementById('fileList');
+                fileList.innerHTML = '';
+                
+                Array.from(this.files).forEach((file, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'file-item';
+                    div.innerHTML = `<span class="badge bg-primary me-2">${index + 1}</span> ${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
+                    fileList.appendChild(div);
+                });
+            });
+        }
+
         // Pastikan semua button kembali ke state normal saat halaman dimuat
         document.querySelectorAll('.btn-process').forEach(btn => {
             btn.classList.remove('btn-primary');
@@ -520,7 +651,64 @@
                 loadReportFreshData();
             });
         });
+
+        // Initialize auto calculate percent for Add Trial modal
+        initAutoCalculatePercent();
+        
+        // Initialize auto calculate percent for Edit Detail modal
+        initEditDetailAutoCalculate();
     });
+
+    /* ===============================
+       AUTO CALCULATE PERCENT FOR ADD TRIAL
+    ================================ */
+    function initAutoCalculatePercent() {
+        const actualInput = document.querySelector('input[name="actual"]');
+        const okInput = document.querySelector('input[name="ok"]');
+        const perctInput = document.querySelector('input[name="perct"]');
+
+        function calculatePercent() {
+            const actual = parseFloat(actualInput.value);
+            const ok = parseFloat(okInput.value);
+
+            if (!isNaN(actual) && actual > 0 && !isNaN(ok)) {
+                const percent = (ok / actual) * 100;
+                perctInput.value = percent.toFixed(2);
+            } else {
+                perctInput.value = '';
+            }
+        }
+
+        if (actualInput && okInput && perctInput) {
+            actualInput.addEventListener('input', calculatePercent);
+            okInput.addEventListener('input', calculatePercent);
+        }
+    }
+
+    /* ===============================
+       AUTO CALCULATE PERCENT FOR EDIT DETAIL
+    ================================ */
+    function initEditDetailAutoCalculate() {
+        const editNgInput = document.getElementById('editNgValue');
+        if (editNgInput) {
+            editNgInput.addEventListener('input', function() {
+                calculateEditDetailPercent();
+            });
+        }
+    }
+
+    function calculateEditDetailPercent() {
+        const ngValue = parseFloat(document.getElementById('editNgValue').value);
+        const actualQty = parseFloat(document.getElementById('editActualQty').value);
+        const perctInput = document.getElementById('editPerctValue');
+
+        if (!isNaN(ngValue) && !isNaN(actualQty) && actualQty > 0) {
+            const percent = (ngValue / actualQty) * 100;
+            perctInput.value = percent.toFixed(2);
+        } else {
+            perctInput.value = '';
+        }
+    }
 
     function formatModalTarget(val) {
         if (val === null || val === '' || isNaN(val)) return '';
@@ -528,7 +716,7 @@
     }
 
     /* ===============================
-       LOAD REAL DATA
+       LOAD TRIAL DATA
     ================================ */
     function loadTrialData() {
         if (!selectedProcessId) return;
@@ -537,7 +725,7 @@
         const tableBody = document.querySelector('#trialDataTable tbody');
         tableBody.innerHTML = `
             <tr>
-                <td colspan="13" class="text-center py-4">
+                <td colspan="14" class="text-center py-4">
                     <div class="spinner-border text-primary" role="status">
                         <span class="visually-hidden">Loading...</span>
                     </div>
@@ -571,7 +759,7 @@
                 console.error('Error loading trial data:', err);
                 tableBody.innerHTML = `
                 <tr>
-                    <td colspan="13" class="text-center text-danger py-4">
+                    <td colspan="14" class="text-center text-danger py-4">
                         Error loading data. Please try again.
                     </td>
                 </tr>
@@ -600,36 +788,40 @@
             })
         })
             .then(res => res.json())
-            .then(data => renderReportFreshTable(data))
+            .then(data => {
+                reportFreshData = data;
+                renderReportFreshTable(data);
+                initReportFreshSearch();
+            })
             .catch(err => {
-                console.error(err);
+                console.error('Error loading report fresh data:', err);
                 tbody.innerHTML = `<tr><td colspan="20" class="text-center text-danger">Error loading report</td></tr>`;
             });
     }
 
-
     /* ===============================
        RENDER REPORT FRESH TABLE
     ================================ */
-function renderReportFreshTable(data) {
-    const table = document.querySelector('#reportFreshTable');
-    const tbody = table.querySelector('tbody');
-    tbody.innerHTML = '';
+    function renderReportFreshTable(data) {
+        const table = document.querySelector('#reportFreshTable');
+        const tbody = table.querySelector('tbody');
+        tbody.innerHTML = '';
 
-    if (!data || !data.columns || data.columns.length === 0) {
-        tbody.innerHTML = `
+        if (!data || !data.columns || data.columns.length === 0) {
+            tbody.innerHTML = `
             <tr>
                 <td colspan="20" class="text-center text-muted">No data</td>
             </tr>`;
-        return;
-    }
+            return;
+        }
 
-    const columns = data.columns;
-    const rows = data.data || {};
-    const categories = data.categories || [];
+        const columns = data.columns;
+        const rows = data.data || {};
+        const categories = data.categories || [];
+        const trials = data.trials || {};
 
-    /* ===== HEADER ===== */
-    table.querySelector('thead').outerHTML = `
+        /* ===== HEADER ===== */
+        table.querySelector('thead').outerHTML = `
         <thead class="text-center">
             <tr>
                 <th rowspan="2">Category</th>
@@ -642,41 +834,43 @@ function renderReportFreshTable(data) {
         </thead>
     `;
 
-    let html = '';
+        let html = '';
 
-    /* ======================
-       OK ROW (tambahkan class ok-row)
-    ====================== */
-    html += `
+        /* ======================
+           OK ROW (NON EDITABLE)
+        ====================== */
+        html += `
         <tr class="fw-bold ok-row">
             <td></td>
             <td class="fw-bold">OK</td>
             ${columns.map(col => {
-                const item = rows.OK?.OK?.[col] ?? { quant: 0, percent: 0 };
-                const target = data.targets?.[col] ?? 0;
-                const cls = item.percent >= target
-                    ? 'text-success-bold'
-                    : 'text-danger-bold';
-                return `
+            const item = rows.OK?.OK?.[col] ?? { quant: 0, percent: 0 };
+            const target = data.targets?.[col] ?? 0;
+            const cls = item.percent >= target
+                ? 'text-success-bold'
+                : 'text-danger-bold';
+            return `
                     <td class="text-end fw-bold">${item.quant}</td>
                     <td class="text-end fw-bold ${cls}">
                         ${Number(item.percent).toFixed(2)}%
                     </td>
                 `;
-            }).join('')}
+        }).join('')}
         </tr>
     `;
 
-    /* ======================
-       CATEGORY (TRANS_TYPE)
-    ====================== */
-    categories.forEach(category => {
-        const defects = rows[category] || {};
-        const defectKeys = Object.keys(defects);
-        const rowspan = defectKeys.length;
+        /* ======================
+           CATEGORY (TRANS_TYPE)
+        ====================== */
+        categories.forEach(category => {
+            const defects = rows[category] || {};
+            const defectKeys = Object.keys(defects);
+            const rowspan = defectKeys.length;
 
-        defectKeys.forEach((defect, i) => {
-            html += `
+            defectKeys.forEach((defect, i) => {
+                const defectData = defects[defect];
+                
+                html += `
                 <tr class="${i === 0 ? 'after-ok' : ''}">
                     ${i === 0 ? `
                         <td rowspan="${rowspan}" class="text-center align-middle fw-bold">
@@ -684,39 +878,245 @@ function renderReportFreshTable(data) {
                         </td>` : ``}
                     <td>${defect}</td>
                     ${columns.map(col => {
-                        const item = defects[defect]?.[col] ?? { quant: 0, percent: 0 };
-                        return `
-                            <td class="text-end">${item.quant}</td>
-                            <td class="text-end">${Number(item.percent).toFixed(2)}%</td>
+                    const item = defectData?.[col] ?? { quant: 0, percent: 0 };
+                    const trialInfo = trials[col];
+                    const trialId = trialInfo?.id;
+                    const defectId = trialInfo?.defectIds?.[defect];
+                    const actualQty = item.actual || 0;
+                    const maxQuant = actualQty - (item.quant || 0);
+                    
+                    // HANYA Quant yang bisa diedit (ada icon)
+                    return `
+                            <td class="text-end edit-cell"
+                                data-trial-id="${trialId}"
+                                data-defect-id="${defectId}"
+                                data-trans-type="${category}"
+                                data-defect-name="${defect}"
+                                data-column-name="quant"
+                                data-current-value="${item.quant}"
+                                data-max-value="${maxQuant}"
+                                data-trial-key="${col}"
+                                data-actual="${actualQty}"
+                                data-current-percent="${item.percent}">
+                                ${item.quant}
+                                <em class="icon ni ni-edit edit-icon"></em>
+                            </td>
+                            <td class="text-end percent-cell">
+                                ${Number(item.percent).toFixed(2)}%
+                            </td>
                         `;
-                    }).join('')}
+                }).join('')}
                 </tr>
             `;
+            });
         });
-    });
 
-    /* ======================
-       JUMLAH
-    ====================== */
-    html += `
+        /* ======================
+           JUMLAH
+        ====================== */
+        html += `
         <tr class="fw-bold border-top jumlah-row">
             <td colspan="2" class="fw-bold">Jumlah</td>
             ${columns.map(col => {
-                const item = rows.Jumlah?.Jumlah?.[col] ?? { quant: 0, percent: 100 };
-                return `
+            const item = rows.Jumlah?.Jumlah?.[col] ?? { quant: 0, percent: 100 };
+            return `
                     <td class="text-end fw-bold">${item.quant}</td>
                     <td class="text-end fw-bold">${Number(item.percent).toFixed(2)}%</td>
                 `;
-            }).join('')}
+        }).join('')}
         </tr>
     `;
 
-    tbody.innerHTML = html;
-}
+        tbody.innerHTML = html;
+        
+        // Initialize edit functionality - HANYA untuk sel Quant
+        initReportFreshEdit();
+    }
 
+    /* ===============================
+       INITIALIZE REPORT FRESH EDIT
+       HANYA untuk sel Quant (td pertama)
+    ================================ */
+    function initReportFreshEdit() {
+        // Event delegation untuk klik sel Quant SAJA
+        document.querySelector('#reportFreshTable tbody').addEventListener('click', function(e) {
+            const target = e.target;
+            
+            // Jika yang diklik adalah icon edit
+            if (target.classList.contains('edit-icon') || target.closest('.edit-icon')) {
+                const cell = target.closest('td');
+                // Hanya cell dengan class edit-cell (Quant) yang bisa diedit
+                if (cell && cell.classList.contains('edit-cell')) {
+                    openEditModal(cell);
+                }
+            }
+        });
+    }
 
+    /* ===============================
+       OPEN EDIT MODAL
+    ================================ */
+    function openEditModal(cell) {
+        // Ambil data dari atribut data-*
+        const trialId = cell.dataset.trialId;
+        const defectId = cell.dataset.defectId;
+        const transType = cell.dataset.transType;
+        const defectName = cell.dataset.defectName;
+        const currentValue = cell.dataset.currentValue || '0';
+        const currentPercent = cell.dataset.currentPercent || '0';
+        const maxValue = cell.dataset.maxValue || '100';
+        const trialKey = cell.dataset.trialKey;
+        const actualQty = cell.dataset.actual || '0';
+        
+        // Validasi data
+        if (!trialId || !defectId) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Warning',
+                text: 'Cannot edit this cell. Data incomplete.'
+            });
+            return;
+        }
+        
+        // Isi modal fields
+        document.getElementById('editProcessId').value = selectedProcessId;
+        document.getElementById('editTrialId').value = trialId;
+        document.getElementById('editDefectId').value = defectId;
+        document.getElementById('editTransType').value = transType;
+        document.getElementById('editDefectName').value = defectName;
+        document.getElementById('editActualQty').value = actualQty;
+        document.getElementById('editCurrentValue').value = currentValue;
+        document.getElementById('editMaxValue').value = maxValue;
+        document.getElementById('editTrialKey').value = trialKey;
+        
+        // Set display values
+        document.getElementById('editTrialInfoDisplay').value = trialKey;
+        document.getElementById('editDefectNameDisplay').value = defectName;
+        document.getElementById('editTransTypeDisplay').value = transType;
+        document.getElementById('editActualQtyDisplay').value = actualQty;
+        
+        // Set current values
+        document.getElementById('editCurrentNgDisplay').value = currentValue + ' pcs';
+        document.getElementById('editMaxNgDisplay').value = maxValue + ' pcs';
+        
+        // Set input values
+        document.getElementById('editNgValue').value = currentValue;
+        document.getElementById('editPerctValue').value = currentPercent;
+        
+        // Calculate initial percentage
+        calculateEditDetailPercent();
+        
+        // Set max untuk NG input
+        document.getElementById('editNgValue').max = maxValue;
+        
+        // Show modal
+        new bootstrap.Modal(document.getElementById('modalEditDetail')).show();
+        
+        // Focus pada NG input field
+        setTimeout(() => {
+            document.getElementById('editNgValue').focus();
+            document.getElementById('editNgValue').select();
+        }, 500);
+    }
 
-
+    /* ===============================
+       UPDATE REPORT FRESH DATA
+    ================================ */
+    document.getElementById('formEditDetail').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const ngValue = parseFloat(document.getElementById('editNgValue').value);
+        const perctValue = parseFloat(document.getElementById('editPerctValue').value);
+        const maxValue = parseFloat(document.getElementById('editMaxValue').value);
+        
+        // Validasi
+        if (isNaN(ngValue) || ngValue < 0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid Value',
+                text: 'Please enter a valid positive number for NG'
+            });
+            return;
+        }
+        
+        if (ngValue > maxValue) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Value Exceeds Limit',
+                text: `Maximum allowed NG value is ${maxValue} pcs`
+            });
+            return;
+        }
+        
+        // Validasi percentage calculation
+        const actualQty = parseFloat(document.getElementById('editActualQty').value);
+        if (actualQty > 0) {
+            const calculatedPercent = (ngValue / actualQty) * 100;
+            if (Math.abs(calculatedPercent - perctValue) > 0.01) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Calculation Error',
+                    text: 'Percentage calculation mismatch. Please check the values.'
+                });
+                return;
+            }
+        }
+        
+        const formData = {
+            project_id: projectId,
+            process_id: selectedProcessId,
+            trial_id: document.getElementById('editTrialId').value,
+            defect_id: document.getElementById('editDefectId').value,
+            ng: ngValue,
+            perct: perctValue
+        };
+        
+        const submitBtn = document.getElementById('btnUpdateDetail');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...';
+        
+        fetch("{{ route('trial.update.detail') }}", {
+            method: "POST",
+            headers: {
+                "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                // Close modal
+                bootstrap.Modal.getInstance(document.getElementById('modalEditDetail')).hide();
+                
+                // Reload data
+                loadReportFreshData();
+                loadTrialData(); // Reload juga trial data untuk sinkronisasi
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: data.message || 'Data updated successfully',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            } else {
+                throw new Error(data.message || 'Failed to update data');
+            }
+        })
+        .catch(err => {
+            console.error('Update error:', err);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: err.message || 'Failed to update data. Please try again.'
+            });
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Save';
+        });
+    });
 
     /* ===============================
        INITIALIZE REPORT FRESH SEARCH
@@ -781,7 +1181,7 @@ function renderReportFreshTable(data) {
         if (!data || data.length === 0) {
             tableBody.innerHTML = `
                 <tr>
-                    <td colspan="13" class="text-center text-muted py-4">
+                    <td colspan="14" class="text-center text-muted py-4">
                         No trial data available
                     </td>
                 </tr>
@@ -841,11 +1241,8 @@ function renderReportFreshTable(data) {
     <td class="${beratClass}">${beratVal.toFixed(1)}</td>
     <td>${row.pic || ''}</td>
     <td>${filesHtml}</td>
-
 </tr>
 `;
-
-
         });
 
         tableBody.innerHTML = html;
@@ -855,7 +1252,7 @@ function renderReportFreshTable(data) {
     }
 
     /* ===============================
-       INITIALIZE DATATABLE - BUTTONS DI TENGAH, PAGINATION DI KANAN
+       INITIALIZE DATATABLE
     ================================ */
     function initDataTable(data) {
         trialDataTable = $('#trialDataTable').DataTable({
@@ -1076,13 +1473,21 @@ function renderReportFreshTable(data) {
             },
             yAxis: {
                 min: 0,
+                max: 100,
                 title: {
                     text: 'Percentage (%)'
                 },
                 labels: {
-                    format: '{value}%'
+                    formatter: function () {
+                        return this.value
+                            .toLocaleString('id-ID', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                            }) + '%';
+                    }
                 }
             },
+
             tooltip: {
                 headerFormat: '<span style="font-size:10px">Trial {point.key}</span><table>',
                 pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
@@ -1198,9 +1603,16 @@ function renderReportFreshTable(data) {
                 crosshair: true
             },
             yAxis: {
-                min: 0,
                 title: {
                     text: 'Berat'
+                },
+                labels: {
+                    formatter: function () {
+                        return this.value.toLocaleString('id-ID', {
+                            minimumFractionDigits: 1,
+                            maximumFractionDigits: 1
+                        });
+                    }
                 }
             },
             tooltip: {
@@ -1284,7 +1696,6 @@ function renderReportFreshTable(data) {
             });
     }
 
-
     /* ===============================
        ADD TRIAL BUTTON
     ================================ */
@@ -1315,7 +1726,7 @@ function renderReportFreshTable(data) {
     });
 
     /* ===============================
-       SUBMIT ADD TRIAL - SEDERHANA
+       SUBMIT ADD TRIAL
     ================================ */
     document.getElementById('formAddTrial').addEventListener('submit', function (e) {
         e.preventDefault();
@@ -1351,6 +1762,7 @@ function renderReportFreshTable(data) {
                 if (res.status) {
                     // Success
                     loadTrialData();
+                    loadReportFreshData();
                     bootstrap.Modal.getInstance(document.getElementById('modalAddTrial')).hide();
                     this.reset();
                     document.getElementById('fileList').innerHTML = '';
@@ -1382,28 +1794,4 @@ function renderReportFreshTable(data) {
                 submitBtn.innerHTML = 'Save';
             });
     });
-
-    /* ===============================
-       AUTO CALCULATE PERCENT (%)
-    ================================ */
-    const actualInput = document.querySelector('input[name="actual"]');
-    const okInput = document.querySelector('input[name="ok"]');
-    const perctInput = document.querySelector('input[name="perct"]');
-
-    function calculatePercent() {
-        const actual = parseFloat(actualInput.value);
-        const ok = parseFloat(okInput.value);
-
-        if (!isNaN(actual) && actual > 0 && !isNaN(ok)) {
-            const percent = (ok / actual) * 100;
-            perctInput.value = percent.toFixed(2);
-        } else {
-            perctInput.value = '';
-        }
-    }
-
-    if (actualInput && okInput && perctInput) {
-        actualInput.addEventListener('input', calculatePercent);
-        okInput.addEventListener('input', calculatePercent);
-    }
 </script>

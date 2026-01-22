@@ -1751,106 +1751,178 @@ class App extends Controller
         ]);
     }
 
-    public function trial_report_multi(Request $request)
-    {
-        $project_id = $request->project_id;
-        $process_id = $request->process_id;
+public function trial_report_multi(Request $request)
+{
+    $project_id = $request->project_id;
+    $process_id = $request->process_id;
 
-        $trials = Maio::get_trial_rr($project_id, $process_id)->reverse()->values();
+    $trials = Maio::get_trial_rr($project_id, $process_id)->reverse()->values();
 
-        if ($trials->isEmpty()) {
-            return response()->json([
-                'columns' => [],
-                'targets' => [],
-                'data' => [],
-                'categories' => []
-            ]);
-        }
-
-        $report = [];
-        $categories = [];
-
-        foreach ($trials as $trial) {
-
-            $trialKey = $trial->trial_no . ' ' . $trial->trial_stat;
-
-            /* =====================
-               OK (TIDAK DIUBAH)
-            ===================== */
-            $okPercent = (float) ($trial->perct ?? 0);
-
-            $report['OK']['OK'][$trialKey] = [
-                'quant' => (float) $trial->ok,
-                'percent' => $okPercent
-            ];
-
-            /* =====================
-               TOTAL UNTUK JUMLAH
-            ===================== */
-            $totalQuant = (float) $trial->ok;
-            $totalPercent = $okPercent;
-
-            /* =====================
-               DETAIL (NG)
-            ===================== */
-            $details = Maio::get_trial_rr_det(
-                $project_id,
-                $process_id,
-                $trial->id
-            );
-
-            foreach ($details as $det) {
-
-                $category = $det->trans_type;
-                $defect = $det->defect_name ?? $det->defect_id;
-
-                if (!isset($report[$category])) {
-                    $report[$category] = [];
-                    $categories[] = $category;
-                }
-
-                if (!isset($report[$category][$defect])) {
-                    $report[$category][$defect] = [];
-                }
-
-                $ngQuant = (float) ($det->ng ?? 0);
-                $ngPercent = (float) ($det->perct ?? 0);
-
-                // 👉 akumulasi JUMLAH
-                $totalQuant += $ngQuant;
-                $totalPercent += $ngPercent;
-
-                $report[$category][$defect][$trialKey] = [
-                    'quant' => $ngQuant,
-                    'percent' => $ngPercent
-                ];
-            }
-
-            /* =====================
-               JUMLAH (FIKS)
-            ===================== */
-            $report['Jumlah']['Jumlah'][$trialKey] = [
-                'quant' => $totalQuant,
-                'percent' => round($totalPercent, 2)
-            ];
-        }
-
-        /* TARGET OK */
-        $targets = [];
-        foreach ($trials as $trial) {
-            $targets[$trial->trial_no . ' ' . $trial->trial_stat] = (float) $trial->target;
-        }
-
+    if ($trials->isEmpty()) {
         return response()->json([
-            'columns' => $trials->map(fn($t) => $t->trial_no . ' ' . $t->trial_stat)->toArray(),
-            'targets' => $targets,
-            'categories' => array_values(array_unique($categories)),
-            'data' => $report
+            'columns' => [],
+            'targets' => [],
+            'trials' => [],
+            'data' => [],
+            'categories' => []
         ]);
     }
 
+    $report = [];
+    $categories = [];
+    $trialInfo = [];
 
+    foreach ($trials as $trial) {
+        $trialKey = $trial->trial_no . ' ' . $trial->trial_stat;
+        
+        // Simpan info trial
+        $trialInfo[$trialKey] = [
+            'id' => $trial->id,
+            'defectIds' => []
+        ];
 
+        /* OK */
+        $okPercent = (float) ($trial->perct ?? 0);
+
+        $report['OK']['OK'][$trialKey] = [
+            'quant' => (float) $trial->ok,
+            'percent' => $okPercent
+        ];
+
+        /* TOTAL UNTUK JUMLAH */
+        $totalQuant = (float) $trial->ok;
+        $totalPercent = $okPercent;
+
+        /* DETAIL (NG) */
+        $details = Maio::get_trial_rr_det(
+            $project_id,
+            $process_id,
+            $trial->id
+        );
+
+        foreach ($details as $det) {
+            $category = $det->trans_type;
+            $defect = $det->defect_name ?? $det->defect_id;
+            
+            // Simpan defect ID
+            $trialInfo[$trialKey]['defectIds'][$defect] = $det->defect_id;
+
+            if (!isset($report[$category])) {
+                $report[$category] = [];
+                $categories[] = $category;
+            }
+
+            if (!isset($report[$category][$defect])) {
+                $report[$category][$defect] = [];
+            }
+
+            $ngQuant = (float) ($det->ng ?? 0);
+            $ngPercent = (float) ($det->perct ?? 0);
+
+            $totalQuant += $ngQuant;
+            $totalPercent += $ngPercent;
+
+            $report[$category][$defect][$trialKey] = [
+                'quant' => $ngQuant,
+                'percent' => $ngPercent,
+                'actual' => $trial->actual
+            ];
+        }
+
+        /* JUMLAH */
+        $report['Jumlah']['Jumlah'][$trialKey] = [
+            'quant' => $totalQuant,
+            'percent' => round($totalPercent, 2)
+        ];
+    }
+
+    /* TARGET OK */
+    $targets = [];
+    foreach ($trials as $trial) {
+        $targets[$trial->trial_no . ' ' . $trial->trial_stat] = (float) $trial->target;
+    }
+
+    return response()->json([
+        'columns' => $trials->map(fn($t) => $t->trial_no . ' ' . $t->trial_stat)->toArray(),
+        'targets' => $targets,
+        'trials' => $trialInfo,
+        'categories' => array_values(array_unique($categories)),
+        'data' => $report
+    ]);
+}
+
+public function trial_report_detail(Request $request)
+{
+    $project_id = $request->project_id;
+    $process_id = $request->process_id;
+    $trial_id = $request->trial_id;
+    
+    $details = Maio::get_trial_rr_det_all($project_id, $process_id, $trial_id);
+    
+    return response()->json([
+        'success' => true,
+        'data' => $details
+    ]);
+}
+
+public function trial_update_detail(Request $request)
+{
+    try {
+        $rules = [
+            'project_id' => 'required',
+            'process_id' => 'required',
+            'trial_id' => 'required',
+            'defect_id' => 'required',
+        ];
+        
+        // Tambahkan rules berdasarkan field yang dikirim
+        if ($request->has('ng') && $request->ng !== null) {
+            $rules['ng'] = 'required|numeric|min:0';
+        }
+        
+        if ($request->has('perct') && $request->perct !== null) {
+            $rules['perct'] = 'required|numeric|min:0|max:100';
+        }
+        
+        // Validasi minimal harus ada salah satu
+        if (!$request->has('ng') && !$request->has('perct')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Either ng or perct must be provided'
+            ], 422);
+        }
+        
+        $validator = Validator::make($request->all(), $rules);
+        
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+        
+        $updated = Mapp::update_trial_detail($request);
+        
+        if ($updated) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Data berhasil diperbarui'
+            ]);
+        }
+        
+        return response()->json([
+            'success' => false,
+            'message' => 'Gagal memperbarui data'
+        ], 500);
+        
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => $e->getMessage()
+        ], 500);
+    }
+}
     public function trailreport($project, $process, $id)
     {
         $data = [

@@ -2440,11 +2440,17 @@
             },
             yAxis: {
                 min: 0,
+                max: 100,
                 title: {
                     text: 'Percentage (%)'
                 },
                 labels: {
-                    format: '{value}%'
+                    formatter: function () {
+                        return this.value.toLocaleString('id-ID', {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        }) + '%';
+                    }
                 }
             },
             tooltip: {
@@ -2579,6 +2585,15 @@
                 min: 0,
                 title: {
                     text: 'Berat'
+                },
+                tickInterval: 0.5, // ⬅️ supaya 15,0 → 15,5 → 16,0
+                labels: {
+                    formatter: function () {
+                        return this.value.toLocaleString('id-ID', {
+                            minimumFractionDigits: 1,
+                            maximumFractionDigits: 1
+                        });
+                    }
                 }
             },
             tooltip: {
