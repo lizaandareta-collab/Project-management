@@ -1,3 +1,9 @@
+<!-- Highcharts Libraries -->
+<script src="{{ asset('assets/js/highcharts-chart.js') }}"></script>
+<script src="{{ asset('assets/js/export-data-chart.js') }}"></script>
+<script src="{{ asset('assets/js/accessibility-chart.js') }}"></script>
+<script src="{{ asset('assets/js/adaptive-chart.js') }}"></script>
+
 <style>
     /* Select Process Area */
     .process-wrapper {
@@ -252,6 +258,10 @@
         border-radius: 3px;
         text-align: right;
     }
+
+    #fileList {
+        display: none !important;
+    }
 </style>
 
 <div class="nk-content">
@@ -503,7 +513,7 @@
                 <input type="hidden" id="editCurrentValue">
                 <input type="hidden" id="editMaxValue">
                 <input type="hidden" id="editTrialKey">
-                
+
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">Edit Detail</h5>
@@ -534,41 +544,29 @@
                         <div class="col-md-6">
                             <label class="form-label">NG</label>
                             <div class="input-group">
-                                <input type="number" 
-                                       id="editNgValue" 
-                                       name="ng" 
-                                       class="form-control" 
-                                       step="0.01"
-                                       min="0"
-                                       required
-                                       autocomplete="off">
+                                <input type="number" id="editNgValue" name="ng" class="form-control" step="0.01" min="0"
+                                    required autocomplete="off">
                                 <span class="input-group-text">pcs</span>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">%</label>
                             <div class="input-group">
-                                <input type="number" 
-                                       id="editPerctValue" 
-                                       name="perct" 
-                                       class="form-control" 
-                                       step="0.01"
-                                       min="0"
-                                       max="100"
-                                       readonly>
+                                <input type="number" id="editPerctValue" name="perct" class="form-control" step="0.01"
+                                    min="0" max="100" readonly>
                                 <span class="input-group-text">%</span>
                             </div>
                         </div>
 
                         <!-- Row 4 -->
-                        <div class="col-md-6">
+                        <!-- <div class="col-md-6">
                             <label class="form-label">Current NG</label>
                             <input type="text" id="editCurrentNgDisplay" class="form-control" readonly>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Max NG Allowed</label>
                             <input type="text" id="editMaxNgDisplay" class="form-control" readonly>
-                        </div>
+                        </div> -->
                     </div>
                     <div class="modal-footer d-flex">
                         <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
@@ -584,11 +582,6 @@
     </div>
 </div>
 
-<!-- Highcharts Libraries -->
-<script src="{{ asset('assets/js/highcharts-chart.js') }}"></script>
-<script src="{{ asset('assets/js/export-data-chart.js') }}"></script>
-<script src="{{ asset('assets/js/accessibility-chart.js') }}"></script>
-<script src="{{ asset('assets/js/adaptive-chart.js') }}"></script>
 
 <script>
     let selectedProcessId = null;
@@ -596,39 +589,31 @@
     let trialDataTable = null;
     let reportFreshData = null;
 
-    /* ===============================
-       INITIALIZE
-    ================================ */
     document.addEventListener('DOMContentLoaded', function () {
-        // Event listener untuk file input
         const fileInput = document.getElementById('fileInput');
         if (fileInput) {
             fileInput.addEventListener('change', function () {
                 const fileList = document.getElementById('fileList');
                 fileList.innerHTML = '';
-                
-                Array.from(this.files).forEach((file, index) => {
-                    const div = document.createElement('div');
-                    div.className = 'file-item';
-                    div.innerHTML = `<span class="badge bg-primary me-2">${index + 1}</span> ${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
-                    fileList.appendChild(div);
-                });
+
+                // Array.from(this.files).forEach((file, index) => {
+                //     const div = document.createElement('div');
+                //     div.className = 'file-item';
+                //     div.innerHTML = `<span class="badge bg-primary me-2">${index + 1}</span> ${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
+                //     fileList.appendChild(div);
+                // });
             });
         }
 
-        // Pastikan semua button kembali ke state normal saat halaman dimuat
         document.querySelectorAll('.btn-process').forEach(btn => {
             btn.classList.remove('btn-primary');
         });
 
-        // Tambahkan event listener ke semua button process
         document.querySelectorAll('.btn-process').forEach(btn => {
             btn.addEventListener('click', function () {
-                // Reset semua button
                 document.querySelectorAll('.btn-process')
                     .forEach(b => b.classList.remove('btn-primary'));
 
-                // Set active button
                 this.classList.add('btn-primary');
 
                 selectedProcessId = this.dataset.processId;
@@ -640,8 +625,6 @@
                 document.getElementById('reportFreshCard').classList.remove('d-none');
                 document.getElementById('btnAddTrial').classList.remove('d-none');
                 document.getElementById('chartSection').classList.remove('d-none');
-
-                // set hidden input (modal)
                 const processInput = document.getElementById('process_id');
                 if (processInput) {
                     processInput.value = selectedProcessId;
@@ -652,11 +635,14 @@
             });
         });
 
-        // Initialize auto calculate percent for Add Trial modal
         initAutoCalculatePercent();
-        
-        // Initialize auto calculate percent for Edit Detail modal
+
         initEditDetailAutoCalculate();
+        document
+            .getElementById('modalEditDetail')
+            .addEventListener('hidden.bs.modal', function () {
+                document.getElementById('formEditDetail').reset();
+            });
     });
 
     /* ===============================
@@ -686,14 +672,31 @@
     }
 
     /* ===============================
-       AUTO CALCULATE PERCENT FOR EDIT DETAIL
-    ================================ */
+    AUTO CALCULATE PERCENT FOR EDIT DETAIL WITH VALIDATION
+ =============================== */
     function initEditDetailAutoCalculate() {
         const editNgInput = document.getElementById('editNgValue');
         if (editNgInput) {
-            editNgInput.addEventListener('input', function() {
+            editNgInput.addEventListener('input', function () {
                 calculateEditDetailPercent();
+                validateRealTimeInput();
             });
+        }
+    }
+
+    function validateRealTimeInput() {
+        const ngInput = document.getElementById('editNgValue');
+        const maxValue = parseFloat(document.getElementById('editMaxValue').value);
+        const currentValue = parseFloat(ngInput.value);
+
+        if (isNaN(currentValue)) return;
+
+        if (currentValue > maxValue) {
+            ngInput.style.borderColor = '#e85347';
+            ngInput.style.backgroundColor = '#ffe6e6';
+        } else {
+            ngInput.style.borderColor = '';
+            ngInput.style.backgroundColor = '';
         }
     }
 
@@ -705,6 +708,14 @@
         if (!isNaN(ngValue) && !isNaN(actualQty) && actualQty > 0) {
             const percent = (ngValue / actualQty) * 100;
             perctInput.value = percent.toFixed(2);
+
+            if (percent > 100) {
+                perctInput.style.borderColor = '#e85347';
+                perctInput.style.backgroundColor = '#ffe6e6';
+            } else {
+                perctInput.style.borderColor = '';
+                perctInput.style.backgroundColor = '';
+            }
         } else {
             perctInput.value = '';
         }
@@ -721,7 +732,6 @@
     function loadTrialData() {
         if (!selectedProcessId) return;
 
-        // Tampilkan loading
         const tableBody = document.querySelector('#trialDataTable tbody');
         tableBody.innerHTML = `
             <tr>
@@ -796,43 +806,85 @@
             .catch(err => {
                 console.error('Error loading report fresh data:', err);
                 tbody.innerHTML = `<tr><td colspan="20" class="text-center text-danger">Error loading report</td></tr>`;
+
+                const btnAddTrial = document.getElementById('btnAddTrial');
+                if (btnAddTrial) {
+                    btnAddTrial.disabled = false;
+                    btnAddTrial.classList.remove('btn-disabled');
+                }
             });
     }
 
     /* ===============================
-       RENDER REPORT FRESH TABLE
-    ================================ */
+   RENDER REPORT FRESH TABLE
+=============================== */
     function renderReportFreshTable(data) {
         const table = document.querySelector('#reportFreshTable');
         const tbody = table.querySelector('tbody');
         tbody.innerHTML = '';
 
-        if (!data || !data.columns || data.columns.length === 0) {
+        const btnAddTrial = document.getElementById('btnAddTrial');
+
+        if (btnAddTrial) {
+            btnAddTrial.disabled = false;
+        }
+
+        // if (!data || !data.columns || data.columns.length === 0) {
+        //     tbody.innerHTML = `
+        // <tr>
+        //     <td colspan="20" class="text-center text-muted">No data</td>
+        // </tr>`;
+
+        //     // Jika tidak ada data, enable button
+        //     if (btnAddTrial) {
+        //         btnAddTrial.disabled = false;
+        //     }
+        //     return;
+        // }
+
+        if (
+            !data ||
+            !data.columns ||
+            data.columns.length === 0 ||
+            !data.data ||
+            Object.keys(data.data).length === 0
+        ) {
+            const thead = table.querySelector('thead');
+            if (thead) thead.innerHTML = '';
             tbody.innerHTML = `
-            <tr>
-                <td colspan="20" class="text-center text-muted">No data</td>
-            </tr>`;
+        <tr>
+            <td colspan="20" class="text-center text-muted">No data</td>
+        </tr>`;
+
+            if (btnAddTrial) {
+                btnAddTrial.disabled = false;
+                btnAddTrial.removeAttribute('title');
+            }
+
             return;
         }
+
 
         const columns = data.columns;
         const rows = data.data || {};
         const categories = data.categories || [];
         const trials = data.trials || {};
 
+        let shouldDisableButton = false;
+
         /* ===== HEADER ===== */
         table.querySelector('thead').outerHTML = `
-        <thead class="text-center">
-            <tr>
-                <th rowspan="2">Category</th>
-                <th rowspan="2">Report Fresh</th>
-                ${columns.map(c => `<th colspan="2">${c}</th>`).join('')}
-            </tr>
-            <tr>
-                ${columns.map(() => `<th>Quant.</th><th>%</th>`).join('')}
-            </tr>
-        </thead>
-    `;
+            <thead class="text-center">
+                <tr>
+                    <th rowspan="2">Category</th>
+                    <th rowspan="2">Report Fresh</th>
+                    ${columns.map(c => `<th colspan="2">${c}</th>`).join('')}
+                </tr>
+                <tr>
+                    ${columns.map(() => `<th>Quant.</th><th>%</th>`).join('')}
+                </tr>
+            </thead>
+            `;
 
         let html = '';
 
@@ -840,24 +892,24 @@
            OK ROW (NON EDITABLE)
         ====================== */
         html += `
-        <tr class="fw-bold ok-row">
-            <td></td>
-            <td class="fw-bold">OK</td>
-            ${columns.map(col => {
-            const item = rows.OK?.OK?.[col] ?? { quant: 0, percent: 0 };
-            const target = data.targets?.[col] ?? 0;
-            const cls = item.percent >= target
-                ? 'text-success-bold'
-                : 'text-danger-bold';
-            return `
-                    <td class="text-end fw-bold">${item.quant}</td>
-                    <td class="text-end fw-bold ${cls}">
-                        ${Number(item.percent).toFixed(2)}%
-                    </td>
-                `;
-        }).join('')}
-        </tr>
-    `;
+            <tr class="fw-bold ok-row">
+                <td></td>
+                <td class="fw-bold">OK</td>
+                ${columns.map(col => {
+                    const item = rows.OK?.OK?.[col] ?? { quant: 0, percent: 0 };
+                    const target = data.targets?.[col] ?? 0;
+                    const cls = item.percent >= target
+                        ? 'text-success-bold'
+                        : 'text-danger-bold';
+                    return `
+                        <td class="text-end fw-bold">${item.quant}</td>
+                        <td class="text-end fw-bold ${cls}">
+                            ${Number(item.percent).toFixed(2)}%
+                        </td>
+                    `;
+                }).join('')}
+            </tr>
+            `;
 
         /* ======================
            CATEGORY (TRANS_TYPE)
@@ -869,67 +921,89 @@
 
             defectKeys.forEach((defect, i) => {
                 const defectData = defects[defect];
-                
+
                 html += `
-                <tr class="${i === 0 ? 'after-ok' : ''}">
-                    ${i === 0 ? `
-                        <td rowspan="${rowspan}" class="text-center align-middle fw-bold">
-                            ${category}
-                        </td>` : ``}
-                    <td>${defect}</td>
-                    ${columns.map(col => {
-                    const item = defectData?.[col] ?? { quant: 0, percent: 0 };
-                    const trialInfo = trials[col];
-                    const trialId = trialInfo?.id;
-                    const defectId = trialInfo?.defectIds?.[defect];
-                    const actualQty = item.actual || 0;
-                    const maxQuant = actualQty - (item.quant || 0);
-                    
-                    // HANYA Quant yang bisa diedit (ada icon)
-                    return `
-                            <td class="text-end edit-cell"
-                                data-trial-id="${trialId}"
-                                data-defect-id="${defectId}"
-                                data-trans-type="${category}"
-                                data-defect-name="${defect}"
-                                data-column-name="quant"
-                                data-current-value="${item.quant}"
-                                data-max-value="${maxQuant}"
-                                data-trial-key="${col}"
-                                data-actual="${actualQty}"
-                                data-current-percent="${item.percent}">
-                                ${item.quant}
-                                <em class="icon ni ni-edit edit-icon"></em>
-                            </td>
-                            <td class="text-end percent-cell">
-                                ${Number(item.percent).toFixed(2)}%
-                            </td>
-                        `;
-                }).join('')}
-                </tr>
-            `;
+                        <tr class="${i === 0 ? 'after-ok' : ''}">
+                            ${i === 0 ? `
+                                <td rowspan="${rowspan}" class="text-center align-middle fw-bold">
+                                    ${category}
+                                </td>` : ``}
+                            <td>${defect}</td>
+                            ${columns.map(col => {
+                                    const item = defectData?.[col] ?? { quant: 0, percent: 0 };
+                                    const trialInfo = trials[col];
+                                    const trialId = trialInfo?.id;
+                                    const defectId = trialInfo?.defectIds?.[defect];
+                                    const actualQty = item.actual || 0;
+                                    const maxQuant = actualQty - (item.quant || 0);
+
+                                    // PERUBAHAN DI SINI:
+                                    // Hanya tampilkan icon edit jika quant = 0
+                                    const hasZeroQuant = item.quant === 0;
+                                    const editCellClass = hasZeroQuant ? 'edit-cell' : '';
+                                    const editIconHTML = hasZeroQuant ? '<em class="icon ni ni-edit edit-icon"></em>' : '';
+
+                                    return `
+                                    <td class="text-end ${editCellClass}"
+                                        data-trial-id="${trialId}"
+                                        data-defect-id="${defectId}"
+                                        data-trans-type="${category}"
+                                        data-defect-name="${defect}"
+                                        data-column-name="quant"
+                                        data-current-value="${item.quant}"
+                                        data-max-value="${maxQuant}"
+                                        data-trial-key="${col}"
+                                        data-actual="${actualQty}"
+                                        data-current-percent="${item.percent}">
+                                        ${item.quant}
+                                        ${editIconHTML}
+                                    </td>
+                                    <td class="text-end percent-cell">
+                                        ${Number(item.percent).toFixed(2)}%
+                                    </td>
+                                `;
+                                }).join('')}
+                        </tr>
+                    `;
             });
         });
 
         /* ======================
-           JUMLAH
+           JUMLAH - INI YANG DICEK
         ====================== */
         html += `
-        <tr class="fw-bold border-top jumlah-row">
-            <td colspan="2" class="fw-bold">Jumlah</td>
-            ${columns.map(col => {
-            const item = rows.Jumlah?.Jumlah?.[col] ?? { quant: 0, percent: 100 };
-            return `
-                    <td class="text-end fw-bold">${item.quant}</td>
-                    <td class="text-end fw-bold">${Number(item.percent).toFixed(2)}%</td>
+                <tr class="fw-bold border-top jumlah-row">
+                    <td colspan="2" class="fw-bold">Jumlah</td>
+                    ${columns.map(col => {
+                        const item = rows.Jumlah?.Jumlah?.[col] ?? { quant: 0, percent: 100 };
+
+                        // CEK APAKAH JUMLAH < 100
+                        const quant = parseFloat(item.quant) || 0;
+                        const percent = parseFloat(item.percent) || 0;
+
+                        // Jika ada kolom dengan jumlah < 100 atau percent < 100
+                        if (quant < 100 || percent < 100) {
+                            shouldDisableButton = true;
+                        }
+
+                        // Tampilkan data biasa saja
+                        return `
+                            <td class="text-end fw-bold">${item.quant}</td>
+                            <td class="text-end fw-bold">${Number(item.percent).toFixed(2)}%</td>
+                        `;
+                    }).join('')}
+                </tr>
                 `;
-        }).join('')}
-        </tr>
-    `;
 
         tbody.innerHTML = html;
-        
-        // Initialize edit functionality - HANYA untuk sel Quant
+
+        if (btnAddTrial && shouldDisableButton) {
+            btnAddTrial.disabled = true;
+            btnAddTrial.setAttribute('title', 'Cannot add trial: Jumlah belum mencapai 100');
+        } else if (btnAddTrial) {
+            btnAddTrial.disabled = false;
+            btnAddTrial.removeAttribute('title');
+        }
         initReportFreshEdit();
     }
 
@@ -939,9 +1013,9 @@
     ================================ */
     function initReportFreshEdit() {
         // Event delegation untuk klik sel Quant SAJA
-        document.querySelector('#reportFreshTable tbody').addEventListener('click', function(e) {
+        document.querySelector('#reportFreshTable tbody').addEventListener('click', function (e) {
             const target = e.target;
-            
+
             // Jika yang diklik adalah icon edit
             if (target.classList.contains('edit-icon') || target.closest('.edit-icon')) {
                 const cell = target.closest('td');
@@ -967,7 +1041,7 @@
         const maxValue = cell.dataset.maxValue || '100';
         const trialKey = cell.dataset.trialKey;
         const actualQty = cell.dataset.actual || '0';
-        
+
         // Validasi data
         if (!trialId || !defectId) {
             Swal.fire({
@@ -977,7 +1051,7 @@
             });
             return;
         }
-        
+
         // Isi modal fields
         document.getElementById('editProcessId').value = selectedProcessId;
         document.getElementById('editTrialId').value = trialId;
@@ -988,48 +1062,51 @@
         document.getElementById('editCurrentValue').value = currentValue;
         document.getElementById('editMaxValue').value = maxValue;
         document.getElementById('editTrialKey').value = trialKey;
-        
+
         // Set display values
         document.getElementById('editTrialInfoDisplay').value = trialKey;
         document.getElementById('editDefectNameDisplay').value = defectName;
         document.getElementById('editTransTypeDisplay').value = transType;
         document.getElementById('editActualQtyDisplay').value = actualQty;
-        
-        // Set current values
-        document.getElementById('editCurrentNgDisplay').value = currentValue + ' pcs';
-        document.getElementById('editMaxNgDisplay').value = maxValue + ' pcs';
-        
+
         // Set input values
-        document.getElementById('editNgValue').value = currentValue;
-        document.getElementById('editPerctValue').value = currentPercent;
-        
-        // Calculate initial percentage
-        calculateEditDetailPercent();
-        
-        // Set max untuk NG input
-        document.getElementById('editNgValue').max = maxValue;
-        
+        const ngInput = document.getElementById('editNgValue');
+        ngInput.value = currentValue;
+        ngInput.max = maxValue;
+
+        const perctInput = document.getElementById('editPerctValue');
+        perctInput.value = currentPercent;
+
+        // Reset style
+        ngInput.style.borderColor = '';
+        ngInput.style.backgroundColor = '';
+        perctInput.style.borderColor = '';
+        perctInput.style.backgroundColor = '';
+
         // Show modal
-        new bootstrap.Modal(document.getElementById('modalEditDetail')).show();
-        
+        bootstrap.Modal.getOrCreateInstance(
+            document.getElementById('modalEditDetail')
+        ).show();
+
         // Focus pada NG input field
         setTimeout(() => {
-            document.getElementById('editNgValue').focus();
-            document.getElementById('editNgValue').select();
+            ngInput.focus();
+            ngInput.select();
         }, 500);
     }
 
     /* ===============================
-       UPDATE REPORT FRESH DATA
-    ================================ */
-    document.getElementById('formEditDetail').addEventListener('submit', function(e) {
+       UPDATE REPORT FRESH DATA - WITH VALIDATION
+    =============================== */
+    document.getElementById('formEditDetail').addEventListener('submit', function (e) {
         e.preventDefault();
-        
+
         const ngValue = parseFloat(document.getElementById('editNgValue').value);
         const perctValue = parseFloat(document.getElementById('editPerctValue').value);
         const maxValue = parseFloat(document.getElementById('editMaxValue').value);
-        
-        // Validasi
+        const actualQty = parseFloat(document.getElementById('editActualQty').value);
+
+        // Validasi dasar
         if (isNaN(ngValue) || ngValue < 0) {
             Swal.fire({
                 icon: 'error',
@@ -1038,7 +1115,8 @@
             });
             return;
         }
-        
+
+        // Validasi tidak melebihi max quantity
         if (ngValue > maxValue) {
             Swal.fire({
                 icon: 'warning',
@@ -1047,9 +1125,8 @@
             });
             return;
         }
-        
+
         // Validasi percentage calculation
-        const actualQty = parseFloat(document.getElementById('editActualQty').value);
         if (actualQty > 0) {
             const calculatedPercent = (ngValue / actualQty) * 100;
             if (Math.abs(calculatedPercent - perctValue) > 0.01) {
@@ -1061,7 +1138,7 @@
                 return;
             }
         }
-        
+
         const formData = {
             project_id: projectId,
             process_id: selectedProcessId,
@@ -1070,11 +1147,11 @@
             ng: ngValue,
             perct: perctValue
         };
-        
+
         const submitBtn = document.getElementById('btnUpdateDetail');
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...';
-        
+
         fetch("{{ route('trial.update.detail') }}", {
             method: "POST",
             headers: {
@@ -1083,39 +1160,66 @@
             },
             body: JSON.stringify(formData)
         })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                // Close modal
-                bootstrap.Modal.getInstance(document.getElementById('modalEditDetail')).hide();
-                
-                // Reload data
-                loadReportFreshData();
-                loadTrialData(); // Reload juga trial data untuk sinkronisasi
-                
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success',
-                    text: data.message || 'Data updated successfully',
-                    timer: 1500,
-                    showConfirmButton: false
-                });
-            } else {
-                throw new Error(data.message || 'Failed to update data');
-            }
-        })
-        .catch(err => {
-            console.error('Update error:', err);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: err.message || 'Failed to update data. Please try again.'
+            .then(async response => {
+                const data = await response.json();
+
+                // Cek jika response tidak ok (status 400-500)
+                if (!response.ok) {
+                    throw new Error(data.message || `Server returned ${response.status}`);
+                }
+
+                return data;
+            })
+            .then(data => {
+                if (data.success) {
+                    // Close modal
+                    bootstrap.Modal.getInstance(document.getElementById('modalEditDetail')).hide();
+
+                    // Reload data
+                    loadReportFreshData();
+                    loadTrialData();
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: data.message || 'Data updated successfully',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                } else {
+                    throw new Error(data.message || 'Failed to update data');
+                }
+            })
+            .catch(err => {
+                console.error('Update error:', err);
+
+                // Tampilkan pesan error yang lebih spesifik
+                let errorMessage = err.message || 'Failed to update data. Please try again.';
+
+                // Jika error terkait validasi total
+                if (errorMessage.includes('exceeds') ||
+                    errorMessage.includes('100%') ||
+                    errorMessage.includes('Maximum allowed') ||
+                    errorMessage.includes('Total')) {
+
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Warning',
+                        html: errorMessage,
+                        confirmButtonText: 'OK'
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: errorMessage
+                    });
+                }
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Save';
             });
-        })
-        .finally(() => {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = 'Save';
-        });
     });
 
     /* ===============================
@@ -1226,23 +1330,23 @@
             }
 
             html += `
-<tr>
-    <td>${row.trial_no || ''}</td>
-    <td>${row.trial_stat || ''}</td>
-    <td>${row.trial_machine || ''}</td>
-    <td>${row.trial_date ? row.trial_date.split(' ')[0] : ''}</td>
-    <td>${row.actual || ''}</td>
-    <td>${row.ok || ''}</td>
-    <td>${targetVal.toFixed(2)}%</td>
-    <td class="${perctClass}">${perctVal.toFixed(2)}%</td>
-    <td>${row.ct_target || ''}</td>
-    <td class="${ctClass}">${row.ct || ''}</td>
-    <td>${row.berat_target || ''}</td>
-    <td class="${beratClass}">${beratVal.toFixed(1)}</td>
-    <td>${row.pic || ''}</td>
-    <td>${filesHtml}</td>
-</tr>
-`;
+                    <tr>
+                        <td>${row.trial_no || ''}</td>
+                        <td>${row.trial_stat || ''}</td>
+                        <td>${row.trial_machine || ''}</td>
+                        <td>${row.trial_date ? row.trial_date.split(' ')[0] : ''}</td>
+                        <td>${row.actual || ''}</td>
+                        <td>${row.ok || ''}</td>
+                        <td>${targetVal.toFixed(2)}%</td>
+                        <td class="${perctClass}">${perctVal.toFixed(2)}%</td>
+                        <td>${row.ct_target || ''}</td>
+                        <td class="${ctClass}">${row.ct || ''}</td>
+                        <td>${row.berat_target || ''}</td>
+                        <td class="${beratClass}">${beratVal.toFixed(1)}</td>
+                        <td>${row.pic || ''}</td>
+                        <td>${filesHtml}</td>
+                    </tr>
+                    `;
         });
 
         tableBody.innerHTML = html;
@@ -1324,7 +1428,6 @@
             pageLength: 10,
             lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
             responsive: true,
-            // DOM LAYOUT: Buttons atas tengah, Search kiri, Show kanan
             dom: '<"dt-header-row"<"dt-search-col"f><"dt-buttons-col"B><"dt-length-col"l>>rt<"dt-footer-row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
             buttons: [
                 {
@@ -1379,7 +1482,6 @@
                 }
             },
             initComplete: function () {
-                // Custom layout styling
                 $('.dt-header-row').css({
                     'display': 'flex',
                     'justify-content': 'space-between',
@@ -1417,7 +1519,6 @@
                 });
             },
             drawCallback: function () {
-                // Pastikan footer layout tetap
                 $('.dataTables_info').css({
                     'text-align': 'left',
                     'float': 'left',
@@ -1432,9 +1533,6 @@
         });
     }
 
-    /* ===============================
-       RENDER CHARTS
-    ================================ */
     function renderCharts(data) {
         if (!data || data.length === 0) {
             document.getElementById('chart1').innerHTML = '<div class="text-center text-muted p-5">No data available</div>';
@@ -1443,14 +1541,11 @@
             return;
         }
 
-        // Sort data by trial_no
         const sortedData = [...data].sort((a, b) => {
             return (a.trial_no || '').localeCompare(b.trial_no || '');
         });
 
         const trialNos = sortedData.map(item => item.trial_no || '');
-
-        // Grafik 1: %OK RATIO
         const perctData = sortedData.map(item => parseFloat(item.perct) || 0);
         const targetData = sortedData.map(item => parseFloat(item.target) || 0);
 
@@ -1521,7 +1616,6 @@
             }
         });
 
-        // Grafik 2: CT
         const ctData = sortedData.map(item => parseFloat(item.ct) || 0);
         const ctTargetData = sortedData.map(item => parseFloat(item.ct_target) || 0);
 
@@ -1581,7 +1675,6 @@
             }
         });
 
-        // Grafik 3: BERAT
         const beratData = sortedData.map(item => parseFloat(item.berat) || 0);
         const beratTargetData = sortedData.map(item => parseFloat(item.berat_target) || 0);
 
@@ -1649,9 +1742,6 @@
         });
     }
 
-    /* ===============================
-       LOAD STANDARD TARGET
-    ================================ */
     function loadStandardTarget() {
         fetch("{{ route('trial.standard') }}", {
             method: "POST",
@@ -1696,9 +1786,6 @@
             });
     }
 
-    /* ===============================
-       ADD TRIAL BUTTON
-    ================================ */
     document.getElementById('btnAddTrial').addEventListener('click', function () {
         if (!selectedProcessId) {
             Swal.fire({
@@ -1709,12 +1796,10 @@
             return;
         }
 
-        // Reset form dan files
         document.getElementById('formAddTrial').reset();
         document.getElementById('fileList').innerHTML = '';
         document.getElementById('fileInput').value = '';
 
-        // Set PIC dari session (jika ada input hidden)
         const picInput = document.getElementById('pic');
         if (picInput) {
             picInput.value = "{{ session('user.NAME') ?? session('user.name') ?? 'Guest' }}";
@@ -1725,18 +1810,13 @@
         new bootstrap.Modal(document.getElementById('modalAddTrial')).show();
     });
 
-    /* ===============================
-       SUBMIT ADD TRIAL
-    ================================ */
     document.getElementById('formAddTrial').addEventListener('submit', function (e) {
         e.preventDefault();
 
-        // Disable submit button
         const submitBtn = document.getElementById('btnSubmit');
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...';
 
-        // Buat FormData
         const formData = new FormData(this);
 
         fetch("{{ route('trial.store') }}", {
@@ -1750,7 +1830,6 @@
             .then(async res => {
                 const contentType = res.headers.get("content-type");
 
-                // Cek jika response adalah HTML (error)
                 if (contentType && contentType.indexOf("text/html") !== -1) {
                     const htmlText = await res.text();
                     throw new Error('Server returned HTML instead of JSON');
@@ -1767,7 +1846,6 @@
                     this.reset();
                     document.getElementById('fileList').innerHTML = '';
 
-                    // Show success message menggunakan SweetAlert2
                     Swal.fire({
                         icon: 'success',
                         title: 'Success',
@@ -1776,7 +1854,6 @@
                         showConfirmButton: false
                     });
                 } else {
-                    // Server returned error
                     throw new Error(res.message || 'Failed to save trial');
                 }
             })
@@ -1789,7 +1866,6 @@
                 });
             })
             .finally(() => {
-                // Re-enable submit button
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = 'Save';
             });

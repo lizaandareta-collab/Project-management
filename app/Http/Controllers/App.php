@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Maio;
 use App\Models\Mapp;
-use App\Models\Mauth;
+// use App\Models\Mauth;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
@@ -157,7 +157,7 @@ class App extends Controller
 
     public function inholiday()
     {
-        $holiday = Maio::get_holiday_table();     // untuk tabel
+        $holiday = Maio::get_holiday_table();
 
         $data = [
             'title' => 'Input Holiday',
@@ -236,19 +236,16 @@ class App extends Controller
         $projects = Maio::get_projects();
         $totalProjects = count($projects);
 
-        // Get all tasks from all projects
         $allTasks = collect();
         foreach ($projects as $project) {
             $projectTasks = Maio::get_project_task($project->id);
             $allTasks = $allTasks->merge($projectTasks);
         }
 
-        // Get all resources
         $resources = Maio::get_resource_mgmt()->filter(function ($r) {
             return !empty($r->npk);
         });
 
-        // Process all data
         $initialData = $this->processResourceData($allTasks, $resources);
 
         $data = [
@@ -256,7 +253,7 @@ class App extends Controller
             'content' => 'pm.resource',
             'projects' => $projects,
             'initialData' => $initialData,
-            'totalProjects' => $totalProjects // Tambahkan total projects ke view
+            'totalProjects' => $totalProjects
         ];
         return view('template.wrapper', $data);
     }
@@ -267,19 +264,16 @@ class App extends Controller
             $projects = Maio::get_projects();
             $totalProjects = count($projects);
 
-            // Get all tasks from all projects
             $allTasks = collect();
             foreach ($projects as $project) {
                 $projectTasks = Maio::get_project_task($project->id);
                 $allTasks = $allTasks->merge($projectTasks);
             }
 
-            // Get all resources
             $resources = Maio::get_resource_mgmt()->filter(function ($r) {
                 return !empty($r->npk);
             });
 
-            // Process all data
             $resourceData = $this->processResourceData($allTasks, $resources);
 
             return response()->json([
@@ -287,7 +281,7 @@ class App extends Controller
                 'data' => $resourceData,
                 'stats' => [
                     'total_resources' => count($resourceData),
-                    'total_projects' => $totalProjects, // Kirim total projects
+                    'total_projects' => $totalProjects,
                     'total_tasks' => $allTasks->count()
                 ]
             ]);
@@ -304,49 +298,41 @@ class App extends Controller
     {
         $resourceData = [];
 
-        // Initialize with all resources from RESOURCE_MGMT
         foreach ($resources as $resource) {
             $resourceData[$resource->emp_name] = [
                 'tasks' => 0,
                 'plan_hours' => 0,
                 'milestones' => 0,
-                'projects' => [] // Track unique projects
+                'projects' => []
             ];
         }
 
-        // Process all task data
         foreach ($tasks as $task) {
             $responsibleName = $task->responsible_name ?: 'Unassigned';
 
-            // Skip task dengan STATUS = 3 (jangan dihitung task dan plan hours nya)
             if (isset($task->status) && $task->status == '3') {
                 continue;
             }
 
-            // Skip milestone 70 dari perhitungan
             $isMilestone70 = (isset($task->is_milestone) && $task->is_milestone == '70');
             if ($isMilestone70) {
                 continue;
             }
 
-            // Only process if the responsible exists in our resource data
             if (isset($resourceData[$responsibleName])) {
-                // Task sudah tidak perlu dicek milestone 70 lagi karena sudah di-skip di atas
                 $resourceData[$responsibleName]['tasks']++;
-
                 $resourceData[$responsibleName]['plan_hours'] += floatval($task->plan_hour ?: 0);
 
-                // Track unique projects
                 if ($task->project_name && !in_array($task->project_name, $resourceData[$responsibleName]['projects'])) {
                     $resourceData[$responsibleName]['projects'][] = $task->project_name;
                 }
 
-                // Count milestones (hanya milestone dengan nilai '1')
                 if (isset($task->is_milestone) && $task->is_milestone == '1') {
                     $resourceData[$responsibleName]['milestones']++;
                 }
+
             } else {
-                // If resource not in resource management, add to Unassigned
+
                 if (!isset($resourceData['Unassigned'])) {
                     $resourceData['Unassigned'] = [
                         'tasks' => 0,
@@ -356,11 +342,9 @@ class App extends Controller
                     ];
                 }
 
-                // Task sudah tidak perlu dicek milestone 70 lagi karena sudah di-skip di atas
                 $resourceData['Unassigned']['tasks']++;
                 $resourceData['Unassigned']['plan_hours'] += floatval($task->plan_hour ?: 0);
 
-                // Count milestones untuk Unassigned juga
                 if (isset($task->is_milestone) && $task->is_milestone == '1') {
                     $resourceData['Unassigned']['milestones']++;
                 }
@@ -379,20 +363,16 @@ class App extends Controller
             return !empty($r->npk);
         });
 
-        // Get holiday
         $holidays = Maio::get_holiday();
 
-        // Get all tasks
         $allTasks = collect();
         foreach ($projects as $project) {
             $projectTasks = Maio::get_project_task($project->id);
             $allTasks = $allTasks->merge($projectTasks);
         }
 
-        // Get year range from tasks
         $yearRange = $this->getYearRangeFromTasks($allTasks);
 
-        // Jika tidak ada data, gunakan tahun saat ini ±1
         if (empty($yearRange)) {
             $currentYear = date('Y');
             $yearRange = [
@@ -410,31 +390,25 @@ class App extends Controller
             'initialHeatmapData' => $heatmapData,
             'resources' => $resources,
             'holidays' => $holidays,
-            'yearRange' => $yearRange // <-- Tambahkan ini
+            'yearRange' => $yearRange
         ];
 
         return view('template.wrapper', $data);
     }
 
-    /**
-     * Get minimum and maximum year from tasks
-     */
     private function getYearRangeFromTasks($tasks)
     {
         $years = [];
 
         foreach ($tasks as $task) {
-            // Skip jika STATUS = 3 (Canceled/Closed)
             if (isset($task->status) && $task->status == '3') {
                 continue;
             }
 
-            // Skip jika milestone 70
             if (isset($task->is_milestone) && $task->is_milestone == '70') {
                 continue;
             }
 
-            // Cek semua tanggal yang relevan
             $dateFields = ['plan_start', 'plan_end', 'actual_start', 'actual_end'];
 
             foreach ($dateFields as $field) {
@@ -469,24 +443,20 @@ class App extends Controller
             $projects = Maio::get_projects();
             $totalProjects = count($projects);
 
-            // Get all tasks
             $allTasks = collect();
             foreach ($projects as $project) {
                 $projectTasks = Maio::get_project_task($project->id);
                 $allTasks = $allTasks->merge($projectTasks);
             }
 
-            // Filter by person
             if (!empty($person)) {
                 $allTasks = $allTasks->filter(function ($task) use ($person) {
                     return $task->responsible == $person;
                 });
             }
 
-            // Get year range dari tasks yang sudah difilter
             $yearRange = $this->getYearRangeFromTasks($allTasks);
 
-            // Jika tidak ada data, gunakan tahun request ±1
             if (empty($yearRange)) {
                 $yearRange = [
                     'min' => $year - 1,
@@ -494,15 +464,11 @@ class App extends Controller
                 ];
             }
 
-            // Process heatmap data
             $heatmapData = $this->processHeatmapData($allTasks, $timeframe, $person);
-
-            // Get resources
             $resources = Maio::get_resource_mgmt()->filter(function ($r) {
                 return !empty($r->npk);
             });
 
-            // Get holiday
             $holidays = Maio::get_holiday();
 
             return response()->json([
@@ -510,7 +476,7 @@ class App extends Controller
                 'data' => $heatmapData,
                 'resources' => $resources,
                 'holidays' => $holidays,
-                'yearRange' => $yearRange, // <-- Kirim juga yearRange
+                'yearRange' => $yearRange,
                 'stats' => [
                     'total_projects' => $totalProjects,
                     'total_tasks' => $allTasks->count(),
@@ -528,13 +494,11 @@ class App extends Controller
 
     private function processHeatmapData($tasks, $timeframe = 'planned', $person = '')
     {
-        // Initialize arrays for hours and tasks count
         $hoursData = [];
         $tasksData = [];
 
         $months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-        // Initialize all years dari 2023 ke 2030
         for ($year = 2023; $year <= 2030; $year++) {
             for ($day = 1; $day <= 31; $day++) {
                 $hoursData[$year][$day] = array_fill_keys($months, 0);
@@ -543,55 +507,42 @@ class App extends Controller
         }
 
         foreach ($tasks as $task) {
-            // Skip jika STATUS = 3 (Canceled/Closed)
             if (isset($task->status) && $task->status == '3') {
                 continue;
             }
 
-            // Skip jika milestone 70
             if (isset($task->is_milestone) && $task->is_milestone == '70') {
                 continue;
             }
 
-            // Tentukan tanggal dan nilai berdasarkan timeframe
             if ($timeframe === 'actual') {
-                // Tentukan tanggal berdasarkan actual dates
                 $startDateField = 'actual_start';
                 $endDateField = 'actual_end';
 
-                // Gunakan actual_hour jika ada, jika tidak gunakan heat_task, jika tidak gunakan plan_hour
-                // FULL VALUE setiap hari untuk actual juga
                 $heatValue = !empty($task->actual_hour) ? floatval($task->actual_hour) :
                     (!empty($task->heat_task) ? floatval($task->heat_task) :
                         (!empty($task->plan_hour) ? floatval($task->plan_hour) : 0));
             } else {
-                // Tentukan tanggal berdasarkan plan dates
                 $startDateField = 'plan_start';
                 $endDateField = 'plan_end';
 
-                // Gunakan heat_task jika ada, jika tidak gunakan plan_hour
-                // FULL VALUE setiap hari
                 $heatValue = !empty($task->heat_task) ? floatval($task->heat_task) :
                     (!empty($task->plan_hour) ? floatval($task->plan_hour) : 0);
             }
 
-            // Check jika ada tanggal
             if (!empty($task->$startDateField) && !empty($task->$endDateField)) {
                 try {
                     $startDate = Carbon::parse($task->$startDateField);
                     $endDate = Carbon::parse($task->$endDateField);
 
-                    // Pastikan startDate <= endDate
                     if ($startDate->gt($endDate)) {
                         continue;
                     }
 
-                    // Jika tidak ada nilai, skip
                     if ($heatValue <= 0) {
                         continue;
                     }
 
-                    // Loop melalui setiap hari dalam rentang tanggal
                     $currentDate = $startDate->copy();
 
                     while ($currentDate->lte($endDate)) {
@@ -599,14 +550,9 @@ class App extends Controller
                         $month = $months[$currentDate->month - 1];
                         $day = $currentDate->day;
 
-                        // Pastikan year, day, month valid
                         if ($year >= 2023 && $year <= 2030 && $day >= 1 && $day <= 31) {
-                            // ==================== HOURS DATA ====================
-                            // FULL VALUE setiap hari, TIDAK dibagi!
-                            $hoursData[$year][$day][$month] += $heatValue;
 
-                            // ==================== TASK COUNT DATA ====================
-                            // Tambah ke jumlah task (hitung 1 task per hari)
+                            $hoursData[$year][$day][$month] += $heatValue;
                             $tasksData[$year][$day][$month] += 1;
                         }
 
@@ -627,22 +573,18 @@ class App extends Controller
 
     public function progress()
     {
-        // Ambil semua data dari sistem (analogi dengan heatmap)
         $projects = Maio::get_projects();
 
-        // Ambil semua tasks
         $allTasks = collect();
         foreach ($projects as $project) {
             $projectTasks = Maio::get_project_task($project->id);
             $allTasks = $allTasks->merge($projectTasks);
         }
 
-        // Ambil resources (untuk dropdown)
         $resources = Maio::get_resource_mgmt()->filter(function ($r) {
             return !empty($r->npk);
         });
 
-        // Format resources untuk dropdown
         $resourceList = $resources->map(function ($resource) {
             return [
                 'id' => $resource->npk,
@@ -650,16 +592,9 @@ class App extends Controller
             ];
         })->unique('id');
 
-        // Urutkan berdasarkan nama
         $resourceList = $resourceList->sortBy('name')->values();
-
-        // Default value untuk "All"
         $defaultResource = 'all';
-
-        // Hitung statistik untuk "All" (semua resources)
         $stats = $this->calculateResourceProgress($allTasks, 'all');
-
-        // Get chart data untuk "All"
         $chartData = $this->getChartData($allTasks, 'all');
 
         $data = [
@@ -675,17 +610,13 @@ class App extends Controller
 
     private function calculateResourceProgress($allTasks, $resourceId)
     {
-        // Filter tasks berdasarkan resource
         if ($resourceId !== 'all') {
             $filteredTasks = $allTasks->filter(function ($task) use ($resourceId) {
                 return isset($task->responsible) && $task->responsible == $resourceId;
             });
         } else {
-            // Jika "all", gunakan semua tasks
             $filteredTasks = $allTasks;
         }
-
-        // Hitung berdasarkan status
         $statusCounts = [
             'Open' => 0,
             'InProgress' => 0,
@@ -694,8 +625,6 @@ class App extends Controller
             'Cancelled' => 0,
             'OTHER' => 0
         ];
-
-        // Mapping status: 1=Open, 2=InProgress, 3=Completed, 4=OnHold, 5=Cancelled
         $statusMapping = [
             '1' => 'Open',
             '2' => 'InProgress',
@@ -704,21 +633,17 @@ class App extends Controller
             '5' => 'Cancelled'
         ];
 
-        // Hitung bulan ini dan tahun ini
         $currentMonth = date('n');
         $currentYear = date('Y');
         $nextMonth = $currentMonth == 12 ? 1 : $currentMonth + 1;
         $nextMonthYear = $currentMonth == 12 ? $currentYear + 1 : $currentYear;
         $nextYear = $currentYear + 1;
-
-        // Inisialisasi counters
         $dueThisMonth = 0;
         $dueNextMonth = 0;
         $dueThisYear = 0;
         $dueNextYear = 0;
 
         foreach ($filteredTasks as $task) {
-            // Hitung berdasarkan status
             if (isset($task->status)) {
                 $statusKey = (string) $task->status;
                 if (array_key_exists($statusKey, $statusMapping)) {
@@ -731,7 +656,6 @@ class App extends Controller
                 $statusCounts['OTHER']++;
             }
 
-            // Hitung due dates jika ada plan_end
             if (!empty($task->plan_end)) {
                 try {
                     $dueDate = Carbon::parse($task->plan_end);
@@ -766,7 +690,6 @@ class App extends Controller
 
         }
 
-        // Hitung total tasks
         $totalTasks = $filteredTasks->count();
         $completedTasks = $statusCounts['Completed'];
 
@@ -800,21 +723,17 @@ class App extends Controller
             ['name' => 'OTHER', 'y' => 0, 'color' => '#34495e']
         ];
 
-        // Filter tasks
         if ($resourceId !== 'all') {
             $filteredTasks = $allTasks->filter(function ($task) use ($resourceId) {
                 return isset($task->responsible) && $task->responsible == $resourceId;
             });
         } else {
-            // Jika "all", gunakan semua tasks
             $filteredTasks = $allTasks;
         }
 
         foreach ($filteredTasks as $task) {
             if (isset($task->status)) {
                 $statusKey = (string) $task->status;
-
-                // Cari index dalam chartData
                 $index = false;
                 if (array_key_exists($statusKey, $statusMapping)) {
                     $statusName = $statusMapping[$statusKey];
@@ -824,7 +743,6 @@ class App extends Controller
                 if ($index !== false) {
                     $chartData[$index]['y']++;
                 } else {
-                    // Cari OTHER
                     $otherIndex = array_search('OTHER', array_column($chartData, 'name'));
                     if ($otherIndex !== false) {
                         $chartData[$otherIndex]['y']++;
@@ -874,7 +792,6 @@ class App extends Controller
                 $allTasks = $allTasks->merge($projectTasks);
             }
 
-            // Ambil resources
             $resources = Maio::get_resource_mgmt()->filter(function ($r) {
                 return !empty($r->npk);
             });
@@ -886,16 +803,10 @@ class App extends Controller
                 ];
             })->unique('id');
 
-            // Urutkan berdasarkan nama
             $resourceList = $resourceList->sortBy('name')->values();
 
-            // Hitung statistik
             $stats = $this->calculateResourceProgress($allTasks, $person);
-
-            // Ambil data chart
             $chartData = $this->getChartData($allTasks, $person);
-
-            // Hitung overall progress (Completed / Total)
             $totalTasks = $stats['total_tasks'];
             $completedTasks = $stats['completed_tasks'];
             $overallProgress = $totalTasks > 0 ? round(($completedTasks / $totalTasks) * 100) : 0;
@@ -929,10 +840,7 @@ class App extends Controller
 
     public function ganttchart()
     {
-        // Ambil semua projects untuk dropdown filter
         $projects = Maio::get_projects();
-
-        // Inisialisasi allTasks sebagai collection kosong
         $allTasks = collect();
 
         $lov = Maio::get_lov();
@@ -950,7 +858,7 @@ class App extends Controller
             'title' => 'Gantt Chart Dashboard',
             'content' => 'pm.ganttchart',
             'projects' => $projects,
-            'all_tasks' => $allTasks, // Kosong dulu
+            'all_tasks' => $allTasks,
             'lov_status' => $lov_status,
             'lov_complexity' => $lov_complexity,
             'lov_priority' => $lov_priority,
@@ -967,8 +875,6 @@ class App extends Controller
     {
         try {
             $projectTasks = Maio::get_project_task($projectId);
-
-            // Tambahkan project_id dan project_name ke setiap task
             $project = Maio::get_projects()->where('id', $projectId)->first();
             $projectTasks = $projectTasks->map(function ($task) use ($project) {
                 $task->project_id = $project->id;
@@ -1359,25 +1265,15 @@ class App extends Controller
         $invoiceAmount = Maio::get_invoice_amount_by_project($id);
         $invoices = Maio::get_invoices_by_project($id);
 
-        // ===========================
-        // GET PROCESS LIST FOR TRIAL CHARTS - HANYA YANG ADA TARGET
-        // ===========================
         $lov = Maio::get_lov();
         $processAll = $lov->where('init', 'process');
 
-        // Filter hanya process yang punya target untuk project ini
         $process = $processAll->filter(function ($p) use ($id) {
             return Maio::has_standard_target($id, $p->lov_id);
         });
 
-        // ===========================
-        // REMAINING BUDGET
-        // ===========================
         $remainingBudget = $budget - $invoiceAmount;
 
-        // ===========================
-        // OVERALL PROGRESS (MS = 21)
-        // ===========================
         $totalActivity = $tasks->filter(function ($t) {
             return $t->is_milestone == 21;
         })->count();
@@ -1394,9 +1290,6 @@ class App extends Controller
             ? round((($finishMilestone + $finishActivity) / $totalActivity) * 100)
             : 0;
 
-        // ================================
-        // PROJECT MILESTONE (MS = 20)
-        // ================================
         $milestoneTotal = $tasks->filter(function ($t) {
             return $t->is_milestone == 20;
         })->count();
@@ -1409,9 +1302,6 @@ class App extends Controller
             ? round(($milestoneFinish / $milestoneTotal) * 100)
             : 0;
 
-        // ==========================
-        // TASK COMPLETE (MS = 21)
-        // ==========================
         $taskTotal = $tasks->filter(function ($t) {
             return $t->is_milestone == 21;
         })->count();
@@ -1424,15 +1314,9 @@ class App extends Controller
             ? round(($taskFinish / $taskTotal) * 100)
             : 0;
 
-        // ============================
-        // PLAN HOURS & HOURS SPENT
-        // ============================
         $planHours = $tasks->sum('plan_hour');
         $hoursSpent = $tasks->sum('actual_hour');
 
-        // ============================
-        // TASK BY STATUS
-        // ============================
         $statusCount = [
             'open' => $tasks->where('status', 1)->count(),
             'inProgress' => $tasks->where('status', 2)->count(),
@@ -1453,23 +1337,18 @@ class App extends Controller
             'cancelled' => $tasks->where('status', 5)->count(),
         ];
 
-        // ============================
-        // KELOMPOKKAN TASK BERDASARKAN STRUKTUR 3 LEVEL
-        // ============================
         $groupedTasks = [];
 
-        // 1. LEVEL 1: Milestone utama (is_milestone = 20, parent_task = NULL)
         foreach ($tasks as $task) {
             if ($task->is_milestone == 20 && empty($task->parent_task)) {
                 $taskId = $task->task_id ?? $task->id;
                 $groupedTasks[$taskId] = [
                     'parent' => $task,
-                    'activities' => [] // Level 2 activities
+                    'activities' => []
                 ];
             }
         }
 
-        // 2. LEVEL 2: Activities (is_milestone = 21) yang punya parent di Level 1
         foreach ($tasks as $task) {
             if ($task->is_milestone == 21 && !empty($task->parent_task)) {
                 $parentId = $task->parent_task;
@@ -1477,7 +1356,7 @@ class App extends Controller
                     $activityId = $task->task_id ?? $task->id;
                     $groupedTasks[$parentId]['activities'][$activityId] = [
                         'activity' => $task,
-                        'subactivities' => [] // Level 3 subactivities
+                        'subactivities' => []
                     ];
                 }
             }
@@ -1651,8 +1530,6 @@ class App extends Controller
     }
 
 
-
-
     public function trial_store(Request $req)
     {
         try {
@@ -1751,121 +1628,135 @@ class App extends Controller
         ]);
     }
 
-public function trial_report_multi(Request $request)
-{
-    $project_id = $request->project_id;
-    $process_id = $request->process_id;
+    public function trial_report_multi(Request $request)
+    {
+        $project_id = $request->project_id;
+        $process_id = $request->process_id;
 
-    $trials = Maio::get_trial_rr($project_id, $process_id)->reverse()->values();
+        $trials = Maio::get_trial_rr($project_id, $process_id)->reverse()->values();
 
-    if ($trials->isEmpty()) {
-        return response()->json([
-            'columns' => [],
-            'targets' => [],
-            'trials' => [],
-            'data' => [],
-            'categories' => []
-        ]);
-    }
+        if ($trials->isEmpty()) {
+            return response()->json([
+                'columns' => [],
+                'targets' => [],
+                'trials' => [],
+                'data' => [],
+                'categories' => []
+            ]);
+        }
 
-    $report = [];
-    $categories = [];
-    $trialInfo = [];
+        $report = [];
+        $categories = [];
+        $trialInfo = [];
 
-    foreach ($trials as $trial) {
-        $trialKey = $trial->trial_no . ' ' . $trial->trial_stat;
-        
-        // Simpan info trial
-        $trialInfo[$trialKey] = [
-            'id' => $trial->id,
-            'defectIds' => []
-        ];
+        foreach ($trials as $trial) {
+            $trialKey = $trial->trial_no . ' ' . $trial->trial_stat;
 
-        /* OK */
-        $okPercent = (float) ($trial->perct ?? 0);
+            // Simpan info trial
+            $trialInfo[$trialKey] = [
+                'id' => $trial->id,
+                'defectIds' => []
+            ];
 
-        $report['OK']['OK'][$trialKey] = [
-            'quant' => (float) $trial->ok,
-            'percent' => $okPercent
-        ];
+            /* OK */
+            $okQuant = (float) ($trial->ok ?? 0);
+            $okPercent = (float) ($trial->perct ?? 0);
 
-        /* TOTAL UNTUK JUMLAH */
-        $totalQuant = (float) $trial->ok;
-        $totalPercent = $okPercent;
+            $report['OK']['OK'][$trialKey] = [
+                'quant' => $okQuant,
+                'percent' => $okPercent
+            ];
 
-        /* DETAIL (NG) */
-        $details = Maio::get_trial_rr_det(
-            $project_id,
-            $process_id,
-            $trial->id
-        );
+            /* TOTAL UNTUK JUMLAH */
+            $totalQuant = $okQuant;
+            $totalPercent = $okPercent;
 
-        foreach ($details as $det) {
-            $category = $det->trans_type;
-            $defect = $det->defect_name ?? $det->defect_id;
-            
-            // Simpan defect ID
-            $trialInfo[$trialKey]['defectIds'][$defect] = $det->defect_id;
+            /* DETAIL (NG) */
+            $details = Maio::get_trial_rr_det(
+                $project_id,
+                $process_id,
+                $trial->id
+            );
 
-            if (!isset($report[$category])) {
-                $report[$category] = [];
-                $categories[] = $category;
+            foreach ($details as $det) {
+                $category = $det->trans_type;
+                $defect = $det->defect_name ?? $det->defect_id;
+
+                // Simpan defect ID
+                $trialInfo[$trialKey]['defectIds'][$defect] = $det->defect_id;
+
+                if (!isset($report[$category])) {
+                    $report[$category] = [];
+                    $categories[] = $category;
+                }
+
+                if (!isset($report[$category][$defect])) {
+                    $report[$category][$defect] = [];
+                }
+
+                $ngQuant = (float) ($det->ng ?? 0);
+                $ngPercent = (float) ($det->perct ?? 0);
+
+                // Tambahkan ke total
+                $totalQuant += $ngQuant;
+                $totalPercent += $ngPercent;
+
+                $report[$category][$defect][$trialKey] = [
+                    'quant' => $ngQuant,
+                    'percent' => $ngPercent,
+                    'actual' => $trial->actual
+                ];
             }
 
-            if (!isset($report[$category][$defect])) {
-                $report[$category][$defect] = [];
+            /* JUMLAH - PASTIKAN TOTAL 100 */
+            $actualQty = (float) ($trial->actual ?? 0);
+
+            // Jika actual quantity ada, hitung persentase berdasarkan actual
+            if ($actualQty > 0) {
+                $totalPercentCalc = ($totalQuant / $actualQty) * 100;
+            } else {
+                $totalPercentCalc = $totalPercent;
             }
 
-            $ngQuant = (float) ($det->ng ?? 0);
-            $ngPercent = (float) ($det->perct ?? 0);
-
-            $totalQuant += $ngQuant;
-            $totalPercent += $ngPercent;
-
-            $report[$category][$defect][$trialKey] = [
-                'quant' => $ngQuant,
-                'percent' => $ngPercent,
-                'actual' => $trial->actual
+            $report['Jumlah']['Jumlah'][$trialKey] = [
+                'quant' => $totalQuant,
+                'percent' => round($totalPercentCalc, 2)
             ];
         }
 
-        /* JUMLAH */
-        $report['Jumlah']['Jumlah'][$trialKey] = [
-            'quant' => $totalQuant,
-            'percent' => round($totalPercent, 2)
-        ];
+        /* TARGET OK */
+        $targets = [];
+        foreach ($trials as $trial) {
+            $targets[$trial->trial_no . ' ' . $trial->trial_stat] = (float) $trial->target;
+        }
+
+        // Hapus duplikat kategori
+        $uniqueCategories = array_values(array_unique($categories));
+
+        return response()->json([
+            'columns' => $trials->map(fn($t) => $t->trial_no . ' ' . $t->trial_stat)->toArray(),
+            'targets' => $targets,
+            'trials' => $trialInfo,
+            'categories' => $uniqueCategories,
+            'data' => $report
+        ]);
     }
 
-    /* TARGET OK */
-    $targets = [];
-    foreach ($trials as $trial) {
-        $targets[$trial->trial_no . ' ' . $trial->trial_stat] = (float) $trial->target;
+    public function trial_report_detail(Request $request)
+    {
+        $project_id = $request->project_id;
+        $process_id = $request->process_id;
+        $trial_id = $request->trial_id;
+
+        $details = Maio::get_trial_rr_det_all($project_id, $process_id, $trial_id);
+
+        return response()->json([
+            'success' => true,
+            'data' => $details
+        ]);
     }
 
-    return response()->json([
-        'columns' => $trials->map(fn($t) => $t->trial_no . ' ' . $t->trial_stat)->toArray(),
-        'targets' => $targets,
-        'trials' => $trialInfo,
-        'categories' => array_values(array_unique($categories)),
-        'data' => $report
-    ]);
-}
-
-public function trial_report_detail(Request $request)
-{
-    $project_id = $request->project_id;
-    $process_id = $request->process_id;
-    $trial_id = $request->trial_id;
-    
-    $details = Maio::get_trial_rr_det_all($project_id, $process_id, $trial_id);
-    
-    return response()->json([
-        'success' => true,
-        'data' => $details
-    ]);
-}
-
-public function trial_update_detail(Request $request)
+    public function trial_update_detail(Request $request)
 {
     try {
         $rules = [
@@ -1873,27 +1764,12 @@ public function trial_update_detail(Request $request)
             'process_id' => 'required',
             'trial_id' => 'required',
             'defect_id' => 'required',
+            'ng' => 'required|numeric|min:0',
+            'perct' => 'required|numeric|min:0|max:100'
         ];
-        
-        // Tambahkan rules berdasarkan field yang dikirim
-        if ($request->has('ng') && $request->ng !== null) {
-            $rules['ng'] = 'required|numeric|min:0';
-        }
-        
-        if ($request->has('perct') && $request->perct !== null) {
-            $rules['perct'] = 'required|numeric|min:0|max:100';
-        }
-        
-        // Validasi minimal harus ada salah satu
-        if (!$request->has('ng') && !$request->has('perct')) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Either ng or perct must be provided'
-            ], 422);
-        }
-        
+
         $validator = Validator::make($request->all(), $rules);
-        
+
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
@@ -1901,25 +1777,113 @@ public function trial_update_detail(Request $request)
                 'errors' => $validator->errors()
             ], 422);
         }
+
+        // ===== VALIDASI TOTAL TIDAK BOLEH > 100% =====
+        // Ambil semua trial untuk project dan process ini
+        $allTrials = Maio::get_trial_rr($request->project_id, $request->process_id);
         
+        // Cari trial yang spesifik berdasarkan trial_id
+        $trial = null;
+        foreach ($allTrials as $t) {
+            if ($t->id == $request->trial_id) {
+                $trial = $t;
+                break;
+            }
+        }
+        
+        if (!$trial) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Trial not found'
+            ], 404);
+        }
+
+        $actualQty = (float) ($trial->actual ?? 0);
+        
+        if ($actualQty <= 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Actual quantity must be greater than 0'
+            ], 422);
+        }
+
+        // Ambil semua detail trial untuk trial ini
+        $existingDetails = Maio::get_trial_rr_det(
+            $request->project_id,
+            $request->process_id,
+            $request->trial_id
+        );
+
+        // Hitung total quant yang sudah ada (tanpa nilai yang sedang diedit)
+        $totalQuantWithoutCurrent = (float) ($trial->ok ?? 0); // Mulai dari OK
+        
+        foreach ($existingDetails as $detail) {
+            // Jika ini detail yang sedang diedit, skip
+            if ($detail->defect_id == $request->defect_id) {
+                continue;
+            }
+            $totalQuantWithoutCurrent += (float) ($detail->ng ?? 0);
+        }
+
+        // Hitung total persentase yang sudah ada (tanpa nilai yang sedang diedit)
+        $totalPercentWithoutCurrent = (float) ($trial->perct ?? 0); // Mulai dari % OK
+        
+        foreach ($existingDetails as $detail) {
+            // Jika ini detail yang sedang diedit, skip
+            if ($detail->defect_id == $request->defect_id) {
+                continue;
+            }
+            $totalPercentWithoutCurrent += (float) ($detail->perct ?? 0);
+        }
+
+        // Nilai baru yang akan disimpan
+        $newNg = (float) $request->ng;
+        $newPercent = (float) $request->perct;
+
+        // Hitung total akhir jika nilai baru disimpan
+        $finalTotalQuant = $totalQuantWithoutCurrent + $newNg;
+        $finalTotalPercent = $totalPercentWithoutCurrent + $newPercent;
+
+        // Validasi: total quantity tidak boleh melebihi actual quantity
+        if ($finalTotalQuant > $actualQty) {
+            $maxAllowed = $actualQty - $totalQuantWithoutCurrent;
+            return response()->json([
+                'success' => false,
+                'message' => 'Total quantity (' . $finalTotalQuant . ') exceeds actual quantity (' . $actualQty . '). Maximum allowed: ' . $maxAllowed . ' pcs',
+                'max_allowed' => $maxAllowed
+            ], 422);
+        }
+
+        // Validasi: total persentase tidak boleh melebihi 100%
+        if ($finalTotalPercent > 100.01) { // Beri toleransi kecil untuk floating point
+            $maxPercentAllowed = 100 - $totalPercentWithoutCurrent;
+            return response()->json([
+                'success' => false,
+                'message' => 'Total percentage (' . round($finalTotalPercent, 2) . '%) exceeds 100%. Maximum allowed: ' . round($maxPercentAllowed, 2) . '%',
+                'max_percent' => $maxPercentAllowed
+            ], 422);
+        }
+
+        // Update data menggunakan Mapp::update_trial_detail
         $updated = Mapp::update_trial_detail($request);
-        
+
         if ($updated) {
             return response()->json([
                 'success' => true,
                 'message' => 'Data berhasil diperbarui'
             ]);
         }
-        
+
         return response()->json([
             'success' => false,
             'message' => 'Gagal memperbarui data'
         ], 500);
-        
+
     } catch (\Exception $e) {
+        \Log::error('Error updating trial detail: ' . $e->getMessage());
         return response()->json([
             'success' => false,
-            'message' => $e->getMessage()
+            'message' => 'Server error: ' . $e->getMessage()
         ], 500);
     }
 }
