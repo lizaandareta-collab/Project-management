@@ -1072,7 +1072,7 @@
 
                 <!-- WRAPPER 4 CARD -->
                 <div class="card-row">
-                    <!-- CARD 1 - OVERALL PROGRESS - HIGHCHARTS DONUT CHART YANG RAPIH -->
+                    <!-- CARD 1 - OVERALL PROGRESS  -->
                     <div class="dash-card">
                         <div class="card-title">OVERALL PROGRESS</div>
                         <div class="chart-box">
@@ -1571,7 +1571,6 @@
         }
     @endphp
 
-    // Function to create Highcharts Donut Chart yang RAPIH
     function createOverallProgressChart(elementId, statusData, overallPercentage) {
         const data = [
             {
@@ -1691,9 +1690,7 @@
         return chart;
     }
 
-    // Function to create PROJECT MILESTONE chart dengan warna berdasarkan status
     function createMilestoneDrilldownChart(elementId, groupedTasks) {
-        // Fungsi untuk mendapatkan warna berdasarkan status
         function getStatusColor(status) {
             const statusColors = {
                 0: '#34495e', // No Status
@@ -1718,25 +1715,19 @@
             return statusTexts[status] || 'No Status';
         }
 
-        // Siapkan data untuk main chart (milestone)
         const mainSeriesData = [];
         const drilldownSeries = [];
 
-        // Proses data dari groupedTasks
         Object.entries(groupedTasks).forEach(([milestoneId, milestoneData]) => {
             if (milestoneData['parent']) {
                 const milestoneName = milestoneData['parent'].milestone_task || 'Unnamed Milestone';
                 const milestoneStatus = milestoneData['parent'].status || 0;
                 const milestoneColor = getStatusColor(milestoneStatus);
 
-                // Hitung total ACTIVITIES untuk milestone ini (TANPA subactivities)
                 let totalActivities = 0;
                 const drilldownData = [];
-
-                // Kumpulkan activities untuk tooltip
                 const activitiesList = [];
 
-                // Hitung dari activities saja (Level 2) - TANPA subactivities
                 if (milestoneData['activities']) {
                     Object.entries(milestoneData['activities']).forEach(([activityId, activityData]) => {
                         if (activityData['activity']) {
@@ -1745,7 +1736,6 @@
                             const activityStatus = activityData['activity'].status || 0;
                             const activityColor = getStatusColor(activityStatus);
 
-                            // Tambahkan ke drilldown data - HANYA activity
                             drilldownData.push({
                                 name: activityName,
                                 y: 1,
@@ -1754,7 +1744,6 @@
                                 statusText: getStatusTextFromNumber(activityStatus)
                             });
 
-                            // Tambahkan ke activities list untuk tooltip
                             activitiesList.push({
                                 name: activityName,
                                 color: activityColor,
@@ -1764,7 +1753,6 @@
                     });
                 }
 
-                // Tambahkan ke main series dengan data tambahan untuk tooltip
                 mainSeriesData.push({
                     name: milestoneName,
                     y: totalActivities,
@@ -1776,31 +1764,27 @@
                     totalActivities: totalActivities
                 });
 
-                // Tambahkan ke drilldown series
                 drilldownSeries.push({
                     name: milestoneName,
                     id: `milestone-${milestoneId}`,
                     data: drilldownData,
                     color: milestoneColor,
-                    isDrilldown: true  // Flag untuk membedakan drilldown series
+                    isDrilldown: true  
                 });
             }
         });
 
-        // Buat chart - MENGUBAH ASUMSI MINIMAL SUMBU Y MENJADI 1
         Highcharts.chart(elementId, {
             chart: {
                 type: 'bar',
                 height: 400,
                 events: {
                     drilldown: function (e) {
-                        // Saat drilldown, tetap gunakan warna yang sama
                         if (e.seriesOptions) {
                             e.seriesOptions.color = e.point.color;
                         }
                     },
                     drillup: function (e) {
-                        // Reset saat drillup
                         this.series[0].update({
                             colorByPoint: true
                         });
@@ -1823,7 +1807,7 @@
                 title: {
                     text: 'Number of Activities'
                 },
-                min: 1, // MENGUBAH INI DARI 0 MENJADI 1
+                min: 1, 
                 allowDecimals: false,
                 tickInterval: 1
             },
@@ -1860,16 +1844,13 @@
                     padding: '10px'
                 },
                 formatter: function () {
-                    // Jika ini adalah DRILLDOWN (activity individual)
                     if (this.series.userOptions && this.series.userOptions.isDrilldown) {
-                        // Tooltip untuk activity individual
                         return `
                             <span style="font-size:13px; font-weight:bold">${this.point.name}</span><br>
                             <span style="color:${this.point.color}">●</span> 
                             Status: <b style="color:${this.point.color}">${this.point.statusText}</b>
                         `;
                     } else {
-                        // Ini adalah MILESTONE (main chart)
                         let tooltipHTML = `
                             <div style="text-align:left;">
                                 <span style="font-size:13px; font-weight:bold">${this.point.name}</span><br>
@@ -1878,7 +1859,6 @@
                                 Total Activities: <b>${this.point.totalActivities}</b>
                         `;
 
-                        // Jika ada activities, tampilkan list-nya
                         if (this.point.activitiesList && this.point.activitiesList.length > 0) {
                             tooltipHTML += `
                                 <hr style="margin:8px 0; border:none; border-top:1px solid #eee;">
@@ -1937,7 +1917,6 @@
         });
     }
 
-    // Initialize charts
     const statusChart = @json($statusChart);
     const overallPercentage = {{ $overall }};
     const groupedTasks = @json($groupedTasks);
@@ -1945,7 +1924,6 @@
     createOverallProgressChart('overallProgressChart', statusChart, overallPercentage);
     createMilestoneDrilldownChart('container', groupedTasks);
 
-    // Initialize Plan Hours vs Hours Spent visualization
     function initializeHoursVisualization() {
         const planHours = parseFloat({{ $planHours }}) || 0;
         const hoursSpent = parseFloat({{ $hoursSpent }}) || 0;
@@ -1978,7 +1956,6 @@
         }
     }
 
-    // Gantt Chart functionality
     const day = 24 * 36e5;
     let chart;
 
@@ -2052,7 +2029,6 @@
             const formattedName = getStyledMilestone(taskName, task.is_milestone);
             const isOverdue = isTaskOverdue(task.plan_end, task.actual_end);
 
-            // BAR 1: PLAN (jika ada plan dates)
             if (planStart && planEnd) {
                 projectTasks.push({
                     name: getStyledMilestone(taskName + " (Plan)", task.is_milestone),
@@ -2075,7 +2051,6 @@
                 });
             }
 
-            // BAR 2: ACTUAL (jika ada actual dates)
             if (actualStart) {
                 let actualColor, actualBorderColor, actualType;
 
@@ -2327,19 +2302,15 @@
         ganttContainer.parentNode.insertBefore(legendContainer, ganttContainer.nextSibling);
     }
 
-    // TRIAL CHART FUNCTIONS
     let selectedProcessId = null;
     const projectId = {{ $projectId }};
     let trialData = [];
 
-    // Select Process untuk Trial Charts
     document.querySelectorAll('.btn-process').forEach(btn => {
         btn.addEventListener('click', function () {
-            // Reset semua button
             document.querySelectorAll('.btn-process')
                 .forEach(b => b.classList.remove('btn-primary'));
 
-            // Set active button
             this.classList.add('btn-primary');
 
             selectedProcessId = this.dataset.processId;
@@ -2351,7 +2322,6 @@
     function loadTrialData() {
         if (!selectedProcessId) return;
 
-        // Reset chart containers dengan loading
         ['trialChart1', 'trialChart2', 'trialChart3'].forEach(id => {
             const container = document.getElementById(id);
             if (container) {
@@ -2401,7 +2371,6 @@
             return;
         }
 
-        // Sort data by TRIAL_NO
         const sortedData = [...data].sort((a, b) => {
             return (a.trial_no || '').localeCompare(b.trial_no || '');
         });
@@ -2410,7 +2379,6 @@
         const selectedButton = document.querySelector('.btn-process.btn-primary');
         const selectedProcessName = selectedButton ? selectedButton.dataset.processName : '';
 
-        // Grafik 1: %OK RATIO
         const perctData = sortedData.map(item => parseFloat(item.perct) || 0);
         const targetData = sortedData.map(item => parseFloat(item.target) || 0);
 
@@ -2486,7 +2454,6 @@
             }
         });
 
-        // Grafik 2: CT (Cycle Time)
         const ctData = sortedData.map(item => parseFloat(item.ct) || 0);
         const ctTargetData = sortedData.map(item => parseFloat(item.ct_target) || 0);
 
@@ -2553,7 +2520,6 @@
             }
         });
 
-        // Grafik 3: BERAT
         const beratData = sortedData.map(item => parseFloat(item.berat) || 0);
         const beratTargetData = sortedData.map(item => parseFloat(item.berat_target) || 0);
 
@@ -2586,7 +2552,7 @@
                 title: {
                     text: 'Berat'
                 },
-                tickInterval: 0.5, // ⬅️ supaya 15,0 → 15,5 → 16,0
+                tickInterval: 0.5, 
                 labels: {
                     formatter: function () {
                         return this.value.toLocaleString('id-ID', {
@@ -2630,20 +2596,15 @@
         });
     }
 
-    // Task Filtering - Hanya Filter Milestone
     document.addEventListener('DOMContentLoaded', function () {
-        // Initialize Hours Visualization
         initializeHoursVisualization();
 
-        // Initialize task filtering
         let currentMilestoneFilter = 'all';
 
-        // Elements
         const taskGridContainer = document.getElementById('taskGridContainer');
         const visibleTaskCounter = document.getElementById('visibleTaskCounter');
         const milestoneFilter = document.getElementById('milestoneFilter');
 
-        // Simple filtering function
         function filterTasks() {
             let visibleTaskCount = 0;
             const taskGroups = document.querySelectorAll('.task-group-card');
@@ -2678,7 +2639,6 @@
             }
         }
 
-        // Event Listeners
         if (milestoneFilter) {
             milestoneFilter.addEventListener('change', function () {
                 currentMilestoneFilter = this.value;
@@ -2686,10 +2646,8 @@
             });
         }
 
-        // Initialize
         filterTasks();
 
-        // Export menu functionality
         const exportMenuBtn = document.getElementById('exportMenuBtn');
         const exportMenu = document.getElementById('exportMenu');
 
@@ -2703,13 +2661,11 @@
                 exportMenu.classList.remove('show');
             });
 
-            // Fullscreen functionality
             document.getElementById('fullscreenBtn').addEventListener('click', function () {
                 if (chart) chart.fullscreen.toggle();
                 exportMenu.classList.remove('show');
             });
 
-            // Print functionality
             document.getElementById('printChartBtn').addEventListener('click', function () {
                 if (chart) {
                     chart.exportChart({
@@ -2722,7 +2678,6 @@
                 exportMenu.classList.remove('show');
             });
 
-            // Download PNG functionality
             document.getElementById('downloadPNGBtn').addEventListener('click', function () {
                 if (chart) {
                     chart.exportChart({
@@ -2735,7 +2690,6 @@
                 exportMenu.classList.remove('show');
             });
 
-            // Download JPEG functionality
             document.getElementById('downloadJPGBtn').addEventListener('click', function () {
                 if (chart) {
                     chart.exportChart({
@@ -2749,10 +2703,8 @@
             });
         }
 
-        // Initialize Gantt Chart
         renderGanttChart();
 
-        // Invoice modal functionality
         const invoiceCard = document.getElementById('invoiceCard');
         if (invoiceCard) {
             invoiceCard.addEventListener('click', function () {
@@ -2761,7 +2713,6 @@
             });
         }
 
-        // Handle invoice form submission
         const form = document.getElementById('formInvoice');
         if (form) {
             form.addEventListener('submit', function (e) {
@@ -2809,7 +2760,6 @@
         }
     });
 
-    // Add weekend plot bands plugin
     Highcharts.addEvent(Highcharts.Axis, 'foundExtremes', e => {
         if (e.target.options.custom && e.target.options.custom.weekendPlotBands) {
             const axis = e.target,

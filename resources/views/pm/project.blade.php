@@ -4,7 +4,6 @@
         inset: 0;
         background: rgba(0, 0, 0, 0.5);
         z-index: 1020;
-        /* 🔥 di atas semua isi modal */
         border-radius: 6px;
     }
 </style>
@@ -75,9 +74,9 @@
                                                             <li><a href="{{ route('trial', ['id' => $p->id]) }}">
                                                                     <em class="icon ni ni-eye"></em><span>Trial
                                                                         Record</span></a></li>
-                                                            <li><a href="{{ route('problem', ['id' => $p->id]) }}">
+                                                            <!-- <li><a href="{{ route('problem', ['id' => $p->id]) }}">
                                                                     <em class="icon ni ni-eye"></em><span>Problem
-                                                                        History</span></a></li>
+                                                                        History</span></a></li> -->
 
                                                         </ul>
                                                     </div>
@@ -414,9 +413,8 @@
                             return;
                         }
 
-                        // 🔥 JIKA CHECKED → BUKA MODAL VALUE
                         if (this.checked) {
-                            activeProcessCheckbox = this; // 🔥 SIMPAN REFERENSI
+                            activeProcessCheckbox = this; 
                             document.getElementById('std_process_id').value = this.dataset.lovId;
                             new bootstrap.Modal(document.getElementById('stdValueModal')).show();
                         }
@@ -446,11 +444,11 @@
                         body: JSON.stringify({
                             lov_id: cb.dataset.lovId,
                             init: cb.dataset.init,
-                            checked: false   // 🔥 PAKSA DELETE
+                            checked: false   
                         })
                     });
 
-                    cb.checked = false; // reset UI
+                    cb.checked = false; 
                 }
             });
 
@@ -508,7 +506,6 @@
 
     document.getElementById('stdValueModal').addEventListener('hidden.bs.modal', function () {
 
-        // jika masih ada checkbox aktif → berarti batal
         if (activeProcessCheckbox) {
 
             fetch("{{ route('zzz_save_process_temp') }}", {

@@ -221,7 +221,7 @@
         vertical-align: middle;
     }
 
-    /* Edit Cell Styling - HANYA untuk Quant */
+    /* Edit Quant */
     .edit-cell {
         cursor: pointer;
         position: relative;
@@ -672,8 +672,8 @@
     }
 
     /* ===============================
-    AUTO CALCULATE PERCENT FOR EDIT DETAIL WITH VALIDATION
- =============================== */
+        AUTO CALCULATE PERCENT FOR EDIT DETAIL WITH VALIDATION
+    =============================== */
     function initEditDetailAutoCalculate() {
         const editNgInput = document.getElementById('editNgValue');
         if (editNgInput) {
@@ -816,8 +816,8 @@
     }
 
     /* ===============================
-   RENDER REPORT FRESH TABLE
-=============================== */
+        RENDER REPORT FRESH TABLE
+    =============================== */
     function renderReportFreshTable(data) {
         const table = document.querySelector('#reportFreshTable');
         const tbody = table.querySelector('tbody');
@@ -937,8 +937,6 @@
                                     const actualQty = item.actual || 0;
                                     const maxQuant = actualQty - (item.quant || 0);
 
-                                    // PERUBAHAN DI SINI:
-                                    // Hanya tampilkan icon edit jika quant = 0
                                     const hasZeroQuant = item.quant === 0;
                                     const editCellClass = hasZeroQuant ? 'edit-cell' : '';
                                     const editIconHTML = hasZeroQuant ? '<em class="icon ni ni-edit edit-icon"></em>' : '';
@@ -977,16 +975,13 @@
                     ${columns.map(col => {
                         const item = rows.Jumlah?.Jumlah?.[col] ?? { quant: 0, percent: 100 };
 
-                        // CEK APAKAH JUMLAH < 100
                         const quant = parseFloat(item.quant) || 0;
                         const percent = parseFloat(item.percent) || 0;
 
-                        // Jika ada kolom dengan jumlah < 100 atau percent < 100
                         if (quant < 100 || percent < 100) {
                             shouldDisableButton = true;
                         }
 
-                        // Tampilkan data biasa saja
                         return `
                             <td class="text-end fw-bold">${item.quant}</td>
                             <td class="text-end fw-bold">${Number(item.percent).toFixed(2)}%</td>
@@ -1009,17 +1004,13 @@
 
     /* ===============================
        INITIALIZE REPORT FRESH EDIT
-       HANYA untuk sel Quant (td pertama)
     ================================ */
     function initReportFreshEdit() {
-        // Event delegation untuk klik sel Quant SAJA
         document.querySelector('#reportFreshTable tbody').addEventListener('click', function (e) {
             const target = e.target;
 
-            // Jika yang diklik adalah icon edit
             if (target.classList.contains('edit-icon') || target.closest('.edit-icon')) {
                 const cell = target.closest('td');
-                // Hanya cell dengan class edit-cell (Quant) yang bisa diedit
                 if (cell && cell.classList.contains('edit-cell')) {
                     openEditModal(cell);
                 }
@@ -1031,7 +1022,6 @@
        OPEN EDIT MODAL
     ================================ */
     function openEditModal(cell) {
-        // Ambil data dari atribut data-*
         const trialId = cell.dataset.trialId;
         const defectId = cell.dataset.defectId;
         const transType = cell.dataset.transType;
@@ -1042,7 +1032,6 @@
         const trialKey = cell.dataset.trialKey;
         const actualQty = cell.dataset.actual || '0';
 
-        // Validasi data
         if (!trialId || !defectId) {
             Swal.fire({
                 icon: 'warning',
@@ -1052,7 +1041,6 @@
             return;
         }
 
-        // Isi modal fields
         document.getElementById('editProcessId').value = selectedProcessId;
         document.getElementById('editTrialId').value = trialId;
         document.getElementById('editDefectId').value = defectId;
@@ -1062,14 +1050,11 @@
         document.getElementById('editCurrentValue').value = currentValue;
         document.getElementById('editMaxValue').value = maxValue;
         document.getElementById('editTrialKey').value = trialKey;
-
-        // Set display values
         document.getElementById('editTrialInfoDisplay').value = trialKey;
         document.getElementById('editDefectNameDisplay').value = defectName;
         document.getElementById('editTransTypeDisplay').value = transType;
         document.getElementById('editActualQtyDisplay').value = actualQty;
 
-        // Set input values
         const ngInput = document.getElementById('editNgValue');
         ngInput.value = currentValue;
         ngInput.max = maxValue;
@@ -1077,18 +1062,15 @@
         const perctInput = document.getElementById('editPerctValue');
         perctInput.value = currentPercent;
 
-        // Reset style
         ngInput.style.borderColor = '';
         ngInput.style.backgroundColor = '';
         perctInput.style.borderColor = '';
         perctInput.style.backgroundColor = '';
 
-        // Show modal
         bootstrap.Modal.getOrCreateInstance(
             document.getElementById('modalEditDetail')
         ).show();
 
-        // Focus pada NG input field
         setTimeout(() => {
             ngInput.focus();
             ngInput.select();
@@ -1106,7 +1088,6 @@
         const maxValue = parseFloat(document.getElementById('editMaxValue').value);
         const actualQty = parseFloat(document.getElementById('editActualQty').value);
 
-        // Validasi dasar
         if (isNaN(ngValue) || ngValue < 0) {
             Swal.fire({
                 icon: 'error',
@@ -1116,7 +1097,6 @@
             return;
         }
 
-        // Validasi tidak melebihi max quantity
         if (ngValue > maxValue) {
             Swal.fire({
                 icon: 'warning',
@@ -1126,7 +1106,6 @@
             return;
         }
 
-        // Validasi percentage calculation
         if (actualQty > 0) {
             const calculatedPercent = (ngValue / actualQty) * 100;
             if (Math.abs(calculatedPercent - perctValue) > 0.01) {
@@ -1163,7 +1142,6 @@
             .then(async response => {
                 const data = await response.json();
 
-                // Cek jika response tidak ok (status 400-500)
                 if (!response.ok) {
                     throw new Error(data.message || `Server returned ${response.status}`);
                 }
@@ -1172,10 +1150,8 @@
             })
             .then(data => {
                 if (data.success) {
-                    // Close modal
                     bootstrap.Modal.getInstance(document.getElementById('modalEditDetail')).hide();
 
-                    // Reload data
                     loadReportFreshData();
                     loadTrialData();
 
@@ -1193,10 +1169,8 @@
             .catch(err => {
                 console.error('Update error:', err);
 
-                // Tampilkan pesan error yang lebih spesifik
                 let errorMessage = err.message || 'Failed to update data. Please try again.';
 
-                // Jika error terkait validasi total
                 if (errorMessage.includes('exceeds') ||
                     errorMessage.includes('100%') ||
                     errorMessage.includes('Maximum allowed') ||
@@ -1235,10 +1209,7 @@
 
                 let categoryHasMatch = {};
 
-                // reset
                 rows.forEach(row => row.style.display = 'none');
-
-                // filter rows
                 rows.forEach(row => {
                     const category = row.dataset.category;
                     const cells = row.querySelectorAll('td');
@@ -1257,7 +1228,6 @@
                     }
                 });
 
-                // show category header if any child visible
                 rows.forEach(row => {
                     if (row.classList.contains('category-row')) {
                         const category = row.dataset.category;
@@ -1274,7 +1244,6 @@
        UPDATE DATATABLE
     ================================ */
     function updateDataTable(data) {
-        // Jika DataTable sudah ada, hancurkan dulu
         if ($.fn.DataTable.isDataTable('#trialDataTable')) {
             trialDataTable.destroy();
             trialDataTable = null;
@@ -1291,12 +1260,10 @@
                 </tr>
             `;
 
-            // Inisialisasi DataTable kosong
             initDataTable([]);
             return;
         }
 
-        // Isi tabel dengan data
         let html = '';
         data.forEach(row => {
             const perctVal = parseFloat(row.perct) || 0;
@@ -1305,8 +1272,6 @@
             const ctTargetVal = parseFloat(row.ct_target) || 0;
             const beratVal = parseFloat(row.berat) || 0;
             const beratTargetVal = parseFloat(row.berat_target) || 0;
-
-            // Tentukan class untuk warna
             const perctClass = !isNaN(perctVal) && !isNaN(targetVal) && perctVal >= targetVal
                 ? 'text-success-bold'
                 : 'text-danger-bold';
@@ -1350,8 +1315,6 @@
         });
 
         tableBody.innerHTML = html;
-
-        // Inisialisasi DataTable dengan data
         initDataTable(data);
     }
 
@@ -1839,7 +1802,6 @@
             })
             .then(res => {
                 if (res.status) {
-                    // Success
                     loadTrialData();
                     loadReportFreshData();
                     bootstrap.Modal.getInstance(document.getElementById('modalAddTrial')).hide();
