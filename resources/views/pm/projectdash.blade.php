@@ -1769,7 +1769,7 @@
                     id: `milestone-${milestoneId}`,
                     data: drilldownData,
                     color: milestoneColor,
-                    isDrilldown: true  
+                    isDrilldown: true
                 });
             }
         });
@@ -1807,7 +1807,7 @@
                 title: {
                     text: 'Number of Activities'
                 },
-                min: 1, 
+                min: 1,
                 allowDecimals: false,
                 tickInterval: 1
             },
@@ -2363,238 +2363,286 @@
             });
     }
 
-    function renderTrialCharts(data) {
-        if (!data || data.length === 0) {
-            ['trialChart1', 'trialChart2', 'trialChart3'].forEach(id => {
-                document.getElementById(id).innerHTML = '<div class="text-center text-muted p-5">No trial data available</div>';
-            });
-            return;
-        }
-
-        const sortedData = [...data].sort((a, b) => {
-            return (a.trial_no || '').localeCompare(b.trial_no || '');
+function renderTrialCharts(data) {
+    if (!data || data.length === 0) {
+        ['trialChart1', 'trialChart2', 'trialChart3'].forEach(id => {
+            document.getElementById(id).innerHTML = '<div class="text-center text-muted p-5">No trial data available</div>';
         });
-
-        const trialNos = sortedData.map(item => item.trial_no || '');
-        const selectedButton = document.querySelector('.btn-process.btn-primary');
-        const selectedProcessName = selectedButton ? selectedButton.dataset.processName : '';
-
-        const perctData = sortedData.map(item => parseFloat(item.perct) || 0);
-        const targetData = sortedData.map(item => parseFloat(item.target) || 0);
-
-        Highcharts.chart('trialChart1', {
-            chart: {
-                type: 'column',
-                height: 380
-            },
-            title: {
-                text: '%OK RATIO',
-                align: 'center',
-                style: {
-                    fontSize: '16px',
-                    fontWeight: 'bold'
-                }
-            },
-            subtitle: {
-                text: selectedProcessName,
-                align: 'center'
-            },
-            xAxis: {
-                categories: trialNos,
-                title: {
-                    text: 'Trial No'
-                },
-                crosshair: true
-            },
-            yAxis: {
-                min: 0,
-                max: 100,
-                title: {
-                    text: 'Percentage (%)'
-                },
-                labels: {
-                    formatter: function () {
-                        return this.value.toLocaleString('id-ID', {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                        }) + '%';
-                    }
-                }
-            },
-            tooltip: {
-                headerFormat: '<span style="font-size:10px">Trial {point.key}</span><table>',
-                pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-                    '<td style="padding:0"><b>{point.y:.2f}%</b></td></tr>',
-                footerFormat: '</table>',
-                shared: true,
-                useHTML: true
-            },
-            plotOptions: {
-                column: {
-                    pointPadding: 0.2,
-                    borderWidth: 0
-                }
-            },
-            series: [{
-                name: '%OK RATIO',
-                data: perctData,
-                color: '#4CAF50'
-            }, {
-                name: 'Target',
-                data: targetData,
-                type: 'line',
-                color: '#FF9800',
-                marker: {
-                    symbol: 'circle',
-                    radius: 6
-                }
-            }],
-            credits: {
-                enabled: false
-            }
-        });
-
-        const ctData = sortedData.map(item => parseFloat(item.ct) || 0);
-        const ctTargetData = sortedData.map(item => parseFloat(item.ct_target) || 0);
-
-        Highcharts.chart('trialChart2', {
-            chart: {
-                type: 'column',
-                height: 380
-            },
-            title: {
-                text: 'Cycle Time (CT)',
-                align: 'center',
-                style: {
-                    fontSize: '16px',
-                    fontWeight: 'bold'
-                }
-            },
-            subtitle: {
-                text: selectedProcessName,
-                align: 'center'
-            },
-            xAxis: {
-                categories: trialNos,
-                title: {
-                    text: 'Trial No'
-                },
-                crosshair: true
-            },
-            yAxis: {
-                min: 0,
-                title: {
-                    text: 'Cycle Time'
-                }
-            },
-            tooltip: {
-                headerFormat: '<span style="font-size:10px">Trial {point.key}</span><table>',
-                pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-                    '<td style="padding:0"><b>{point.y:.2f}</b></td></tr>',
-                footerFormat: '</table>',
-                shared: true,
-                useHTML: true
-            },
-            plotOptions: {
-                column: {
-                    pointPadding: 0.2,
-                    borderWidth: 0
-                }
-            },
-            series: [{
-                name: 'CT',
-                data: ctData,
-                color: '#2196F3'
-            }, {
-                name: 'CT Target',
-                data: ctTargetData,
-                type: 'line',
-                color: '#FF5722',
-                marker: {
-                    symbol: 'circle',
-                    radius: 6
-                }
-            }],
-            credits: {
-                enabled: false
-            }
-        });
-
-        const beratData = sortedData.map(item => parseFloat(item.berat) || 0);
-        const beratTargetData = sortedData.map(item => parseFloat(item.berat_target) || 0);
-
-        Highcharts.chart('trialChart3', {
-            chart: {
-                type: 'column',
-                height: 380
-            },
-            title: {
-                text: 'Berat',
-                align: 'center',
-                style: {
-                    fontSize: '16px',
-                    fontWeight: 'bold'
-                }
-            },
-            subtitle: {
-                text: selectedProcessName,
-                align: 'center'
-            },
-            xAxis: {
-                categories: trialNos,
-                title: {
-                    text: 'Trial No'
-                },
-                crosshair: true
-            },
-            yAxis: {
-                min: 0,
-                title: {
-                    text: 'Berat'
-                },
-                tickInterval: 0.5, 
-                labels: {
-                    formatter: function () {
-                        return this.value.toLocaleString('id-ID', {
-                            minimumFractionDigits: 1,
-                            maximumFractionDigits: 1
-                        });
-                    }
-                }
-            },
-            tooltip: {
-                headerFormat: '<span style="font-size:10px">Trial {point.key}</span><table>',
-                pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-                    '<td style="padding:0"><b>{point.y:.2f}</b></td></tr>',
-                footerFormat: '</table>',
-                shared: true,
-                useHTML: true
-            },
-            plotOptions: {
-                column: {
-                    pointPadding: 0.2,
-                    borderWidth: 0
-                }
-            },
-            series: [{
-                name: 'Berat',
-                data: beratData,
-                color: '#9C27B0'
-            }, {
-                name: 'Berat Target',
-                data: beratTargetData,
-                type: 'line',
-                color: '#795548',
-                marker: {
-                    symbol: 'circle',
-                    radius: 6
-                }
-            }],
-            credits: {
-                enabled: false
-            }
-        });
+        return;
     }
+
+    const sortedData = [...data].sort((a, b) => {
+        return (a.trial_no || '').localeCompare(b.trial_no || '');
+    });
+
+    const trialNos = sortedData.map(item => item.trial_no || '');
+    const selectedButton = document.querySelector('.btn-process.btn-primary');
+    const selectedProcessName = selectedButton ? selectedButton.dataset.processName : '';
+
+    const perctData = sortedData.map(item => parseFloat(item.perct) || 0);
+    const targetData = sortedData.map(item => parseFloat(item.target) || 0);
+
+    // Grafik 1: %OK RATIO - DENGAN DATA LABELS
+    Highcharts.chart('trialChart1', {
+        chart: {
+            type: 'column',
+            height: 380
+        },
+        title: {
+            text: '%OK RATIO',
+            align: 'center',
+            style: {
+                fontSize: '16px',
+                fontWeight: 'bold'
+            }
+        },
+        subtitle: {
+            text: selectedProcessName,
+            align: 'center'
+        },
+        xAxis: {
+            categories: trialNos,
+            title: {
+                text: 'Trial No'
+            },
+            crosshair: true
+        },
+        yAxis: {
+            min: 0,
+            max: 100,
+            title: {
+                text: 'Percentage (%)'
+            },
+            labels: {
+                formatter: function () {
+                    return this.value.toLocaleString('id-ID', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    }) + '%';
+                }
+            }
+        },
+        tooltip: {
+            headerFormat: '<span style="font-size:10px">Trial {point.key}</span><table>',
+            pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                '<td style="padding:0"><b>{point.y:.2f}%</b></td></tr>',
+            footerFormat: '</table>',
+            shared: true,
+            useHTML: true
+        },
+        plotOptions: {
+            column: {
+                pointPadding: 0.2,
+                borderWidth: 0,
+                dataLabels: {
+                    enabled: true,
+                    format: '{y:.2f}%',
+                    style: {
+                        fontSize: '11px',
+                        fontWeight: 'bold',
+                        textOutline: 'none'
+                    },
+                    color: '#ffffff', // Warna teks putih untuk kontras
+                    inside: true, // Label di dalam kolom
+                    verticalAlign: 'middle', // Posisi vertikal tengah
+                    crop: false,
+                    overflow: 'none'
+                }
+            }
+        },
+        series: [{
+            name: '%OK RATIO',
+            data: perctData,
+            color: '#4CAF50'
+        }, {
+            name: 'Target',
+            data: targetData,
+            type: 'line',
+            color: '#FF9800',
+            marker: {
+                symbol: 'circle',
+                radius: 6
+            }
+            // Tidak ada dataLabels untuk target
+        }],
+        credits: {
+            enabled: false
+        }
+    });
+
+    const ctData = sortedData.map(item => parseFloat(item.ct) || 0);
+    const ctTargetData = sortedData.map(item => parseFloat(item.ct_target) || 0);
+
+    // Grafik 2: CT - DENGAN DATA LABELS
+    Highcharts.chart('trialChart2', {
+        chart: {
+            type: 'column',
+            height: 380
+        },
+        title: {
+            text: 'Cycle Time (CT)',
+            align: 'center',
+            style: {
+                fontSize: '16px',
+                fontWeight: 'bold'
+            }
+        },
+        subtitle: {
+            text: selectedProcessName,
+            align: 'center'
+        },
+        xAxis: {
+            categories: trialNos,
+            title: {
+                text: 'Trial No'
+            },
+            crosshair: true
+        },
+        yAxis: {
+            min: 0,
+            title: {
+                text: 'Cycle Time'
+            }
+        },
+        tooltip: {
+            headerFormat: '<span style="font-size:10px">Trial {point.key}</span><table>',
+            pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                '<td style="padding:0"><b>{point.y:.2f}</b></td></tr>',
+            footerFormat: '</table>',
+            shared: true,
+            useHTML: true
+        },
+        plotOptions: {
+            column: {
+                pointPadding: 0.2,
+                borderWidth: 0,
+                dataLabels: {
+                    enabled: true,
+                    format: '{y:.1f}',
+                    style: {
+                        fontSize: '11px',
+                        fontWeight: 'bold',
+                        textOutline: 'none'
+                    },
+                    color: '#ffffff',
+                    inside: true,
+                    verticalAlign: 'middle',
+                    crop: false,
+                    overflow: 'none'
+                }
+            }
+        },
+        series: [{
+            name: 'CT',
+            data: ctData,
+            color: '#2196F3'
+        }, {
+            name: 'CT Target',
+            data: ctTargetData,
+            type: 'line',
+            color: '#FF5722',
+            marker: {
+                symbol: 'circle',
+                radius: 6
+            }
+            // Tidak ada dataLabels untuk target
+        }],
+        credits: {
+            enabled: false
+        }
+    });
+
+    const beratData = sortedData.map(item => parseFloat(item.berat) || 0);
+    const beratTargetData = sortedData.map(item => parseFloat(item.berat_target) || 0);
+
+    // Grafik 3: BERAT - DENGAN DATA LABELS
+    Highcharts.chart('trialChart3', {
+        chart: {
+            type: 'column',
+            height: 380
+        },
+        title: {
+            text: 'Berat',
+            align: 'center',
+            style: {
+                fontSize: '16px',
+                fontWeight: 'bold'
+            }
+        },
+        subtitle: {
+            text: selectedProcessName,
+            align: 'center'
+        },
+        xAxis: {
+            categories: trialNos,
+            title: {
+                text: 'Trial No'
+            },
+            crosshair: true
+        },
+        yAxis: {
+            min: 0,
+            title: {
+                text: 'Berat'
+            },
+            tickInterval: 0.5, 
+            labels: {
+                formatter: function () {
+                    return this.value.toLocaleString('id-ID', {
+                        minimumFractionDigits: 1,
+                        maximumFractionDigits: 1
+                    });
+                }
+            }
+        },
+        tooltip: {
+            headerFormat: '<span style="font-size:10px">Trial {point.key}</span><table>',
+            pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                '<td style="padding:0"><b>{point.y:.2f}</b></td></tr>',
+            footerFormat: '</table>',
+            shared: true,
+            useHTML: true
+        },
+        plotOptions: {
+            column: {
+                pointPadding: 0.2,
+                borderWidth: 0,
+                dataLabels: {
+                    enabled: true,
+                    format: '{y:.1f}',
+                    style: {
+                        fontSize: '11px',
+                        fontWeight: 'bold',
+                        textOutline: 'none'
+                    },
+                    color: '#ffffff',
+                    inside: true,
+                    verticalAlign: 'middle',
+                    crop: false,
+                    overflow: 'none'
+                }
+            }
+        },
+        series: [{
+            name: 'Berat',
+            data: beratData,
+            color: '#9C27B0'
+        }, {
+            name: 'Berat Target',
+            data: beratTargetData,
+            type: 'line',
+            color: '#795548',
+            marker: {
+                symbol: 'circle',
+                radius: 6
+            }
+            // Tidak ada dataLabels untuk target
+        }],
+        credits: {
+            enabled: false
+        }
+    });
+}
 
     document.addEventListener('DOMContentLoaded', function () {
         initializeHoursVisualization();

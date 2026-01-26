@@ -516,7 +516,7 @@
 
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Edit Detail</h5>
+                        <h5 class="modal-title">Edit Trail Detail</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body row g-3">
@@ -816,8 +816,8 @@
     }
 
     /* ===============================
-        RENDER REPORT FRESH TABLE
-    =============================== */
+    RENDER REPORT FRESH TABLE
+ =============================== */
     function renderReportFreshTable(data) {
         const table = document.querySelector('#reportFreshTable');
         const tbody = table.querySelector('tbody');
@@ -828,19 +828,6 @@
         if (btnAddTrial) {
             btnAddTrial.disabled = false;
         }
-
-        // if (!data || !data.columns || data.columns.length === 0) {
-        //     tbody.innerHTML = `
-        // <tr>
-        //     <td colspan="20" class="text-center text-muted">No data</td>
-        // </tr>`;
-
-        //     // Jika tidak ada data, enable button
-        //     if (btnAddTrial) {
-        //         btnAddTrial.disabled = false;
-        //     }
-        //     return;
-        // }
 
         if (
             !data ||
@@ -864,27 +851,30 @@
             return;
         }
 
-
         const columns = data.columns;
         const rows = data.data || {};
         const categories = data.categories || [];
         const trials = data.trials || {};
 
+        // Dapatkan trial terakhir berdasarkan urutan angka
+        const trialKeys = Object.keys(trials);
+        const lastTrial = getLastTrial(trialKeys, trials);
+
         let shouldDisableButton = false;
 
         /* ===== HEADER ===== */
         table.querySelector('thead').outerHTML = `
-            <thead class="text-center">
-                <tr>
-                    <th rowspan="2">Category</th>
-                    <th rowspan="2">Report Fresh</th>
-                    ${columns.map(c => `<th colspan="2">${c}</th>`).join('')}
-                </tr>
-                <tr>
-                    ${columns.map(() => `<th>Quant.</th><th>%</th>`).join('')}
-                </tr>
-            </thead>
-            `;
+        <thead class="text-center">
+            <tr>
+                <th rowspan="2">Category</th>
+                <th rowspan="2">Report Fresh</th>
+                ${columns.map(c => `<th colspan="2">${c}</th>`).join('')}
+            </tr>
+            <tr>
+                ${columns.map(() => `<th>Quant.</th><th>%</th>`).join('')}
+            </tr>
+        </thead>
+        `;
 
         let html = '';
 
@@ -892,24 +882,24 @@
            OK ROW (NON EDITABLE)
         ====================== */
         html += `
-            <tr class="fw-bold ok-row">
-                <td></td>
-                <td class="fw-bold">OK</td>
-                ${columns.map(col => {
-                    const item = rows.OK?.OK?.[col] ?? { quant: 0, percent: 0 };
-                    const target = data.targets?.[col] ?? 0;
-                    const cls = item.percent >= target
-                        ? 'text-success-bold'
-                        : 'text-danger-bold';
-                    return `
-                        <td class="text-end fw-bold">${item.quant}</td>
-                        <td class="text-end fw-bold ${cls}">
-                            ${Number(item.percent).toFixed(2)}%
-                        </td>
-                    `;
-                }).join('')}
-            </tr>
-            `;
+        <tr class="fw-bold ok-row">
+            <td></td>
+            <td class="fw-bold">OK</td>
+            ${columns.map(col => {
+            const item = rows.OK?.OK?.[col] ?? { quant: 0, percent: 0 };
+            const target = data.targets?.[col] ?? 0;
+            const cls = item.percent >= target
+                ? 'text-success-bold'
+                : 'text-danger-bold';
+            return `
+                    <td class="text-end fw-bold">${item.quant}</td>
+                    <td class="text-end fw-bold ${cls}">
+                        ${Number(item.percent).toFixed(2)}%
+                    </td>
+                `;
+        }).join('')}
+        </tr>
+        `;
 
         /* ======================
            CATEGORY (TRANS_TYPE)
@@ -923,72 +913,80 @@
                 const defectData = defects[defect];
 
                 html += `
-                        <tr class="${i === 0 ? 'after-ok' : ''}">
-                            ${i === 0 ? `
-                                <td rowspan="${rowspan}" class="text-center align-middle fw-bold">
-                                    ${category}
-                                </td>` : ``}
-                            <td>${defect}</td>
-                            ${columns.map(col => {
-                                    const item = defectData?.[col] ?? { quant: 0, percent: 0 };
-                                    const trialInfo = trials[col];
-                                    const trialId = trialInfo?.id;
-                                    const defectId = trialInfo?.defectIds?.[defect];
-                                    const actualQty = item.actual || 0;
-                                    const maxQuant = actualQty - (item.quant || 0);
+                <tr class="${i === 0 ? 'after-ok' : ''}">
+                    ${i === 0 ? `
+                        <td rowspan="${rowspan}" class="text-center align-middle fw-bold">
+                            ${category}
+                        </td>` : ``}
+                    <td>${defect}</td>
+                    ${columns.map(col => {
+                    const item = defectData?.[col] ?? { quant: 0, percent: 0 };
+                    const trialInfo = trials[col];
+                    const trialId = trialInfo?.id;
+                    const defectId = trialInfo?.defectIds?.[defect];
+                    const actualQty = item.actual || 0;
+                    const maxQuant = actualQty - (item.quant || 0);
 
-                                    const hasZeroQuant = item.quant === 0;
-                                    const editCellClass = hasZeroQuant ? 'edit-cell' : '';
-                                    const editIconHTML = hasZeroQuant ? '<em class="icon ni ni-edit edit-icon"></em>' : '';
+                    // Cek apakah ini trial terakhir
+                    const isLastTrial = col === lastTrial?.key;
 
-                                    return `
-                                    <td class="text-end ${editCellClass}"
-                                        data-trial-id="${trialId}"
-                                        data-defect-id="${defectId}"
-                                        data-trans-type="${category}"
-                                        data-defect-name="${defect}"
-                                        data-column-name="quant"
-                                        data-current-value="${item.quant}"
-                                        data-max-value="${maxQuant}"
-                                        data-trial-key="${col}"
-                                        data-actual="${actualQty}"
-                                        data-current-percent="${item.percent}">
-                                        ${item.quant}
-                                        ${editIconHTML}
-                                    </td>
-                                    <td class="text-end percent-cell">
-                                        ${Number(item.percent).toFixed(2)}%
-                                    </td>
-                                `;
-                                }).join('')}
-                        </tr>
-                    `;
+                    // Edit cell hanya untuk trial terakhir, TETAP muncul walaupun ada datanya
+                    const showEditIcon = isLastTrial;
+                    const editCellClass = showEditIcon ? 'edit-cell' : '';
+                    const editIconHTML = showEditIcon ? '<em class="icon ni ni-edit edit-icon"></em>' : '';
+
+                    return `
+                            <td class="text-end ${editCellClass}"
+                                data-trial-id="${trialId}"
+                                data-defect-id="${defectId}"
+                                data-trans-type="${category}"
+                                data-defect-name="${defect}"
+                                data-column-name="quant"
+                                data-current-value="${item.quant}"
+                                data-max-value="${maxQuant}"
+                                data-trial-key="${col}"
+                                data-actual="${actualQty}"
+                                data-current-percent="${item.percent}"
+                                data-is-last-trial="${isLastTrial}">
+                                ${item.quant}
+                                ${editIconHTML}
+                            </td>
+                            <td class="text-end percent-cell">
+                                ${Number(item.percent).toFixed(2)}%
+                            </td>
+                        `;
+                }).join('')}
+                </tr>
+            `;
             });
         });
 
         /* ======================
-           JUMLAH - INI YANG DICEK
+        JUMLAH - INI YANG DICEK - HANYA PERCENTAGE SAJA
         ====================== */
         html += `
-                <tr class="fw-bold border-top jumlah-row">
-                    <td colspan="2" class="fw-bold">Jumlah</td>
-                    ${columns.map(col => {
-                        const item = rows.Jumlah?.Jumlah?.[col] ?? { quant: 0, percent: 100 };
+            <tr class="fw-bold border-top jumlah-row">
+                <td colspan="2" class="fw-bold">Jumlah</td>
+                ${columns.map(col => {
+            const item = rows.Jumlah?.Jumlah?.[col] ?? { quant: 0, percent: 100 };
 
-                        const quant = parseFloat(item.quant) || 0;
-                        const percent = parseFloat(item.percent) || 0;
+            const percent = parseFloat(item.percent) || 0;
 
-                        if (quant < 100 || percent < 100) {
-                            shouldDisableButton = true;
-                        }
+            // HANYA CEK PERCENTAGE = 100.00%
+            // Toleransi 0.01% untuk perbedaan floating point
+            if (Math.abs(percent - 100.00) > 0.01) {
+                shouldDisableButton = true;
+            }
 
-                        return `
-                            <td class="text-end fw-bold">${item.quant}</td>
-                            <td class="text-end fw-bold">${Number(item.percent).toFixed(2)}%</td>
-                        `;
-                    }).join('')}
-                </tr>
-                `;
+            return `
+                        <td class="text-end fw-bold">${item.quant}</td>
+                        <td class="text-end fw-bold">
+                            ${Number(item.percent).toFixed(2)}%
+                        </td>
+                    `;
+        }).join('')}
+            </tr>
+            `;
 
         tbody.innerHTML = html;
 
@@ -999,12 +997,64 @@
             btnAddTrial.disabled = false;
             btnAddTrial.removeAttribute('title');
         }
+
         initReportFreshEdit();
     }
 
     /* ===============================
-       INITIALIZE REPORT FRESH EDIT
-    ================================ */
+       FUNGSI UNTUK MENDAPATKAN TRIAL TERAKHIR
+     =============================== */
+    function getLastTrial(trialKeys, trials) {
+        if (!trialKeys || trialKeys.length === 0) return null;
+
+        if (trials[trialKeys[0]]?.order) {
+            const sortedTrials = trialKeys
+                .map(key => ({ key, order: trials[key]?.order || 0 }))
+                .sort((a, b) => b.order - a.order);
+
+            return {
+                key: sortedTrials[0]?.key,
+                order: sortedTrials[0]?.order,
+                id: trials[sortedTrials[0]?.key]?.id
+            };
+        }
+
+        let lastTrial = null;
+        let maxNumber = -1;
+
+        trialKeys.forEach(key => {
+            const match = key.match(/\d+/);
+            if (match) {
+                const num = parseInt(match[0]);
+                if (num > maxNumber) {
+                    maxNumber = num;
+                    lastTrial = {
+                        key: key,
+                        number: num,
+                        id: trials[key]?.id
+                    };
+                }
+            }
+        });
+
+        if (maxNumber !== -1) {
+            return lastTrial;
+        }
+
+        const sortedKeys = trialKeys.sort((a, b) => {
+            return b.localeCompare(a);
+        });
+
+        return {
+            key: sortedKeys[0],
+            order: trialKeys.length,
+            id: trials[sortedKeys[0]]?.id
+        };
+    }
+
+    /* ===============================
+       INITIALIZE REPORT FRESH EDIT - DENGAN VALIDASI TRIAL TERAKHIR
+     ================================ */
     function initReportFreshEdit() {
         document.querySelector('#reportFreshTable tbody').addEventListener('click', function (e) {
             const target = e.target;
@@ -1012,6 +1062,20 @@
             if (target.classList.contains('edit-icon') || target.closest('.edit-icon')) {
                 const cell = target.closest('td');
                 if (cell && cell.classList.contains('edit-cell')) {
+                    // Validasi: hanya trial terakhir yang bisa diedit
+                    const isLastTrial = cell.dataset.isLastTrial === 'true';
+
+                    if (!isLastTrial) {
+                        Swal.fire({
+                            icon: 'info',
+                            title: 'Restricted',
+                            text: 'Only the latest trial can be edited. Please select the last trial.',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                        return;
+                    }
+
                     openEditModal(cell);
                 }
             }
@@ -1545,7 +1609,6 @@
                     }
                 }
             },
-
             tooltip: {
                 headerFormat: '<span style="font-size:10px">Trial {point.key}</span><table>',
                 pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
@@ -1557,7 +1620,21 @@
             plotOptions: {
                 column: {
                     pointPadding: 0.2,
-                    borderWidth: 0
+                    borderWidth: 0,
+                    dataLabels: {
+                        enabled: true,
+                        format: '{y:.2f}%',
+                        style: {
+                            fontSize: '11px',
+                            fontWeight: 'bold',
+                            textOutline: 'none'
+                        },
+                        color: '#ffffff',
+                        inside: true,
+                        verticalAlign: 'middle',
+                        crop: false,
+                        overflow: 'none'
+                    }
                 }
             },
             series: [{
@@ -1572,7 +1649,8 @@
                 marker: {
                     symbol: 'circle',
                     radius: 6
-                }
+                },
+                // TIDAK ADA dataLabels di sini (target tidak tampil angka)
             }],
             credits: {
                 enabled: false
@@ -1616,7 +1694,21 @@
             plotOptions: {
                 column: {
                     pointPadding: 0.2,
-                    borderWidth: 0
+                    borderWidth: 0,
+                    dataLabels: {
+                        enabled: true,
+                        format: '{y:.1f}',
+                        style: {
+                            fontSize: '11px',
+                            fontWeight: 'bold',
+                            textOutline: 'none'
+                        },
+                        color: '#ffffff',
+                        inside: true,
+                        verticalAlign: 'middle',
+                        crop: false,
+                        overflow: 'none'
+                    }
                 }
             },
             series: [{
@@ -1631,7 +1723,8 @@
                 marker: {
                     symbol: 'circle',
                     radius: 6
-                }
+                },
+                // TIDAK ADA dataLabels di sini (target tidak tampil angka)
             }],
             credits: {
                 enabled: false
@@ -1674,7 +1767,7 @@
             tooltip: {
                 headerFormat: '<span style="font-size:10px">Trial {point.key}</span><table>',
                 pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-                    '<td style="padding:0"><b>{point.y:.2f}</b></td></tr>',
+                    '<td style="padding:0"><b>{point.y:.1f}</b></td></tr>',
                 footerFormat: '</table>',
                 shared: true,
                 useHTML: true
@@ -1682,7 +1775,21 @@
             plotOptions: {
                 column: {
                     pointPadding: 0.2,
-                    borderWidth: 0
+                    borderWidth: 0,
+                    dataLabels: {
+                        enabled: true,
+                        format: '{y:.1f}',
+                        style: {
+                            fontSize: '11px',
+                            fontWeight: 'bold',
+                            textOutline: 'none'
+                        },
+                        color: '#ffffff',
+                        inside: true,
+                        verticalAlign: 'middle',
+                        crop: false,
+                        overflow: 'none'
+                    }
                 }
             },
             series: [{
@@ -1697,7 +1804,7 @@
                 marker: {
                     symbol: 'circle',
                     radius: 6
-                }
+                },
             }],
             credits: {
                 enabled: false
