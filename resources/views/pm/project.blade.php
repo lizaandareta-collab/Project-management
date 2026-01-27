@@ -266,7 +266,7 @@
         <div class="modal-content">
             <form id="formStdValue">
                 <div class="modal-header">
-                    <h5 class="modal-title">Standard Process Value</h5>
+                    <h5 class="modal-title">Standard Process</h5>
                     <a href="#" class="close" data-bs-dismiss="modal">
                         <em class="icon ni ni-cross"></em>
                     </a>

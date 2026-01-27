@@ -905,61 +905,62 @@
            CATEGORY (TRANS_TYPE)
         ====================== */
         categories.forEach(category => {
-            const defects = rows[category] || {};
-            const defectKeys = Object.keys(defects);
-            const rowspan = defectKeys.length;
+    const defects = rows[category] || {};
+    const defectKeys = Object.keys(defects);
+    const rowspan = defectKeys.length;
 
-            defectKeys.forEach((defect, i) => {
-                const defectData = defects[defect];
+    defectKeys.forEach((defectId, i) => {
+        const defectData = defects[defectId];
+        const defectLabel = defectData._label || '-';
 
-                html += `
-                <tr class="${i === 0 ? 'after-ok' : ''}">
-                    ${i === 0 ? `
-                        <td rowspan="${rowspan}" class="text-center align-middle fw-bold">
-                            ${category}
-                        </td>` : ``}
-                    <td>${defect}</td>
-                    ${columns.map(col => {
-                    const item = defectData?.[col] ?? { quant: 0, percent: 0 };
-                    const trialInfo = trials[col];
-                    const trialId = trialInfo?.id;
-                    const defectId = trialInfo?.defectIds?.[defect];
-                    const actualQty = item.actual || 0;
-                    const maxQuant = actualQty - (item.quant || 0);
+        html += `
+        <tr class="${i === 0 ? 'after-ok' : ''}">
+            ${i === 0 ? `
+                <td rowspan="${rowspan}" class="text-center align-middle fw-bold">
+                    ${category}
+                </td>` : ``}
+            <td data-defect-id="${defectId}">
+                ${defectLabel}
+            </td>
 
-                    // Cek apakah ini trial terakhir
-                    const isLastTrial = col === lastTrial?.key;
+            ${columns.map(col => {
+                const item = defectData?.[col] ?? { quant: 0, percent: 0 };
+                const trialInfo = trials[col];
+                const trialId = trialInfo?.id;
+                const actualQty = item.actual || 0;
+                const maxQuant = actualQty - (item.quant || 0);
 
-                    // Edit cell hanya untuk trial terakhir, TETAP muncul walaupun ada datanya
-                    const showEditIcon = isLastTrial;
-                    const editCellClass = showEditIcon ? 'edit-cell' : '';
-                    const editIconHTML = showEditIcon ? '<em class="icon ni ni-edit edit-icon"></em>' : '';
+                const isLastTrial = col === lastTrial?.key;
+                const showEditIcon = isLastTrial;
+                const editIconHTML = showEditIcon
+                    ? '<em class="icon ni ni-edit edit-icon"></em>'
+                    : '';
 
-                    return `
-                            <td class="text-end ${editCellClass}"
-                                data-trial-id="${trialId}"
-                                data-defect-id="${defectId}"
-                                data-trans-type="${category}"
-                                data-defect-name="${defect}"
-                                data-column-name="quant"
-                                data-current-value="${item.quant}"
-                                data-max-value="${maxQuant}"
-                                data-trial-key="${col}"
-                                data-actual="${actualQty}"
-                                data-current-percent="${item.percent}"
-                                data-is-last-trial="${isLastTrial}">
-                                ${item.quant}
-                                ${editIconHTML}
-                            </td>
-                            <td class="text-end percent-cell">
-                                ${Number(item.percent).toFixed(2)}%
-                            </td>
-                        `;
-                }).join('')}
-                </tr>
-            `;
-            });
-        });
+                return `
+                    <td class="text-end ${showEditIcon ? 'edit-cell' : ''}"
+                        data-trial-id="${trialId}"
+                        data-defect-id="${defectId}"
+                        data-trans-type="${category}"
+                        data-defect-name="${defectLabel}"
+                        data-column-name="quant"
+                        data-current-value="${item.quant}"
+                        data-max-value="${maxQuant}"
+                        data-trial-key="${col}"
+                        data-actual="${actualQty}"
+                        data-current-percent="${item.percent}"
+                        data-is-last-trial="${isLastTrial}">
+                        ${item.quant}
+                        ${editIconHTML}
+                    </td>
+                    <td class="text-end percent-cell">
+                        ${Number(item.percent).toFixed(2)}%
+                    </td>
+                `;
+            }).join('')}
+        </tr>`;
+    });
+});
+
 
         /* ======================
         JUMLAH - INI YANG DICEK - HANYA PERCENTAGE SAJA

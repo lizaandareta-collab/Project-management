@@ -1390,9 +1390,9 @@ class Mapp
                     // -----------------------
                     // 2) Nama asli user → client_name
                     // -----------------------
-                    $originalName = $file->getClientOriginalName();  // contoh: "Foto Mesin Produksi.jpg"
+                    $originalName = $file->getClientOriginalName();  
                     $cleanClientName = preg_replace('/\s+/', '_', $originalName);
-                    // hasil: "Foto_Mesin_Produksi.jpg"
+
 
                     // -----------------------
                     // 3) Rename jadi nama unik untuk FILE_NAME
@@ -1428,7 +1428,6 @@ class Mapp
 
                     $savePath = public_path('activity/' . $uniqueName);
 
-                    // Kondisi: ukuran file < 200 KB → JANGAN COMPRESS
                     $skipCompress = $file->getSize() < (200 * 1024);
 
                     if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif'])) {
@@ -1441,7 +1440,7 @@ class Mapp
                         if ($ext === 'gif') {
                             $file->move(public_path('activity'), $uniqueName);
                             $savePath = public_path('activity/' . $uniqueName);
-                            $size = filesize($savePath);   // ✅ benar
+                            $size = filesize($savePath);   
 
                         }
 
@@ -1451,7 +1450,7 @@ class Mapp
                         elseif ($skipCompress) {
                             $file->move(public_path('activity'), $uniqueName);
                             $savePath = public_path('activity/' . $uniqueName);
-                            $size = filesize($savePath);   // ✅ benar
+                            $size = filesize($savePath);   
 
                         }
 
@@ -1462,16 +1461,14 @@ class Mapp
 
                             // Tentukan encoder
                             if (in_array($ext, ['jpg', 'jpeg'])) {
-                                $encoder = new JpegEncoder(70); // kualitas 70%
+                                $encoder = new JpegEncoder(70); 
                             } else {
-                                // PNG → compression level (0-9)
                                 $encoder = new PngEncoder(8);
                             }
 
-                            // Resize + encode
                             Image::read($file->getRealPath())
-                                ->scaleDown(1600)          // resize otomatis
-                                ->encode($encoder)         // compress
+                                ->scaleDown(1600)          
+                                ->encode($encoder)         
                                 ->save($savePath);
 
                             $size = filesize($savePath);
@@ -1479,7 +1476,6 @@ class Mapp
 
                     } else {
 
-                        // Bukan image → langsung move
                         $file->move(public_path('activity'), $uniqueName);
                         $type = $type ?? 'other';
                         $size = $file->getSize();
@@ -1494,8 +1490,8 @@ class Mapp
                     // -----------------------
                     DB::connection('oracle')->table('PROMAN.SOFTCOPY')->insert([
                         'ID' => $softId,
-                        'CLIENT_NAME' => $cleanClientName,  // NAMA ASLI FILE USER
-                        'FILE_NAME' => $uniqueName,       // NAMA FILE YANG DISIMPAN
+                        'CLIENT_NAME' => $cleanClientName,  
+                        'FILE_NAME' => $uniqueName,       
                         'FILE_PATH' => 'activity',
                         'FULL_PATH' => $fileRelPath,
                         'FILE_SIZE' => $size,
@@ -1522,7 +1518,7 @@ class Mapp
                     'TASK_ID' => $req->task_id,
                     'ACTIVITY' => $activityName,
                     'TASK_DET' => $req->task_det,
-                    'PICTURE' => json_encode($softcopyIds), // simpan ID softcopy
+                    'PICTURE' => json_encode($softcopyIds), 
                     'INPUTBY' => $req->inputby,
                     'STATUS1' => 1,
                     'SYSDATE1' => DB::raw('SYSDATE')

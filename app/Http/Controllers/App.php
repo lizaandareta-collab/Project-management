@@ -1628,119 +1628,115 @@ class App extends Controller
         ]);
     }
 
-    public function trial_report_multi(Request $request)
-    {
-        $project_id = $request->project_id;
-        $process_id = $request->process_id;
+public function trial_report_multi(Request $request)
+{
+    $project_id = $request->project_id;
+    $process_id = $request->process_id;
 
-        $trials = Maio::get_trial_rr($project_id, $process_id)->reverse()->values();
+    $trials = Maio::get_trial_rr($project_id, $process_id)->reverse()->values();
 
-        if ($trials->isEmpty()) {
-            return response()->json([
-                'columns' => [],
-                'targets' => [],
-                'trials' => [],
-                'data' => [],
-                'categories' => []
-            ]);
-        }
+    if ($trials->isEmpty()) {
+        return response()->json([
+            'columns' => [],
+            'targets' => [],
+            'trials' => [],
+            'categories' => [],
+            'data' => []
+        ]);
+    }
 
-        $report = [];
-        $categories = [];
-        $trialInfo = [];
+    $report     = [];
+    $categories = [];
+    $trialInfo  = [];
 
-        foreach ($trials as $trial) {
-            $trialKey = $trial->trial_no . ' ' . $trial->trial_stat;
+    foreach ($trials as $trial) {
+        $trialKey = $trial->trial_no . ' ' . $trial->trial_stat;
 
-            // Simpan info trial
-            $trialInfo[$trialKey] = [
-                'id' => $trial->id,
-                'defectIds' => []
-            ];
+        // info trial
+        $trialInfo[$trialKey] = [
+            'id' => $trial->id,
+            'defectIds' => []
+        ];
 
-            /* OK */
-            $okQuant = (float) ($trial->ok ?? 0);
-            $okPercent = (float) ($trial->perct ?? 0);
+        /* OK */
+        $okQuant   = (float) ($trial->ok ?? 0);
+        $okPercent = (float) ($trial->perct ?? 0);
 
-            $report['OK']['OK'][$trialKey] = [
-                'quant' => $okQuant,
-                'percent' => $okPercent
-            ];
+        $report['OK']['OK'][$trialKey] = [
+            'quant'   => $okQuant,
+            'percent' => $okPercent
+        ];
 
-            /* TOTAL UNTUK JUMLAH */
-            $totalQuant = $okQuant;
-            $totalPercent = $okPercent;
+        $totalQuant   = $okQuant;
+        $totalPercent = $okPercent;
 
-            /* DETAIL (NG) */
-            $details = Maio::get_trial_rr_det(
-                $project_id,
-                $process_id,
-                $trial->id
-            );
+        /* DETAIL NG */
+        $details = Maio::get_trial_rr_det(
+            $project_id,
+            $process_id,
+            $trial->id
+        );
 
-            foreach ($details as $det) {
-                $category = $det->trans_type;
-                $defect = $det->defect_name ?? $det->defect_id;
+        foreach ($details as $det) {
+            $category  = $det->trans_type;
+            $defectKey = $det->defect_id; // ✅ KUNCI PAKAI ID
+            $defectLbl = $det->defect_name;
 
-                // Simpan defect ID
-                $trialInfo[$trialKey]['defectIds'][$defect] = $det->defect_id;
+            // simpan mapping defect_id
+            $trialInfo[$trialKey]['defectIds'][$defectKey] = $defectKey;
 
-                if (!isset($report[$category])) {
-                    $report[$category] = [];
-                    $categories[] = $category;
-                }
+            if (!isset($report[$category])) {
+                $report[$category] = [];
+                $categories[] = $category;
+            }
 
-                if (!isset($report[$category][$defect])) {
-                    $report[$category][$defect] = [];
-                }
-
-                $ngQuant = (float) ($det->ng ?? 0);
-                $ngPercent = (float) ($det->perct ?? 0);
-
-                // Tambahkan ke total
-                $totalQuant += $ngQuant;
-                $totalPercent += $ngPercent;
-
-                $report[$category][$defect][$trialKey] = [
-                    'quant' => $ngQuant,
-                    'percent' => $ngPercent,
-                    'actual' => $trial->actual
+            if (!isset($report[$category][$defectKey])) {
+                $report[$category][$defectKey] = [
+                    '_label' => $defectLbl
                 ];
             }
 
-            /* JUMLAH - PASTIKAN TOTAL 100 */
-            $actualQty = (float) ($trial->actual ?? 0);
+            $ngQuant   = (float) ($det->ng ?? 0);
+            $ngPercent = (float) ($det->perct ?? 0);
 
-            // Jika actual quantity ada, hitung persentase berdasarkan actual
-            if ($actualQty > 0) {
-                $totalPercentCalc = ($totalQuant / $actualQty) * 100;
-            } else {
-                $totalPercentCalc = $totalPercent;
-            }
+            $totalQuant   += $ngQuant;
+            $totalPercent += $ngPercent;
 
-            $report['Jumlah']['Jumlah'][$trialKey] = [
-                'quant' => $totalQuant,
-                'percent' => round($totalPercentCalc, 2)
+            $report[$category][$defectKey][$trialKey] = [
+                'quant'   => $ngQuant,
+                'percent' => $ngPercent,
+                'actual'  => $trial->actual
             ];
         }
 
-        /* TARGET OK */
-        $targets = [];
-        foreach ($trials as $trial) {
-            $targets[$trial->trial_no . ' ' . $trial->trial_stat] = (float) $trial->target;
-        }
+        /* JUMLAH */
+        $actualQty = (float) ($trial->actual ?? 0);
 
-        // Hapus duplikat kategori
-        $uniqueCategories = array_values(array_unique($categories));
+        $totalPercentCalc = $actualQty > 0
+            ? ($totalQuant / $actualQty) * 100
+            : $totalPercent;
 
-        return response()->json([
-            'columns' => $trials->map(fn($t) => $t->trial_no . ' ' . $t->trial_stat)->toArray(),
-            'targets' => $targets,
-            'trials' => $trialInfo,
-            'categories' => $uniqueCategories,
-            'data' => $report
-        ]);
+        $report['Jumlah']['Jumlah'][$trialKey] = [
+            'quant'   => $totalQuant,
+            'percent' => round($totalPercentCalc, 2)
+        ];
     }
+
+    /* TARGET */
+    $targets = [];
+    foreach ($trials as $trial) {
+        $targets[$trial->trial_no . ' ' . $trial->trial_stat] = (float) $trial->target;
+    }
+
+    return response()->json([
+        'columns'    => $trials->map(fn ($t) => $t->trial_no . ' ' . $t->trial_stat)->toArray(),
+        'targets'    => $targets,
+        'trials'     => $trialInfo,
+        'categories' => array_values(array_unique($categories)),
+        'data'       => $report
+    ]);
+}
+
 
     public function trial_report_detail(Request $request)
     {
@@ -1778,11 +1774,9 @@ class App extends Controller
             ], 422);
         }
 
-        // ===== VALIDASI TOTAL TIDAK BOLEH > 100% =====
-        // Ambil semua trial untuk project dan process ini
+
         $allTrials = Maio::get_trial_rr($request->project_id, $request->process_id);
         
-        // Cari trial yang spesifik berdasarkan trial_id
         $trial = null;
         foreach ($allTrials as $t) {
             if ($t->id == $request->trial_id) {
@@ -1807,44 +1801,36 @@ class App extends Controller
             ], 422);
         }
 
-        // Ambil semua detail trial untuk trial ini
         $existingDetails = Maio::get_trial_rr_det(
             $request->project_id,
             $request->process_id,
             $request->trial_id
         );
 
-        // Hitung total quant yang sudah ada (tanpa nilai yang sedang diedit)
-        $totalQuantWithoutCurrent = (float) ($trial->ok ?? 0); // Mulai dari OK
+        $totalQuantWithoutCurrent = (float) ($trial->ok ?? 0); 
         
         foreach ($existingDetails as $detail) {
-            // Jika ini detail yang sedang diedit, skip
             if ($detail->defect_id == $request->defect_id) {
                 continue;
             }
             $totalQuantWithoutCurrent += (float) ($detail->ng ?? 0);
         }
 
-        // Hitung total persentase yang sudah ada (tanpa nilai yang sedang diedit)
-        $totalPercentWithoutCurrent = (float) ($trial->perct ?? 0); // Mulai dari % OK
+        $totalPercentWithoutCurrent = (float) ($trial->perct ?? 0); 
         
         foreach ($existingDetails as $detail) {
-            // Jika ini detail yang sedang diedit, skip
             if ($detail->defect_id == $request->defect_id) {
                 continue;
             }
             $totalPercentWithoutCurrent += (float) ($detail->perct ?? 0);
         }
 
-        // Nilai baru yang akan disimpan
         $newNg = (float) $request->ng;
         $newPercent = (float) $request->perct;
 
-        // Hitung total akhir jika nilai baru disimpan
         $finalTotalQuant = $totalQuantWithoutCurrent + $newNg;
         $finalTotalPercent = $totalPercentWithoutCurrent + $newPercent;
 
-        // Validasi: total quantity tidak boleh melebihi actual quantity
         if ($finalTotalQuant > $actualQty) {
             $maxAllowed = $actualQty - $totalQuantWithoutCurrent;
             return response()->json([
@@ -1854,8 +1840,7 @@ class App extends Controller
             ], 422);
         }
 
-        // Validasi: total persentase tidak boleh melebihi 100%
-        if ($finalTotalPercent > 100.01) { // Beri toleransi kecil untuk floating point
+        if ($finalTotalPercent > 100.01) { 
             $maxPercentAllowed = 100 - $totalPercentWithoutCurrent;
             return response()->json([
                 'success' => false,
@@ -1864,7 +1849,6 @@ class App extends Controller
             ], 422);
         }
 
-        // Update data menggunakan Mapp::update_trial_detail
         $updated = Mapp::update_trial_detail($request);
 
         if ($updated) {
