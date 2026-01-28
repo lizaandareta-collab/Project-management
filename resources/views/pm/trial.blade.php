@@ -259,9 +259,49 @@
         text-align: right;
     }
 
+    /* Input langsung styling */
+    .ng-input {
+        width: 80px;
+        padding: 2px 5px;
+        border: 1px solid #dee2e6;
+        border-radius: 3px;
+        text-align: right;
+        font-size: 14px;
+        display: block;
+        margin: 0 auto;
+    }
+
+    .ng-input:focus {
+        outline: none;
+        border-color: #0fac81;
+        box-shadow: 0 0 0 2px rgba(15, 172, 129, 0.1);
+    }
+
+    .ng-input.error {
+        border-color: #e85347;
+        background-color: #fff5f5;
+    }
+
+    /* Warning message */
+    .warning-message {
+        background-color: #fff3cd;
+        border: 1px solid #ffeaa7;
+        color: #856404;
+        padding: 10px 15px;
+        border-radius: 4px;
+        margin-bottom: 15px;
+        display: none;
+    }
+
+    .warning-message.show {
+        display: block;
+    }
+
     #fileList {
         display: none !important;
     }
+    
+    
 </style>
 
 <div class="nk-content">
@@ -344,11 +384,16 @@
                                     </div>
                                 </div>
 
+                                <!-- Warning Message -->
+                                <div class="warning-message" id="warningMessage">
+                                    <strong>Note:</strong> Total NG + OK cannot exceed 100%. Please adjust your input.
+                                </div>
+
                                 <!-- Search -->
-                                <div class="d-flex justify-content-between mb-3">
+                                <!-- <div class="d-flex justify-content-between mb-3">
                                     <input type="text" id="reportFreshSearch" class="form-control form-control-sm w-25"
                                         placeholder="Search...">
-                                </div>
+                                </div> -->
 
                                 <!-- Report Fresh Table -->
                                 <div class="table-responsive">
@@ -357,7 +402,7 @@
                                             <tr>
                                                 <th>Category</th>
                                                 <th>Report Fresh</th>
-                                                <th>Quant.</th>
+                                                <th>NG</th>
                                                 <th>%</th>
                                             </tr>
                                         </thead>
@@ -496,98 +541,15 @@
             </form>
         </div>
     </div>
-
-    <!-- Modal Edit Detail - Sederhana seperti Add Trial -->
-    <div class="modal fade" id="modalEditDetail" tabindex="-1">
-        <div class="modal-dialog modal-md">
-            <form id="formEditDetail">
-                @csrf
-                <input type="hidden" name="project_id" value="{{ request()->route('id') }}">
-                <input type="hidden" id="editProcessId" name="process_id">
-                <input type="hidden" id="editTrialId" name="trial_id">
-                <input type="hidden" id="editDefectId" name="defect_id">
-                <input type="hidden" id="editTransType">
-                <input type="hidden" id="editDefectName">
-                <input type="hidden" id="editActualQty">
-                <input type="hidden" id="editColumnName">
-                <input type="hidden" id="editCurrentValue">
-                <input type="hidden" id="editMaxValue">
-                <input type="hidden" id="editTrialKey">
-
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Edit Trail Detail</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body row g-3">
-                        <!-- Row 1 -->
-                        <div class="col-md-6">
-                            <label class="form-label">Trial</label>
-                            <input type="text" id="editTrialInfoDisplay" class="form-control" readonly>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Defect</label>
-                            <input type="text" id="editDefectNameDisplay" class="form-control" readonly>
-                        </div>
-
-                        <!-- Row 2 -->
-                        <div class="col-md-6">
-                            <label class="form-label">Category</label>
-                            <input type="text" id="editTransTypeDisplay" class="form-control" readonly>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Process Qty</label>
-                            <input type="text" id="editActualQtyDisplay" class="form-control" readonly>
-                        </div>
-
-                        <!-- Row 3 -->
-                        <div class="col-md-6">
-                            <label class="form-label">NG</label>
-                            <div class="input-group">
-                                <input type="number" id="editNgValue" name="ng" class="form-control" step="0.01" min="0"
-                                    required autocomplete="off">
-                                <span class="input-group-text">pcs</span>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">%</label>
-                            <div class="input-group">
-                                <input type="number" id="editPerctValue" name="perct" class="form-control" step="0.01"
-                                    min="0" max="100" readonly>
-                                <span class="input-group-text">%</span>
-                            </div>
-                        </div>
-
-                        <!-- Row 4 -->
-                        <!-- <div class="col-md-6">
-                            <label class="form-label">Current NG</label>
-                            <input type="text" id="editCurrentNgDisplay" class="form-control" readonly>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Max NG Allowed</label>
-                            <input type="text" id="editMaxNgDisplay" class="form-control" readonly>
-                        </div> -->
-                    </div>
-                    <div class="modal-footer d-flex">
-                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
-                            Cancel
-                        </button>
-                        <button type="submit" class="btn btn-primary ms-auto" id="btnUpdateDetail">
-                            Save
-                        </button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
 </div>
-
 
 <script>
     let selectedProcessId = null;
     const projectId = "{{ request()->route('id') }}";
     let trialDataTable = null;
     let reportFreshData = null;
+    let lastTrialInfo = null;
+    let saveTimeout = null;
 
     document.addEventListener('DOMContentLoaded', function () {
         const fileInput = document.getElementById('fileInput');
@@ -595,13 +557,6 @@
             fileInput.addEventListener('change', function () {
                 const fileList = document.getElementById('fileList');
                 fileList.innerHTML = '';
-
-                // Array.from(this.files).forEach((file, index) => {
-                //     const div = document.createElement('div');
-                //     div.className = 'file-item';
-                //     div.innerHTML = `<span class="badge bg-primary me-2">${index + 1}</span> ${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
-                //     fileList.appendChild(div);
-                // });
             });
         }
 
@@ -636,13 +591,6 @@
         });
 
         initAutoCalculatePercent();
-
-        initEditDetailAutoCalculate();
-        document
-            .getElementById('modalEditDetail')
-            .addEventListener('hidden.bs.modal', function () {
-                document.getElementById('formEditDetail').reset();
-            });
     });
 
     /* ===============================
@@ -669,61 +617,6 @@
             actualInput.addEventListener('input', calculatePercent);
             okInput.addEventListener('input', calculatePercent);
         }
-    }
-
-    /* ===============================
-        AUTO CALCULATE PERCENT FOR EDIT DETAIL WITH VALIDATION
-    =============================== */
-    function initEditDetailAutoCalculate() {
-        const editNgInput = document.getElementById('editNgValue');
-        if (editNgInput) {
-            editNgInput.addEventListener('input', function () {
-                calculateEditDetailPercent();
-                validateRealTimeInput();
-            });
-        }
-    }
-
-    function validateRealTimeInput() {
-        const ngInput = document.getElementById('editNgValue');
-        const maxValue = parseFloat(document.getElementById('editMaxValue').value);
-        const currentValue = parseFloat(ngInput.value);
-
-        if (isNaN(currentValue)) return;
-
-        if (currentValue > maxValue) {
-            ngInput.style.borderColor = '#e85347';
-            ngInput.style.backgroundColor = '#ffe6e6';
-        } else {
-            ngInput.style.borderColor = '';
-            ngInput.style.backgroundColor = '';
-        }
-    }
-
-    function calculateEditDetailPercent() {
-        const ngValue = parseFloat(document.getElementById('editNgValue').value);
-        const actualQty = parseFloat(document.getElementById('editActualQty').value);
-        const perctInput = document.getElementById('editPerctValue');
-
-        if (!isNaN(ngValue) && !isNaN(actualQty) && actualQty > 0) {
-            const percent = (ngValue / actualQty) * 100;
-            perctInput.value = percent.toFixed(2);
-
-            if (percent > 100) {
-                perctInput.style.borderColor = '#e85347';
-                perctInput.style.backgroundColor = '#ffe6e6';
-            } else {
-                perctInput.style.borderColor = '';
-                perctInput.style.backgroundColor = '';
-            }
-        } else {
-            perctInput.value = '';
-        }
-    }
-
-    function formatModalTarget(val) {
-        if (val === null || val === '' || isNaN(val)) return '';
-        return parseFloat(val).toFixed(2).replace('.', ',');
     }
 
     /* ===============================
@@ -800,8 +693,9 @@
             .then(res => res.json())
             .then(data => {
                 reportFreshData = data;
+                lastTrialInfo = getLastTrial(data.trials || {});
                 renderReportFreshTable(data);
-                initReportFreshSearch();
+                // initReportFreshSearch();
             })
             .catch(err => {
                 console.error('Error loading report fresh data:', err);
@@ -816,7 +710,7 @@
     }
 
     /* ===============================
-    RENDER REPORT FRESH TABLE
+    RENDER REPORT FRESH TABLE WITH REAL-TIME INPUT
  =============================== */
     function renderReportFreshTable(data) {
         const table = document.querySelector('#reportFreshTable');
@@ -856,9 +750,10 @@
         const categories = data.categories || [];
         const trials = data.trials || {};
 
-        // Dapatkan trial terakhir berdasarkan urutan angka
-        const trialKeys = Object.keys(trials);
-        const lastTrial = getLastTrial(trialKeys, trials);
+        // Dapatkan trial terakhir
+        lastTrialInfo = getLastTrial(trials);
+        const lastTrialKey = lastTrialInfo ? lastTrialInfo.key : null;
+        const lastTrialIndex = lastTrialKey ? columns.indexOf(lastTrialKey) : -1;
 
         let shouldDisableButton = false;
 
@@ -871,7 +766,7 @@
                 ${columns.map(c => `<th colspan="2">${c}</th>`).join('')}
             </tr>
             <tr>
-                ${columns.map(() => `<th>Quant.</th><th>%</th>`).join('')}
+                ${columns.map(() => `<th>NG</th><th>%</th>`).join('')}
             </tr>
         </thead>
         `;
@@ -885,16 +780,18 @@
         <tr class="fw-bold ok-row">
             <td></td>
             <td class="fw-bold">OK</td>
-            ${columns.map(col => {
+            ${columns.map((col, colIndex) => {
             const item = rows.OK?.OK?.[col] ?? { quant: 0, percent: 0 };
             const target = data.targets?.[col] ?? 0;
             const cls = item.percent >= target
                 ? 'text-success-bold'
                 : 'text-danger-bold';
+            // AMBIL 4 ANGKA: 2 angka di belakang koma
+            const percentValue = parseFloat(item.percent).toFixed(2);
             return `
-                    <td class="text-end fw-bold">${item.quant}</td>
+                    <td class="text-end fw-bold" id="ok-value-${colIndex}">${item.quant}</td>
                     <td class="text-end fw-bold ${cls}">
-                        ${Number(item.percent).toFixed(2)}%
+                        ${percentValue}%
                     </td>
                 `;
         }).join('')}
@@ -905,84 +802,100 @@
            CATEGORY (TRANS_TYPE)
         ====================== */
         categories.forEach(category => {
-    const defects = rows[category] || {};
-    const defectKeys = Object.keys(defects);
-    const rowspan = defectKeys.length;
+            const defects = rows[category] || {};
+            const defectKeys = Object.keys(defects);
+            const rowspan = defectKeys.length;
 
-    defectKeys.forEach((defectId, i) => {
-        const defectData = defects[defectId];
-        const defectLabel = defectData._label || '-';
+            defectKeys.forEach((defectId, i) => {
+                const defectData = defects[defectId];
+                const defectLabel = defectData._label || '-';
 
-        html += `
-        <tr class="${i === 0 ? 'after-ok' : ''}">
-            ${i === 0 ? `
-                <td rowspan="${rowspan}" class="text-center align-middle fw-bold">
-                    ${category}
-                </td>` : ``}
-            <td data-defect-id="${defectId}">
-                ${defectLabel}
-            </td>
-
-            ${columns.map(col => {
-                const item = defectData?.[col] ?? { quant: 0, percent: 0 };
-                const trialInfo = trials[col];
-                const trialId = trialInfo?.id;
-                const actualQty = item.actual || 0;
-                const maxQuant = actualQty - (item.quant || 0);
-
-                const isLastTrial = col === lastTrial?.key;
-                const showEditIcon = isLastTrial;
-                const editIconHTML = showEditIcon
-                    ? '<em class="icon ni ni-edit edit-icon"></em>'
-                    : '';
-
-                return `
-                    <td class="text-end ${showEditIcon ? 'edit-cell' : ''}"
-                        data-trial-id="${trialId}"
-                        data-defect-id="${defectId}"
-                        data-trans-type="${category}"
-                        data-defect-name="${defectLabel}"
-                        data-column-name="quant"
-                        data-current-value="${item.quant}"
-                        data-max-value="${maxQuant}"
-                        data-trial-key="${col}"
-                        data-actual="${actualQty}"
-                        data-current-percent="${item.percent}"
-                        data-is-last-trial="${isLastTrial}">
-                        ${item.quant}
-                        ${editIconHTML}
+                html += `
+                <tr class="${i === 0 ? 'after-ok' : ''}" data-defect-id="${defectId}" data-category="${category}">
+                    ${i === 0 ? `
+                        <td rowspan="${rowspan}" class="text-center align-middle fw-bold">
+                            ${category}
+                        </td>` : ``}
+                    <td data-defect-id="${defectId}">
+                        ${defectLabel}
                     </td>
-                    <td class="text-end percent-cell">
-                        ${Number(item.percent).toFixed(2)}%
-                    </td>
-                `;
-            }).join('')}
-        </tr>`;
-    });
-});
 
+                    ${columns.map((col, colIndex) => {
+                    const item = defectData?.[col] ?? { quant: 0, percent: 0 };
+                    const trialInfo = trials[col];
+                    const trialId = trialInfo?.id;
+                    const actualQty = item.actual || 0;
+                    const currentValue = item.quant || 0;
+
+                    // AMBIL 4 ANGKA: 2 angka di belakang koma
+                    const percentValue = parseFloat(item.percent).toFixed(2);
+
+                    const isLastTrial = lastTrialKey && col === lastTrialKey;
+
+                    // Jika trial terakhir, buat input field
+                    if (isLastTrial && trialId) {
+                        return `
+                            <td class="text-center">
+                                <input type="number" 
+                                       class="ng-input" 
+                                       value="${currentValue}"
+                                       min="0" 
+                                       max="${actualQty}"
+                                       step="0.01"
+                                       data-trial-id="${trialId}"
+                                       data-defect-id="${defectId}"
+                                       data-actual="${actualQty}"
+                                       data-trial-key="${col}"
+                                       data-column-index="${lastTrialIndex}"
+                                       data-trans-type="${category}"
+                                       data-defect-name="${defectLabel}"
+                                       data-original-value="${currentValue}"
+                                       data-current-percent="${percentValue}">
+                            </td>
+                            <td class="text-end percent-cell" id="percent-${defectId}-${colIndex}">
+                                ${percentValue}%
+                            </td>`;
+                    } else {
+                        // Trial lama, tampilkan saja
+                        return `
+                            <td class="text-end">${currentValue}</td>
+                            <td class="text-end percent-cell">
+                                ${percentValue}%
+                            </td>`;
+                    }
+                }).join('')}
+                </tr>`;
+            });
+        });
 
         /* ======================
-        JUMLAH - INI YANG DICEK - HANYA PERCENTAGE SAJA
+        JUMLAH ROW - REAL-TIME
         ====================== */
-        html += `
-            <tr class="fw-bold border-top jumlah-row">
-                <td colspan="2" class="fw-bold">Jumlah</td>
-                ${columns.map(col => {
+        const totalPercentages = {};
+        columns.forEach(col => {
             const item = rows.Jumlah?.Jumlah?.[col] ?? { quant: 0, percent: 100 };
+            totalPercentages[col] = parseFloat(item.percent) || 100;
+        });
 
+        html += `
+            <tr class="fw-bold border-top jumlah-row" id="jumlahRow">
+                <td colspan="2" class="fw-bold">Jumlah</td>
+                ${columns.map((col, colIndex) => {
+            const item = rows.Jumlah?.Jumlah?.[col] ?? { quant: 0, percent: 100 };
             const percent = parseFloat(item.percent) || 0;
+            const statusClass = Math.abs(percent - 100) <= 0.01 ? 'text-success-bold' : 'text-danger-bold';
 
-            // HANYA CEK PERCENTAGE = 100.00%
-            // Toleransi 0.01% untuk perbedaan floating point
             if (Math.abs(percent - 100.00) > 0.01) {
                 shouldDisableButton = true;
             }
 
+            // AMBIL 4 ANGKA: 2 angka di belakang koma
+            const percentValue = percent.toFixed(2);
+
             return `
-                        <td class="text-end fw-bold">${item.quant}</td>
-                        <td class="text-end fw-bold">
-                            ${Number(item.percent).toFixed(2)}%
+                        <td class="text-end fw-bold" id="totalNG-${colIndex}">${item.quant}</td>
+                        <td class="text-end fw-bold ${statusClass}" id="totalPercent-${colIndex}">
+                            ${percentValue}%
                         </td>
                     `;
         }).join('')}
@@ -991,6 +904,9 @@
 
         tbody.innerHTML = html;
 
+        // Attach event listeners untuk input fields
+        attachInputListeners();
+
         if (btnAddTrial && shouldDisableButton) {
             btnAddTrial.disabled = true;
             btnAddTrial.setAttribute('title', 'Cannot add trial: Jumlah belum mencapai 100');
@@ -998,15 +914,339 @@
             btnAddTrial.disabled = false;
             btnAddTrial.removeAttribute('title');
         }
+    }
 
-        initReportFreshEdit();
+    /* ===============================
+       ATTACH INPUT LISTENERS FOR REAL-TIME
+    ================================ */
+    function attachInputListeners() {
+        const ngInputs = document.querySelectorAll('#reportFreshTable .ng-input');
+
+        ngInputs.forEach(input => {
+            // Store original value
+            const originalValue = parseFloat(input.value) || 0;
+
+            // Input event untuk real-time calculation
+            input.addEventListener('input', function () {
+                const value = parseFloat(this.value) || 0;
+                const actualQty = parseFloat(this.dataset.actual) || 0;
+                const maxValue = parseFloat(this.max) || 0;
+
+                // Validasi real-time
+                if (value < 0) {
+                    this.value = 0;
+                    this.classList.add('error');
+                    return;
+                }
+
+                if (value > maxValue) {
+                    this.value = maxValue;
+                    this.classList.add('error');
+                    return;
+                }
+
+                this.classList.remove('error');
+
+                // Update percent cell secara real-time
+                updatePercentCell(this, value, actualQty);
+
+                // Update total row secara real-time (hanya untuk kolom terakhir)
+                const colIndex = parseInt(this.dataset.columnIndex);
+                const totalPercent = updateTotalForColumn(colIndex);
+
+                // Cek apakah total > 100%
+                if (totalPercent > 100.01) { // toleransi 0.01%
+                    // KEMBALIKAN KE NILAI AWAL
+                    this.value = originalValue;
+                    this.classList.add('error');
+
+                    // Update percent cell kembali ke nilai awal
+                    updatePercentCell(this, originalValue, actualQty);
+
+                    // Update total kembali
+                    updateTotalForColumn(colIndex);
+
+                    showWarningMessage(true);
+                    return;
+                } else {
+                    this.classList.remove('error');
+                    showWarningMessage(false);
+                }
+
+                // Auto-save dengan debounce
+                clearTimeout(saveTimeout);
+                saveTimeout = setTimeout(() => {
+                    // Cek lagi sebelum save
+                    const currentTotalPercent = updateTotalForColumn(colIndex);
+                    if (currentTotalPercent <= 100.01) {
+                        saveNGValue(this, value);
+                    }
+                }, 500);
+            });
+
+            // Focus event untuk select text
+            input.addEventListener('focus', function () {
+                this.select();
+            });
+
+            // Key events untuk navigasi
+            input.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    // Pindah ke input berikutnya
+                    const allInputs = Array.from(document.querySelectorAll('.ng-input'));
+                    const currentIndex = allInputs.indexOf(this);
+                    if (currentIndex < allInputs.length - 1) {
+                        allInputs[currentIndex + 1].focus();
+                    }
+                }
+
+                // ESC key untuk cancel dan kembali ke nilai awal
+                if (e.key === 'Escape') {
+                    this.value = originalValue;
+                    this.classList.remove('error');
+
+                    const actualQty = parseFloat(this.dataset.actual) || 0;
+                    updatePercentCell(this, originalValue, actualQty);
+
+                    const colIndex = parseInt(this.dataset.columnIndex);
+                    updateTotalForColumn(colIndex);
+                    showWarningMessage(false);
+
+                    this.blur();
+                }
+            });
+
+            // Blur event untuk save langsung
+            input.addEventListener('blur', function () {
+                const value = parseFloat(this.value) || 0;
+                const colIndex = parseInt(this.dataset.columnIndex);
+                const totalPercent = updateTotalForColumn(colIndex);
+
+                if (totalPercent <= 100.01) {
+                    saveNGValue(this, value);
+                } else {
+                    // Jika masih > 100%, kembalikan ke nilai awal
+                    this.value = originalValue;
+                    this.classList.add('error');
+
+                    const actualQty = parseFloat(this.dataset.actual) || 0;
+                    updatePercentCell(this, originalValue, actualQty);
+                    updateTotalForColumn(colIndex);
+                }
+            });
+        });
+    }
+
+    /* ===============================
+       UPDATE PERCENT CELL REAL-TIME
+    ================================ */
+    function updatePercentCell(input, value, actualQty) {
+        const defectId = input.dataset.defectId;
+        const colIndex = parseInt(input.dataset.columnIndex);
+        const percentCell = document.getElementById(`percent-${defectId}-${colIndex}`);
+
+        if (percentCell) {
+            if (actualQty > 0) {
+                const percent = (value / actualQty) * 100;
+                // AMBIL 4 ANGKA: 2 angka di belakang koma
+                percentCell.textContent = `${percent.toFixed(2)}%`;
+
+                // Update juga di dataset untuk konsistensi
+                if (input.dataset) {
+                    input.dataset.currentPercent = percent.toFixed(2);
+                }
+            } else {
+                percentCell.textContent = '0.00%';
+                if (input.dataset) {
+                    input.dataset.currentPercent = '0.00';
+                }
+            }
+        }
+    }
+
+    /* ===============================
+       UPDATE TOTAL FOR SPECIFIC COLUMN (HANYA KOLOM TERAKHIR)
+    ================================ */
+    function updateTotalForColumn(colIndex) {
+        const okCell = document.getElementById(`ok-value-${colIndex}`);
+        if (!okCell) return 100;
+
+        const okValue = parseFloat(okCell.textContent) || 0;
+
+        // Hitung total NG untuk kolom ini
+        const ngInputs = document.querySelectorAll(`.ng-input[data-column-index="${colIndex}"]`);
+        let totalNG = 0;
+        let actualQty = 0;
+
+        ngInputs.forEach(input => {
+            const value = parseFloat(input.value) || 0;
+            const inputActual = parseFloat(input.dataset.actual) || 0;
+            totalNG += value;
+
+            if (inputActual > 0) {
+                actualQty = inputActual;
+            }
+        });
+
+        // Total = NG + OK
+        const total = totalNG + okValue;
+
+        // Update total cells untuk kolom ini saja
+        const totalNGCell = document.getElementById(`totalNG-${colIndex}`);
+        const totalPercentCell = document.getElementById(`totalPercent-${colIndex}`);
+
+        if (totalNGCell) {
+            totalNGCell.textContent = total;
+        }
+
+        if (totalPercentCell && actualQty > 0) {
+            const percent = (total / actualQty) * 100;
+            // AMBIL 4 ANGKA: 2 angka di belakang koma
+            totalPercentCell.textContent = `${percent.toFixed(2)}%`;
+
+            // Update status color - HIJAU hanya jika EXACT 100%
+            if (Math.abs(percent - 100) <= 0.01) {
+                totalPercentCell.className = 'text-end fw-bold text-success-bold';
+                totalPercentCell.style.color = '#0fac81';
+            } else {
+                totalPercentCell.className = 'text-end fw-bold text-danger-bold';
+                totalPercentCell.style.color = '#e85347';
+            }
+
+            // Update button status
+            updateAddTrialButton();
+
+            return percent;
+        }
+
+        return 100;
+    }
+
+    /* ===============================
+       SHOW/HIDE WARNING MESSAGE
+    ================================ */
+    function showWarningMessage(show) {
+        const warningMessage = document.getElementById('warningMessage');
+        if (warningMessage) {
+            if (show) {
+                warningMessage.classList.add('show');
+            } else {
+                warningMessage.classList.remove('show');
+            }
+        }
+    }
+
+    /* ===============================
+       SAVE NG VALUE REAL-TIME (JIKA TOTAL <= 100%)
+    ================================ */
+    function saveNGValue(input, value) {
+        const trialId = input.dataset.trialId;
+        const defectId = input.dataset.defectId;
+        const actualQty = parseFloat(input.dataset.actual) || 0;
+        const originalValue = parseFloat(input.dataset.originalValue) || 0;
+        const colIndex = parseInt(input.dataset.columnIndex);
+
+        // Cek total dulu sebelum save
+        const totalPercent = updateTotalForColumn(colIndex);
+        if (totalPercent > 100.01) {
+            console.log('Not saved: Total exceeds 100%');
+
+            // Kembalikan ke nilai awal
+            input.value = originalValue;
+            input.classList.add('error');
+            updatePercentCell(input, originalValue, actualQty);
+            updateTotalForColumn(colIndex);
+
+            return;
+        }
+
+        // Cek jika nilai berubah
+        if (Math.abs(value - originalValue) < 0.001) {
+            return;
+        }
+
+        // Update original value
+        input.dataset.originalValue = value;
+
+        // Prepare save data - PERCT HANYA 4 ANGKA (2 desimal)
+        const saveData = {
+            project_id: projectId,
+            process_id: selectedProcessId,
+            trial_id: trialId,
+            defect_id: defectId,
+            ng: value,
+            perct: actualQty > 0 ? parseFloat(((value / actualQty) * 100).toFixed(2)) : 0
+        };
+
+        // Save langsung
+        fetch("{{ route('trial.update.detail') }}", {
+            method: "POST",
+            headers: {
+                "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(saveData)
+        })
+            .then(async response => {
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || `Server returned ${response.status}`);
+                }
+
+                return data;
+            })
+            .then(data => {
+                if (data.success) {
+                    console.log('Data saved successfully');
+                    input.classList.remove('error');
+
+                    // Update percent cell dengan data dari server (untuk memastikan konsistensi)
+                    if (data.perct !== undefined) {
+                        const percentCell = document.getElementById(`percent-${defectId}-${colIndex}`);
+                        if (percentCell) {
+                            percentCell.textContent = `${parseFloat(data.perct).toFixed(2)}%`;
+                        }
+                    }
+                } else {
+                    throw new Error(data.message || 'Failed to save data');
+                }
+            })
+            .catch(err => {
+                console.error('Save error:', err);
+                // Jika error, kembalikan ke nilai awal
+                input.value = originalValue;
+                input.dataset.originalValue = originalValue;
+                input.classList.add('error');
+                updatePercentCell(input, originalValue, actualQty);
+                updateTotalForColumn(colIndex);
+            });
+    }
+
+
+    /* ===============================
+       UPDATE ADD TRIAL BUTTON STATUS
+    ================================ */
+    function updateAddTrialButton() {
+        const btnAddTrial = document.getElementById('btnAddTrial');
+        if (!btnAddTrial) return;
+
+        const totalPercentCells = document.querySelectorAll('#jumlahRow td.text-end.fw-bold.text-danger-bold');
+        const shouldDisable = totalPercentCells.length > 0;
+
+        btnAddTrial.disabled = shouldDisable;
+        btnAddTrial.title = shouldDisable
+            ? 'Cannot add trial: Jumlah belum mencapai 100%'
+            : '';
     }
 
     /* ===============================
        FUNGSI UNTUK MENDAPATKAN TRIAL TERAKHIR
      =============================== */
-    function getLastTrial(trialKeys, trials) {
-        if (!trialKeys || trialKeys.length === 0) return null;
+    function getLastTrial(trials) {
+        const trialKeys = Object.keys(trials || {});
+        if (trialKeys.length === 0) return null;
 
         if (trials[trialKeys[0]]?.order) {
             const sortedTrials = trialKeys
@@ -1042,10 +1282,7 @@
             return lastTrial;
         }
 
-        const sortedKeys = trialKeys.sort((a, b) => {
-            return b.localeCompare(a);
-        });
-
+        const sortedKeys = trialKeys.sort((a, b) => b.localeCompare(a));
         return {
             key: sortedKeys[0],
             order: trialKeys.length,
@@ -1054,256 +1291,49 @@
     }
 
     /* ===============================
-       INITIALIZE REPORT FRESH EDIT - DENGAN VALIDASI TRIAL TERAKHIR
-     ================================ */
-    function initReportFreshEdit() {
-        document.querySelector('#reportFreshTable tbody').addEventListener('click', function (e) {
-            const target = e.target;
-
-            if (target.classList.contains('edit-icon') || target.closest('.edit-icon')) {
-                const cell = target.closest('td');
-                if (cell && cell.classList.contains('edit-cell')) {
-                    // Validasi: hanya trial terakhir yang bisa diedit
-                    const isLastTrial = cell.dataset.isLastTrial === 'true';
-
-                    if (!isLastTrial) {
-                        Swal.fire({
-                            icon: 'info',
-                            title: 'Restricted',
-                            text: 'Only the latest trial can be edited. Please select the last trial.',
-                            timer: 2000,
-                            showConfirmButton: false
-                        });
-                        return;
-                    }
-
-                    openEditModal(cell);
-                }
-            }
-        });
-    }
-
-    /* ===============================
-       OPEN EDIT MODAL
-    ================================ */
-    function openEditModal(cell) {
-        const trialId = cell.dataset.trialId;
-        const defectId = cell.dataset.defectId;
-        const transType = cell.dataset.transType;
-        const defectName = cell.dataset.defectName;
-        const currentValue = cell.dataset.currentValue || '0';
-        const currentPercent = cell.dataset.currentPercent || '0';
-        const maxValue = cell.dataset.maxValue || '100';
-        const trialKey = cell.dataset.trialKey;
-        const actualQty = cell.dataset.actual || '0';
-
-        if (!trialId || !defectId) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Warning',
-                text: 'Cannot edit this cell. Data incomplete.'
-            });
-            return;
-        }
-
-        document.getElementById('editProcessId').value = selectedProcessId;
-        document.getElementById('editTrialId').value = trialId;
-        document.getElementById('editDefectId').value = defectId;
-        document.getElementById('editTransType').value = transType;
-        document.getElementById('editDefectName').value = defectName;
-        document.getElementById('editActualQty').value = actualQty;
-        document.getElementById('editCurrentValue').value = currentValue;
-        document.getElementById('editMaxValue').value = maxValue;
-        document.getElementById('editTrialKey').value = trialKey;
-        document.getElementById('editTrialInfoDisplay').value = trialKey;
-        document.getElementById('editDefectNameDisplay').value = defectName;
-        document.getElementById('editTransTypeDisplay').value = transType;
-        document.getElementById('editActualQtyDisplay').value = actualQty;
-
-        const ngInput = document.getElementById('editNgValue');
-        ngInput.value = currentValue;
-        ngInput.max = maxValue;
-
-        const perctInput = document.getElementById('editPerctValue');
-        perctInput.value = currentPercent;
-
-        ngInput.style.borderColor = '';
-        ngInput.style.backgroundColor = '';
-        perctInput.style.borderColor = '';
-        perctInput.style.backgroundColor = '';
-
-        bootstrap.Modal.getOrCreateInstance(
-            document.getElementById('modalEditDetail')
-        ).show();
-
-        setTimeout(() => {
-            ngInput.focus();
-            ngInput.select();
-        }, 500);
-    }
-
-    /* ===============================
-       UPDATE REPORT FRESH DATA - WITH VALIDATION
-    =============================== */
-    document.getElementById('formEditDetail').addEventListener('submit', function (e) {
-        e.preventDefault();
-
-        const ngValue = parseFloat(document.getElementById('editNgValue').value);
-        const perctValue = parseFloat(document.getElementById('editPerctValue').value);
-        const maxValue = parseFloat(document.getElementById('editMaxValue').value);
-        const actualQty = parseFloat(document.getElementById('editActualQty').value);
-
-        if (isNaN(ngValue) || ngValue < 0) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Invalid Value',
-                text: 'Please enter a valid positive number for NG'
-            });
-            return;
-        }
-
-        if (ngValue > maxValue) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Value Exceeds Limit',
-                text: `Maximum allowed NG value is ${maxValue} pcs`
-            });
-            return;
-        }
-
-        if (actualQty > 0) {
-            const calculatedPercent = (ngValue / actualQty) * 100;
-            if (Math.abs(calculatedPercent - perctValue) > 0.01) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Calculation Error',
-                    text: 'Percentage calculation mismatch. Please check the values.'
-                });
-                return;
-            }
-        }
-
-        const formData = {
-            project_id: projectId,
-            process_id: selectedProcessId,
-            trial_id: document.getElementById('editTrialId').value,
-            defect_id: document.getElementById('editDefectId').value,
-            ng: ngValue,
-            perct: perctValue
-        };
-
-        const submitBtn = document.getElementById('btnUpdateDetail');
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...';
-
-        fetch("{{ route('trial.update.detail') }}", {
-            method: "POST",
-            headers: {
-                "X-CSRF-TOKEN": "{{ csrf_token() }}",
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(formData)
-        })
-            .then(async response => {
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.message || `Server returned ${response.status}`);
-                }
-
-                return data;
-            })
-            .then(data => {
-                if (data.success) {
-                    bootstrap.Modal.getInstance(document.getElementById('modalEditDetail')).hide();
-
-                    loadReportFreshData();
-                    loadTrialData();
-
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success',
-                        text: data.message || 'Data updated successfully',
-                        timer: 1500,
-                        showConfirmButton: false
-                    });
-                } else {
-                    throw new Error(data.message || 'Failed to update data');
-                }
-            })
-            .catch(err => {
-                console.error('Update error:', err);
-
-                let errorMessage = err.message || 'Failed to update data. Please try again.';
-
-                if (errorMessage.includes('exceeds') ||
-                    errorMessage.includes('100%') ||
-                    errorMessage.includes('Maximum allowed') ||
-                    errorMessage.includes('Total')) {
-
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Warning',
-                        html: errorMessage,
-                        confirmButtonText: 'OK'
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: errorMessage
-                    });
-                }
-            })
-            .finally(() => {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Save';
-            });
-    });
-
-    /* ===============================
        INITIALIZE REPORT FRESH SEARCH
     ================================ */
-    function initReportFreshSearch() {
-        const searchInput = document.getElementById('reportFreshSearch');
+    // function initReportFreshSearch() {
+    //     const searchInput = document.getElementById('reportFreshSearch');
 
-        if (searchInput) {
-            searchInput.addEventListener('keyup', function () {
-                const keyword = this.value.toLowerCase();
-                const rows = document.querySelectorAll('#reportFreshTable tbody tr');
+    //     if (searchInput) {
+    //         searchInput.addEventListener('keyup', function () {
+    //             const keyword = this.value.toLowerCase();
+    //             const rows = document.querySelectorAll('#reportFreshTable tbody tr');
 
-                let categoryHasMatch = {};
+    //             let categoryHasMatch = {};
 
-                rows.forEach(row => row.style.display = 'none');
-                rows.forEach(row => {
-                    const category = row.dataset.category;
-                    const cells = row.querySelectorAll('td');
+    //             rows.forEach(row => row.style.display = 'none');
+    //             rows.forEach(row => {
+    //                 const category = row.dataset.category;
+    //                 const cells = row.querySelectorAll('td');
 
-                    if (cells.length < 3) return;
+    //                 if (cells.length < 3) return;
 
-                    const searchableText = (
-                        cells[cells.length - 3].innerText + ' ' +
-                        cells[cells.length - 2].innerText + ' ' +
-                        cells[cells.length - 1].innerText
-                    ).toLowerCase();
+    //                 const searchableText = (
+    //                     cells[cells.length - 3].innerText + ' ' +
+    //                     cells[cells.length - 2].innerText + ' ' +
+    //                     cells[cells.length - 1].innerText
+    //                 ).toLowerCase();
 
-                    if (searchableText.includes(keyword) || keyword === '') {
-                        row.style.display = '';
-                        categoryHasMatch[category] = true;
-                    }
-                });
+    //                 if (searchableText.includes(keyword) || keyword === '') {
+    //                     row.style.display = '';
+    //                     if (category) categoryHasMatch[category] = true;
+    //                 }
+    //             });
 
-                rows.forEach(row => {
-                    if (row.classList.contains('category-row')) {
-                        const category = row.dataset.category;
-                        if (categoryHasMatch[category]) {
-                            row.style.display = '';
-                        }
-                    }
-                });
-            });
-        }
-    }
+    //             // Tampilkan kategori jika ada match
+    //             rows.forEach(row => {
+    //                 if (row.classList.contains('category-row')) {
+    //                     const category = row.dataset.category;
+    //                     if (categoryHasMatch[category]) {
+    //                         row.style.display = '';
+    //                     }
+    //                 }
+    //             });
+    //         });
+    //     }
+    // }
 
     /* ===============================
        UPDATE DATATABLE
@@ -1384,8 +1414,8 @@
     }
 
     /* ===============================
-       INITIALIZE DATATABLE
-    ================================ */
+           INITIALIZE DATATABLE
+        ================================ */
     function initDataTable(data) {
         trialDataTable = $('#trialDataTable').DataTable({
             data: data,
@@ -1509,6 +1539,18 @@
                     previous: "Prev"
                 }
             },
+            // TAMBAHKAN KONFIGURASI INI UNTUK PERBAIKI SEARCH
+            search: {
+                regex: false,
+                smart: false
+            },
+            // Pastikan semua kolom bisa dicari
+            columnDefs: [
+                {
+                    targets: '_all',
+                    searchable: true
+                }
+            ],
             initComplete: function () {
                 $('.dt-header-row').css({
                     'display': 'flex',
@@ -1545,6 +1587,9 @@
                     'align-items': 'center',
                     'margin-top': '10px'
                 });
+
+                // DEBUG: Cek apakah data bisa dicari
+                console.log('DataTable initialized. Search should work for all columns including "Casting (Status Trial)"');
             },
             drawCallback: function () {
                 $('.dataTables_info').css({
@@ -1651,7 +1696,6 @@
                     symbol: 'circle',
                     radius: 6
                 },
-                // TIDAK ADA dataLabels di sini (target tidak tampil angka)
             }],
             credits: {
                 enabled: false
@@ -1725,7 +1769,6 @@
                     symbol: 'circle',
                     radius: 6
                 },
-                // TIDAK ADA dataLabels di sini (target tidak tampil angka)
             }],
             credits: {
                 enabled: false
@@ -1940,4 +1983,9 @@
                 submitBtn.innerHTML = 'Save';
             });
     });
+
+    function formatModalTarget(val) {
+        if (val === null || val === '' || isNaN(val)) return '';
+        return parseFloat(val).toFixed(2).replace('.', ',');
+    }
 </script>
