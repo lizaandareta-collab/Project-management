@@ -1428,7 +1428,7 @@
                             <div class="col-12">
                                 <div class="card card-bordered">
                                     <div class="card-inner">
-                                        <div class="chart-title">Cycle Time (CT)</div>
+                                        <div class="chart-title">Cycle Time (Second)</div>
                                         <div id="trialChart2" class="chart-wrapper"></div>
                                     </div>
                                 </div>
@@ -2480,7 +2480,7 @@ function renderTrialCharts(data) {
             height: 380
         },
         title: {
-            text: 'Cycle Time (CT)',
+            text: 'Cycle Time (Second)',
             align: 'center',
             style: {
                 fontSize: '16px',

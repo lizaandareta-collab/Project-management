@@ -300,8 +300,6 @@
     #fileList {
         display: none !important;
     }
-    
-    
 </style>
 
 <div class="nk-content">
@@ -352,7 +350,7 @@
                                         <thead>
                                             <tr>
                                                 <th>Trial</th>
-                                                <th>Casting (Status Trial)</th>
+                                                <th id="tableProcessHeader">Casting</th>
                                                 <th>Machine</th>
                                                 <th>Date</th>
                                                 <th>Process (QTY)</th>
@@ -402,7 +400,7 @@
                                             <tr>
                                                 <th>Category</th>
                                                 <th>Report Fresh</th>
-                                                <th>NG</th>
+                                                <th>Quant.</th>
                                                 <th>%</th>
                                             </tr>
                                         </thead>
@@ -428,7 +426,7 @@
                             <div class="col-12">
                                 <div class="card card-bordered">
                                     <div class="card-inner">
-                                        <div class="chart-title">Cycle Time (CT)</div>
+                                        <div class="chart-title">Cycle Time (Second)</div>
                                         <div id="chart2" class="chart-wrapper"></div>
                                     </div>
                                 </div>
@@ -437,7 +435,7 @@
                             <div class="col-12">
                                 <div class="card card-bordered">
                                     <div class="card-inner">
-                                        <div class="chart-title">Berat</div>
+                                        <div class="chart-title">Berat()</div>
                                         <div id="chart3" class="chart-wrapper"></div>
                                     </div>
                                 </div>
@@ -468,8 +466,9 @@
                             <input type="text" name="trial_no" id="trial_no" class="form-control" readonly>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">Casting (Status Trial) <span class="text-danger">*</span></label>
-                            <input type="text" name="trial_stat" class="form-control" required>
+                            <label class="form-label" id="trialStatLabel">Casting <span
+                                    class="text-danger">*</span></label>
+                            <input type="text" name="trial_stat" id="trial_stat_input" class="form-control" required>
                         </div>
                         <div class="col-md-3">
                             <label class="form-label">Machine <span class="text-danger">*</span></label>
@@ -574,12 +573,28 @@
                 selectedProcessId = this.dataset.processId;
                 const processName = this.dataset.processName;
 
+                // Update semua teks yang terkait dengan proses
                 document.getElementById('selectedProcess').innerText = ' ' + processName;
                 document.getElementById('selectedProcessReport').innerText = ' ' + processName;
+
+                // Update label pada modal
+                document.getElementById('trialStatLabel').innerHTML =
+                    `${processName} <span class="text-danger">*</span>`;
+
+                // Update placeholder pada input modal
+                document.getElementById('trial_stat_input');
+
+                // Update header tabel
+                document.getElementById('tableProcessHeader').innerText = `${processName}`;
+
+                // Update judul pada DataTables
+                const dataTableTitle = `Trial Report - ${processName}`;
+
                 document.getElementById('trialTableCard').classList.remove('d-none');
                 document.getElementById('reportFreshCard').classList.remove('d-none');
                 document.getElementById('btnAddTrial').classList.remove('d-none');
                 document.getElementById('chartSection').classList.remove('d-none');
+
                 const processInput = document.getElementById('process_id');
                 if (processInput) {
                     processInput.value = selectedProcessId;
@@ -587,6 +602,48 @@
 
                 loadTrialData();
                 loadReportFreshData();
+
+                // Update DataTables button titles jika DataTable sudah diinisialisasi
+                if (trialDataTable) {
+                    trialDataTable.buttons().destroy();
+                    trialDataTable.buttons([
+                        {
+                            extend: 'copy',
+                            text: '<i class="icon ni ni-copy"></i> Copy',
+                            className: 'btn btn-outline-secondary btn-sm',
+                            title: dataTableTitle
+                        },
+                        {
+                            extend: 'excel',
+                            text: '<i class="icon ni ni-file-xls"></i> Excel',
+                            className: 'btn btn-outline-success btn-sm',
+                            title: dataTableTitle
+                        },
+                        {
+                            extend: 'pdf',
+                            text: '<i class="icon ni ni-file-pdf"></i> PDF',
+                            className: 'btn btn-outline-danger btn-sm',
+                            title: dataTableTitle
+                        },
+                        {
+                            extend: 'print',
+                            text: '<i class="icon ni ni-printer"></i> Print',
+                            className: 'btn btn-outline-primary btn-sm',
+                            title: dataTableTitle,
+                            customize: function (win) {
+                                $(win.document.body)
+                                    .css('font-size', '10pt')
+                                    .prepend(
+                                        `<h3>${dataTableTitle}</h3>`
+                                    );
+
+                                $(win.document.body).find('table')
+                                    .addClass('compact')
+                                    .css('font-size', 'inherit');
+                            }
+                        }
+                    ]).container().appendTo($('.dt-buttons-col'));
+                }
             });
         });
 
@@ -766,7 +823,7 @@
                 ${columns.map(c => `<th colspan="2">${c}</th>`).join('')}
             </tr>
             <tr>
-                ${columns.map(() => `<th>NG</th><th>%</th>`).join('')}
+                ${columns.map(() => `<th>Quant.</th><th>%</th>`).join('')}
             </tr>
         </thead>
         `;
@@ -1589,7 +1646,7 @@
                 });
 
                 // DEBUG: Cek apakah data bisa dicari
-                console.log('DataTable initialized. Search should work for all columns including "Casting (Status Trial)"');
+                console.log('DataTable initialized. Search should work for all columns including "Casting"');
             },
             drawCallback: function () {
                 $('.dataTables_info').css({
@@ -1711,7 +1768,7 @@
                 height: 380
             },
             title: {
-                text: 'Cycle Time (CT)',
+                text: 'Cycle Time (Second)',
                 align: 'center'
             },
             subtitle: {
