@@ -1,3 +1,4 @@
+
 <!-- Highcharts Libraries -->
 <script src="{{ asset('assets/js/highcharts-chart.js') }}"></script>
 <script src="{{ asset('assets/js/export-data-chart.js') }}"></script>
@@ -300,6 +301,33 @@
     #fileList {
         display: none !important;
     }
+
+    /* TAMBAHAN UNTUK LOCK SYSTEM */
+    .locked-value {
+        text-align: right !important;
+        font-weight: normal !important;
+        color: #212529 !important;
+    }
+
+    #btnSaveData {
+        display: none;
+        padding: 6px 16px;
+        font-size: 14px;
+    }
+
+    #btnSaveData.show {
+        display: inline-block;
+    }
+
+    #lockedMessage {
+        display: none;
+        margin-bottom: 15px;
+        padding: 10px 15px;
+    }
+
+    #lockedMessage.show {
+        display: block;
+    }
 </style>
 
 <div class="nk-content">
@@ -377,8 +405,12 @@
                         <div class="card card-bordered card-preview d-none" id="reportFreshCard">
                             <div class="card-inner">
                                 <div class="nk-block-head mb-3">
-                                    <div class="nk-block-head-content">
+                                    <div
+                                        class="nk-block-head-content d-flex justify-content-between align-items-center">
                                         <h6 class="mb-0">Report - <span id="selectedProcessReport"></span></h6>
+                                        <button type="button" class="btn btn-warning btn-sm d-none" id="btnSaveData">
+                                            <em class="icon ni ni-save"></em> Save Data
+                                        </button>
                                     </div>
                                 </div>
 
@@ -387,11 +419,10 @@
                                     <strong>Note:</strong> Total NG + OK cannot exceed 100%. Please adjust your input.
                                 </div>
 
-                                <!-- Search -->
-                                <!-- <div class="d-flex justify-content-between mb-3">
-                                    <input type="text" id="reportFreshSearch" class="form-control form-control-sm w-25"
-                                        placeholder="Search...">
-                                </div> -->
+                                <!-- Locked Message -->
+                                <div class="alert alert-success d-none" id="lockedMessage">
+                                    <em class="icon ni ni-lock"></em> Data has been Save. Total has reached 100.00%
+                                </div>
 
                                 <!-- Report Fresh Table -->
                                 <div class="table-responsive">
@@ -549,6 +580,9 @@
     let reportFreshData = null;
     let lastTrialInfo = null;
     let saveTimeout = null;
+    let isDataLocked = false;
+    let pendingLockConfirmation = false;
+    let showSaveButton = false;
 
     document.addEventListener('DOMContentLoaded', function () {
         const fileInput = document.getElementById('fileInput');
@@ -648,6 +682,25 @@
         });
 
         initAutoCalculatePercent();
+
+        // Event listener untuk Save Data button
+        document.getElementById('btnSaveData')?.addEventListener('click', function () {
+            Swal.fire({
+                title: 'Confirm Save Data',
+                text: 'Are you sure you want to save the data? You will not be able to edit Quant. values after this.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#0fac81',
+                cancelButtonColor: '#e85347',
+                confirmButtonText: 'Yes, Save Now',
+                cancelButtonText: 'Cancel',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    lockDataImmediately();
+                }
+            });
+        });
     });
 
     /* ===============================
@@ -752,7 +805,6 @@
                 reportFreshData = data;
                 lastTrialInfo = getLastTrial(data.trials || {});
                 renderReportFreshTable(data);
-                // initReportFreshSearch();
             })
             .catch(err => {
                 console.error('Error loading report fresh data:', err);
@@ -812,7 +864,22 @@
         const lastTrialKey = lastTrialInfo ? lastTrialInfo.key : null;
         const lastTrialIndex = lastTrialKey ? columns.indexOf(lastTrialKey) : -1;
 
-        let shouldDisableButton = false;
+        // Reset flags
+        showSaveButton = false;
+        pendingLockConfirmation = false;
+
+        // Cek apakah data sudah dilock sebelumnya
+        const isAlreadyLocked = checkIfAllColumnsLocked(data);
+
+        if (isAlreadyLocked) {
+            isDataLocked = true;
+            updateLockUI(true);
+            hideSaveDataButton();
+        } else {
+            isDataLocked = false;
+            updateLockUI(false);
+            hideSaveDataButton();
+        }
 
         /* ===== HEADER ===== */
         table.querySelector('thead').outerHTML = `
@@ -843,7 +910,6 @@
             const cls = item.percent >= target
                 ? 'text-success-bold'
                 : 'text-danger-bold';
-            // AMBIL 4 ANGKA: 2 angka di belakang koma
             const percentValue = parseFloat(item.percent).toFixed(2);
             return `
                     <td class="text-end fw-bold" id="ok-value-${colIndex}">${item.quant}</td>
@@ -883,37 +949,46 @@
                     const trialId = trialInfo?.id;
                     const actualQty = item.actual || 0;
                     const currentValue = item.quant || 0;
-
-                    // AMBIL 4 ANGKA: 2 angka di belakang koma
                     const percentValue = parseFloat(item.percent).toFixed(2);
-
                     const isLastTrial = lastTrialKey && col === lastTrialKey;
 
-                    // Jika trial terakhir, buat input field
+                    // Jika trial terakhir dan trial ada
                     if (isLastTrial && trialId) {
-                        return `
-                            <td class="text-center">
-                                <input type="number" 
-                                       class="ng-input" 
-                                       value="${currentValue}"
-                                       min="0" 
-                                       max="${actualQty}"
-                                       step="0.01"
-                                       data-trial-id="${trialId}"
-                                       data-defect-id="${defectId}"
-                                       data-actual="${actualQty}"
-                                       data-trial-key="${col}"
-                                       data-column-index="${lastTrialIndex}"
-                                       data-trans-type="${category}"
-                                       data-defect-name="${defectLabel}"
-                                       data-original-value="${currentValue}"
-                                       data-current-percent="${percentValue}">
-                            </td>
-                            <td class="text-end percent-cell" id="percent-${defectId}-${colIndex}">
-                                ${percentValue}%
-                            </td>`;
+                        // Jika data locked, tampilkan sebagai teks biasa
+                        if (isDataLocked) {
+                            return `
+                                <td class="text-end locked-value">
+                                    ${currentValue}
+                                </td>
+                                <td class="text-end percent-cell">
+                                    ${percentValue}%
+                                </td>`;
+                        } else {
+                            // Jika tidak locked, tampilkan input field
+                            return `
+                                <td class="text-center">
+                                    <input type="number" 
+                                           class="ng-input" 
+                                           value="${currentValue}"
+                                           min="0" 
+                                           max="${actualQty}"
+                                           step="0.01"
+                                           data-trial-id="${trialId}"
+                                           data-defect-id="${defectId}"
+                                           data-actual="${actualQty}"
+                                           data-trial-key="${col}"
+                                           data-column-index="${lastTrialIndex}"
+                                           data-trans-type="${category}"
+                                           data-defect-name="${defectLabel}"
+                                           data-original-value="${currentValue}"
+                                           data-current-percent="${percentValue}">
+                                </td>
+                                <td class="text-end percent-cell" id="percent-${defectId}-${colIndex}">
+                                    ${percentValue}%
+                                </td>`;
+                        }
                     } else {
-                        // Trial lama, tampilkan saja
+                        // Trial lama, selalu tampilkan sebagai teks
                         return `
                             <td class="text-end">${currentValue}</td>
                             <td class="text-end percent-cell">
@@ -941,12 +1016,6 @@
             const item = rows.Jumlah?.Jumlah?.[col] ?? { quant: 0, percent: 100 };
             const percent = parseFloat(item.percent) || 0;
             const statusClass = Math.abs(percent - 100) <= 0.01 ? 'text-success-bold' : 'text-danger-bold';
-
-            if (Math.abs(percent - 100.00) > 0.01) {
-                shouldDisableButton = true;
-            }
-
-            // AMBIL 4 ANGKA: 2 angka di belakang koma
             const percentValue = percent.toFixed(2);
 
             return `
@@ -961,16 +1030,424 @@
 
         tbody.innerHTML = html;
 
-        // Attach event listeners untuk input fields
-        attachInputListeners();
-
-        if (btnAddTrial && shouldDisableButton) {
-            btnAddTrial.disabled = true;
-            btnAddTrial.setAttribute('title', 'Cannot add trial: Jumlah belum mencapai 100');
-        } else if (btnAddTrial) {
-            btnAddTrial.disabled = false;
-            btnAddTrial.removeAttribute('title');
+        // Attach event listeners untuk input fields hanya jika tidak locked
+        if (!isDataLocked) {
+            attachInputListeners();
         }
+
+        // Update button status berdasarkan data awal
+        if (btnAddTrial) {
+            if (isDataLocked) {
+                btnAddTrial.disabled = false;
+                btnAddTrial.removeAttribute('title');
+            } else {
+                btnAddTrial.disabled = true;
+                btnAddTrial.setAttribute('title', 'Cannot add trial: Total must reach 100.00%');
+            }
+        }
+    }
+
+    /* ===============================
+       CHECK IF ALL COLUMNS LOCKED
+    ================================ */
+    function checkIfAllColumnsLocked(data) {
+        if (!data || !data.data || !data.data.Jumlah || !data.data.Jumlah.Jumlah) {
+            return false;
+        }
+
+        const jumlahData = data.data.Jumlah.Jumlah;
+        const columns = data.columns || [];
+
+        for (const col of columns) {
+            const item = jumlahData[col];
+            // Cek ATT1 status dari data trial
+            const trialInfo = data.trials[col];
+
+            if (item && item.percent) {
+                const percent = parseFloat(item.percent);
+
+                // PERUBAHAN LOGIKA:
+                // 1. Jika percent 100% DAN ATT1 = NULL, maka dianggap locked (karena sudah save permanent)
+                // 2. Jika percent 100% DAN ATT1 = 1, maka dianggap "save later" (bukan locked permanent)
+                if (Math.abs(percent - 100.00) <= 0.001) {
+                    if (trialInfo && trialInfo.att1 === null) {
+                        continue; // Kolom ini locked permanent
+                    }
+                }
+            }
+            return false;
+        }
+
+        return true;
+    }
+
+    /* ===============================
+       UPDATE LOCK UI
+    ================================ */
+    function updateLockUI(isLocked) {
+        const lockedMessage = document.getElementById('lockedMessage');
+        const btnAddTrial = document.getElementById('btnAddTrial');
+        const btnSaveData = document.getElementById('btnSaveData');
+
+        if (isLocked) {
+            // Tampilkan pesan locked
+            if (lockedMessage) {
+                lockedMessage.classList.add('show');
+            }
+
+            // Enable Add Trial button
+            if (btnAddTrial) {
+                btnAddTrial.disabled = false;
+                btnAddTrial.removeAttribute('title');
+            }
+
+            // Sembunyikan Save Data button
+            if (btnSaveData) {
+                btnSaveData.classList.remove('show');
+                btnSaveData.style.display = 'none';
+            }
+
+            isDataLocked = true;
+        } else {
+            // Sembunyikan pesan locked
+            if (lockedMessage) {
+                lockedMessage.classList.remove('show');
+            }
+
+            // Disable Add Trial button
+            if (btnAddTrial) {
+                btnAddTrial.disabled = true;
+                btnAddTrial.setAttribute('title', 'Cannot add trial: Total must reach 100.00%');
+            }
+
+            isDataLocked = false;
+        }
+    }
+
+    /* ===============================
+       DISPLAY SAVE DATA BUTTON
+    ================================ */
+    function displaySaveDataButton() {
+        const btnSaveData = document.getElementById('btnSaveData');
+        if (btnSaveData) {
+            btnSaveData.classList.add('show');
+            btnSaveData.style.display = 'inline-block';
+            btnSaveData.disabled = false;
+            btnSaveData.innerHTML = '<em class="icon ni ni-save"></em> Save Data';
+        }
+    }
+
+    /* ===============================
+       HIDE SAVE DATA BUTTON
+    ================================ */
+    function hideSaveDataButton() {
+        const btnSaveData = document.getElementById('btnSaveData');
+        if (btnSaveData) {
+            btnSaveData.classList.remove('show');
+            btnSaveData.style.display = 'none';
+        }
+        showSaveButton = false;
+    }
+
+    /* ===============================
+       SHOW LOCK CONFIRMATION
+    ================================ */
+    function showLockConfirmation() {
+        // Cegah multiple confirmation
+        if (document.querySelector('.swal2-container')) return;
+
+        Swal.fire({
+            title: 'Total Reached 100.00%',
+            text: 'Do you want to Save the data? Once Saved, you cannot edit NG values anymore.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#0fac81',
+            cancelButtonColor: '#e85347',
+            confirmButtonText: 'Yes, Save Now',
+            cancelButtonText: 'No, I\'ll Save Later',
+            reverseButtons: true,
+            allowOutsideClick: false,
+            allowEscapeKey: false
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // User pilih Yes → langsung lock
+                lockDataImmediately();
+            } else {
+                // User pilih No → set ATT1 = 1 dan tampilkan tombol Save Data
+                markAsSaveLater();
+            }
+        });
+    }
+
+    /* ===============================
+       MARK AS SAVE LATER (ATT1 = 1)
+    =============================== */
+    function markAsSaveLater() {
+        // Tampilkan loading
+        Swal.fire({
+            title: 'Saving Status...',
+            text: 'Please wait',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        // Kirim request untuk update ATT1 = 1 untuk semua row trial terakhir
+        const lastTrialId = lastTrialInfo ? lastTrialInfo.id : null;
+        if (!lastTrialId) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Trial ID not found'
+            });
+            return;
+        }
+
+        // Kirim request ke endpoint baru
+        fetch("{{ route('trial.mark.save_later') }}", {
+            method: "POST",
+            headers: {
+                "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                project_id: projectId,
+                process_id: selectedProcessId,
+                trial_id: lastTrialId
+            })
+        })
+            .then(async response => {
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.message || `Server returned ${response.status}`);
+                }
+                return data;
+            })
+            .then(data => {
+                // Tampilkan tombol Save Data
+                showSaveButton = true;
+                displaySaveDataButton();
+
+                // Update status di UI
+                pendingLockConfirmation = false;
+
+                // Tampilkan alert success
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Status Saved',
+                    text: 'Data marked as "Save Later". You can continue editing.',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            })
+            .catch(error => {
+                console.error('Error marking as save later:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Failed',
+                    text: 'Failed to save status. Please try again.'
+                });
+            });
+    }
+
+    /* ===============================
+       LOCK DATA IMMEDIATELY
+    ================================ */
+    function lockDataImmediately() {
+        const btnAddTrial = document.getElementById('btnAddTrial');
+        const lockedMessage = document.getElementById('lockedMessage');
+
+        // Tampilkan loading
+        Swal.fire({
+            title: 'Save Data...',
+            text: 'Please wait while we save and lock your data',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        // Simpan semua perubahan terlebih dahulu
+        saveAllChangesBeforeLock()
+            .then(() => {
+                // Set ATT1 = NULL untuk trial terakhir
+                return setAtt1NullForLastTrial();
+            })
+            .then(() => {
+                // Set status locked
+                isDataLocked = true;
+
+                // Replace semua input dengan teks biasa
+                replaceInputsWithText();
+
+                // Tampilkan pesan locked
+                if (lockedMessage) {
+                    lockedMessage.classList.add('show');
+                }
+
+                // Enable Add Trial button
+                if (btnAddTrial) {
+                    btnAddTrial.disabled = false;
+                    btnAddTrial.removeAttribute('title');
+                }
+
+                // Sembunyikan tombol Save Data
+                hideSaveDataButton();
+
+                // Tutup loading dan tampilkan success
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Data Saved & Locked',
+                    text: 'Data has been successfully saved and locked. You can now add new trial.',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+
+                // Reload data untuk konsistensi
+                setTimeout(() => {
+                    loadReportFreshData();
+                }, 500);
+            })
+            .catch(error => {
+                console.error('Error saving/locking data:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Save/Lock Failed',
+                    text: 'Failed to save and lock data. Please try again.'
+                });
+            });
+    }
+
+    /* ===============================
+       SET ATT1 = NULL FOR LAST TRIAL
+    =============================== */
+    function setAtt1NullForLastTrial() {
+        return new Promise((resolve, reject) => {
+            const lastTrialId = lastTrialInfo ? lastTrialInfo.id : null;
+            if (!lastTrialId) {
+                reject(new Error('Trial ID not found'));
+                return;
+            }
+
+            // Kirim request untuk set ATT1 = NULL untuk trial terakhir
+            fetch("{{ route('trial.set.att1_null') }}", {
+                method: "POST",
+                headers: {
+                    "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    project_id: projectId,
+                    process_id: selectedProcessId,
+                    trial_id: lastTrialId
+                })
+            })
+                .then(async response => {
+                    const data = await response.json();
+                    if (!response.ok) {
+                        throw new Error(data.message || `Server returned ${response.status}`);
+                    }
+                    resolve(data);
+                })
+                .catch(error => {
+                    reject(error);
+                });
+        });
+    }
+
+    /* ===============================
+       REPLACE INPUTS WITH TEXT (UNTUK LOCKED STATE)
+    ================================ */
+    function replaceInputsWithText() {
+        const ngInputs = document.querySelectorAll('.ng-input');
+
+        ngInputs.forEach(input => {
+            const value = input.value || '0';
+            const tdElement = input.parentElement;
+
+            // Buat elemen span dengan teks biasa
+            const spanElement = document.createElement('span');
+            spanElement.className = 'locked-value';
+            spanElement.textContent = value;
+
+            // Ganti input dengan span
+            tdElement.innerHTML = '';
+            tdElement.appendChild(spanElement);
+            tdElement.classList.remove('text-center');
+            tdElement.classList.add('text-end');
+        });
+    }
+
+    /* ===============================
+       SAVE ALL CHANGES BEFORE LOCK
+    ================================ */
+    function saveAllChangesBeforeLock() {
+        return new Promise((resolve, reject) => {
+            const ngInputs = document.querySelectorAll('.ng-input');
+            let savePromises = [];
+
+            ngInputs.forEach(input => {
+                const originalValue = parseFloat(input.dataset.originalValue) || 0;
+                const currentValue = parseFloat(input.value) || 0;
+
+                if (Math.abs(currentValue - originalValue) > 0.001) {
+                    savePromises.push(saveSingleNG(input, currentValue));
+                }
+            });
+
+            if (savePromises.length === 0) {
+                resolve();
+                return;
+            }
+
+            Promise.all(savePromises)
+                .then(() => {
+                    resolve();
+                })
+                .catch(error => {
+                    reject(error);
+                });
+        });
+    }
+
+    /* ===============================
+       SAVE SINGLE NG VALUE (PROMISE VERSION)
+    ================================ */
+    function saveSingleNG(input, value) {
+        return new Promise((resolve, reject) => {
+            const trialId = input.dataset.trialId;
+            const defectId = input.dataset.defectId;
+            const actualQty = parseFloat(input.dataset.actual) || 0;
+
+            const saveData = {
+                project_id: projectId,
+                process_id: selectedProcessId,
+                trial_id: trialId,
+                defect_id: defectId,
+                ng: value,
+                perct: actualQty > 0 ? parseFloat(((value / actualQty) * 100).toFixed(2)) : 0
+            };
+
+            fetch("{{ route('trial.update.detail') }}", {
+                method: "POST",
+                headers: {
+                    "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(saveData)
+            })
+                .then(async response => {
+                    const data = await response.json();
+                    if (!response.ok) {
+                        throw new Error(data.message || `Server returned ${response.status}`);
+                    }
+                    resolve(data);
+                })
+                .catch(error => {
+                    reject(error);
+                });
+        });
     }
 
     /* ===============================
@@ -980,11 +1457,25 @@
         const ngInputs = document.querySelectorAll('#reportFreshTable .ng-input');
 
         ngInputs.forEach(input => {
+            // Cek ATT1 status dari dataset
+            const att1Status = input.dataset.att1;
+            const isAlreadyLocked = att1Status === 'null' && parseFloat(input.dataset.currentPercent || 0) == 100.00;
+
+            if (isAlreadyLocked) {
+                // Jika sudah locked, nonaktifkan input
+                input.disabled = true;
+                input.style.backgroundColor = '#f8f9fa';
+                input.style.cursor = 'not-allowed';
+                return;
+            }
+
             // Store original value
             const originalValue = parseFloat(input.value) || 0;
 
             // Input event untuk real-time calculation
             input.addEventListener('input', function () {
+                if (isDataLocked) return;
+
                 const value = parseFloat(this.value) || 0;
                 const actualQty = parseFloat(this.dataset.actual) || 0;
                 const maxValue = parseFloat(this.max) || 0;
@@ -1012,17 +1503,11 @@
                 const totalPercent = updateTotalForColumn(colIndex);
 
                 // Cek apakah total > 100%
-                if (totalPercent > 100.01) { // toleransi 0.01%
-                    // KEMBALIKAN KE NILAI AWAL
+                if (totalPercent > 100.01) {
                     this.value = originalValue;
                     this.classList.add('error');
-
-                    // Update percent cell kembali ke nilai awal
                     updatePercentCell(this, originalValue, actualQty);
-
-                    // Update total kembali
                     updateTotalForColumn(colIndex);
-
                     showWarningMessage(true);
                     return;
                 } else {
@@ -1043,14 +1528,17 @@
 
             // Focus event untuk select text
             input.addEventListener('focus', function () {
-                this.select();
+                if (!isDataLocked) {
+                    this.select();
+                }
             });
 
             // Key events untuk navigasi
             input.addEventListener('keydown', function (e) {
+                if (isDataLocked) return;
+
                 if (e.key === 'Enter') {
                     e.preventDefault();
-                    // Pindah ke input berikutnya
                     const allInputs = Array.from(document.querySelectorAll('.ng-input'));
                     const currentIndex = allInputs.indexOf(this);
                     if (currentIndex < allInputs.length - 1) {
@@ -1076,6 +1564,8 @@
 
             // Blur event untuk save langsung
             input.addEventListener('blur', function () {
+                if (isDataLocked) return;
+
                 const value = parseFloat(this.value) || 0;
                 const colIndex = parseInt(this.dataset.columnIndex);
                 const totalPercent = updateTotalForColumn(colIndex);
@@ -1083,10 +1573,8 @@
                 if (totalPercent <= 100.01) {
                     saveNGValue(this, value);
                 } else {
-                    // Jika masih > 100%, kembalikan ke nilai awal
                     this.value = originalValue;
                     this.classList.add('error');
-
                     const actualQty = parseFloat(this.dataset.actual) || 0;
                     updatePercentCell(this, originalValue, actualQty);
                     updateTotalForColumn(colIndex);
@@ -1106,10 +1594,8 @@
         if (percentCell) {
             if (actualQty > 0) {
                 const percent = (value / actualQty) * 100;
-                // AMBIL 4 ANGKA: 2 angka di belakang koma
                 percentCell.textContent = `${percent.toFixed(2)}%`;
 
-                // Update juga di dataset untuk konsistensi
                 if (input.dataset) {
                     input.dataset.currentPercent = percent.toFixed(2);
                 }
@@ -1123,15 +1609,13 @@
     }
 
     /* ===============================
-       UPDATE TOTAL FOR SPECIFIC COLUMN (HANYA KOLOM TERAKHIR)
+       UPDATE TOTAL FOR SPECIFIC COLUMN
     ================================ */
     function updateTotalForColumn(colIndex) {
         const okCell = document.getElementById(`ok-value-${colIndex}`);
         if (!okCell) return 100;
 
         const okValue = parseFloat(okCell.textContent) || 0;
-
-        // Hitung total NG untuk kolom ini
         const ngInputs = document.querySelectorAll(`.ng-input[data-column-index="${colIndex}"]`);
         let totalNG = 0;
         let actualQty = 0;
@@ -1146,10 +1630,7 @@
             }
         });
 
-        // Total = NG + OK
         const total = totalNG + okValue;
-
-        // Update total cells untuk kolom ini saja
         const totalNGCell = document.getElementById(`totalNG-${colIndex}`);
         const totalPercentCell = document.getElementById(`totalPercent-${colIndex}`);
 
@@ -1159,25 +1640,49 @@
 
         if (totalPercentCell && actualQty > 0) {
             const percent = (total / actualQty) * 100;
-            // AMBIL 4 ANGKA: 2 angka di belakang koma
             totalPercentCell.textContent = `${percent.toFixed(2)}%`;
 
-            // Update status color - HIJAU hanya jika EXACT 100%
             if (Math.abs(percent - 100) <= 0.01) {
                 totalPercentCell.className = 'text-end fw-bold text-success-bold';
                 totalPercentCell.style.color = '#0fac81';
+
+                if (Math.abs(percent - 100.00) <= 0.001 && !isDataLocked && !pendingLockConfirmation) {
+                    showLockConfirmation();
+                    pendingLockConfirmation = true;
+                }
             } else {
                 totalPercentCell.className = 'text-end fw-bold text-danger-bold';
                 totalPercentCell.style.color = '#e85347';
+                pendingLockConfirmation = false;
             }
 
-            // Update button status
-            updateAddTrialButton();
-
+            updateAddTrialButtonStatus(percent);
             return percent;
         }
 
         return 100;
+    }
+
+    /* ===============================
+       UPDATE ADD TRIAL BUTTON STATUS
+    ================================ */
+    function updateAddTrialButtonStatus(currentPercent) {
+        const btnAddTrial = document.getElementById('btnAddTrial');
+        if (!btnAddTrial) return;
+
+        if (isDataLocked) {
+            btnAddTrial.disabled = false;
+            btnAddTrial.removeAttribute('title');
+        } else if (Math.abs(currentPercent - 100.00) <= 0.001 && showSaveButton) {
+            btnAddTrial.disabled = true;
+            btnAddTrial.setAttribute('title', 'Cannot add trial: Please save and Save data first');
+        } else if (Math.abs(currentPercent - 100.00) <= 0.001) {
+            btnAddTrial.disabled = true;
+            btnAddTrial.setAttribute('title', 'Cannot add trial: Total must be Save first');
+        } else {
+            btnAddTrial.disabled = true;
+            btnAddTrial.setAttribute('title', 'Cannot add trial: Total must reach 100.00%');
+        }
     }
 
     /* ===============================
@@ -1195,38 +1700,36 @@
     }
 
     /* ===============================
-       SAVE NG VALUE REAL-TIME (JIKA TOTAL <= 100%)
+       SAVE NG VALUE REAL-TIME
     ================================ */
     function saveNGValue(input, value) {
+        if (isDataLocked) {
+            console.log('Data is Save, cannot save');
+            return;
+        }
+
         const trialId = input.dataset.trialId;
         const defectId = input.dataset.defectId;
         const actualQty = parseFloat(input.dataset.actual) || 0;
         const originalValue = parseFloat(input.dataset.originalValue) || 0;
         const colIndex = parseInt(input.dataset.columnIndex);
 
-        // Cek total dulu sebelum save
         const totalPercent = updateTotalForColumn(colIndex);
         if (totalPercent > 100.01) {
             console.log('Not saved: Total exceeds 100%');
-
-            // Kembalikan ke nilai awal
             input.value = originalValue;
             input.classList.add('error');
             updatePercentCell(input, originalValue, actualQty);
             updateTotalForColumn(colIndex);
-
             return;
         }
 
-        // Cek jika nilai berubah
         if (Math.abs(value - originalValue) < 0.001) {
             return;
         }
 
-        // Update original value
         input.dataset.originalValue = value;
 
-        // Prepare save data - PERCT HANYA 4 ANGKA (2 desimal)
         const saveData = {
             project_id: projectId,
             process_id: selectedProcessId,
@@ -1236,7 +1739,6 @@
             perct: actualQty > 0 ? parseFloat(((value / actualQty) * 100).toFixed(2)) : 0
         };
 
-        // Save langsung
         fetch("{{ route('trial.update.detail') }}", {
             method: "POST",
             headers: {
@@ -1259,7 +1761,6 @@
                     console.log('Data saved successfully');
                     input.classList.remove('error');
 
-                    // Update percent cell dengan data dari server (untuk memastikan konsistensi)
                     if (data.perct !== undefined) {
                         const percentCell = document.getElementById(`percent-${defectId}-${colIndex}`);
                         if (percentCell) {
@@ -1272,7 +1773,6 @@
             })
             .catch(err => {
                 console.error('Save error:', err);
-                // Jika error, kembalikan ke nilai awal
                 input.value = originalValue;
                 input.dataset.originalValue = originalValue;
                 input.classList.add('error');
@@ -1281,26 +1781,9 @@
             });
     }
 
-
-    /* ===============================
-       UPDATE ADD TRIAL BUTTON STATUS
-    ================================ */
-    function updateAddTrialButton() {
-        const btnAddTrial = document.getElementById('btnAddTrial');
-        if (!btnAddTrial) return;
-
-        const totalPercentCells = document.querySelectorAll('#jumlahRow td.text-end.fw-bold.text-danger-bold');
-        const shouldDisable = totalPercentCells.length > 0;
-
-        btnAddTrial.disabled = shouldDisable;
-        btnAddTrial.title = shouldDisable
-            ? 'Cannot add trial: Jumlah belum mencapai 100%'
-            : '';
-    }
-
     /* ===============================
        FUNGSI UNTUK MENDAPATKAN TRIAL TERAKHIR
-     =============================== */
+    =============================== */
     function getLastTrial(trials) {
         const trialKeys = Object.keys(trials || {});
         if (trialKeys.length === 0) return null;
@@ -1346,51 +1829,6 @@
             id: trials[sortedKeys[0]]?.id
         };
     }
-
-    /* ===============================
-       INITIALIZE REPORT FRESH SEARCH
-    ================================ */
-    // function initReportFreshSearch() {
-    //     const searchInput = document.getElementById('reportFreshSearch');
-
-    //     if (searchInput) {
-    //         searchInput.addEventListener('keyup', function () {
-    //             const keyword = this.value.toLowerCase();
-    //             const rows = document.querySelectorAll('#reportFreshTable tbody tr');
-
-    //             let categoryHasMatch = {};
-
-    //             rows.forEach(row => row.style.display = 'none');
-    //             rows.forEach(row => {
-    //                 const category = row.dataset.category;
-    //                 const cells = row.querySelectorAll('td');
-
-    //                 if (cells.length < 3) return;
-
-    //                 const searchableText = (
-    //                     cells[cells.length - 3].innerText + ' ' +
-    //                     cells[cells.length - 2].innerText + ' ' +
-    //                     cells[cells.length - 1].innerText
-    //                 ).toLowerCase();
-
-    //                 if (searchableText.includes(keyword) || keyword === '') {
-    //                     row.style.display = '';
-    //                     if (category) categoryHasMatch[category] = true;
-    //                 }
-    //             });
-
-    //             // Tampilkan kategori jika ada match
-    //             rows.forEach(row => {
-    //                 if (row.classList.contains('category-row')) {
-    //                     const category = row.dataset.category;
-    //                     if (categoryHasMatch[category]) {
-    //                         row.style.display = '';
-    //                     }
-    //                 }
-    //             });
-    //         });
-    //     }
-    // }
 
     /* ===============================
        UPDATE DATATABLE
@@ -1471,8 +1909,8 @@
     }
 
     /* ===============================
-           INITIALIZE DATATABLE
-        ================================ */
+       INITIALIZE DATATABLE
+    ================================ */
     function initDataTable(data) {
         trialDataTable = $('#trialDataTable').DataTable({
             data: data,
@@ -1596,12 +2034,10 @@
                     previous: "Prev"
                 }
             },
-            // TAMBAHKAN KONFIGURASI INI UNTUK PERBAIKI SEARCH
             search: {
                 regex: false,
                 smart: false
             },
-            // Pastikan semua kolom bisa dicari
             columnDefs: [
                 {
                     targets: '_all',
@@ -1645,7 +2081,6 @@
                     'margin-top': '10px'
                 });
 
-                // DEBUG: Cek apakah data bisa dicari
                 console.log('DataTable initialized. Search should work for all columns including "Casting"');
             },
             drawCallback: function () {

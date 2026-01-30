@@ -706,6 +706,44 @@ class Mapp
     }
 }
 
+public static function setAtt1NullForTrial($project_id, $process_id, $trial_id)
+{
+    try {
+        // Update ATT1 = NULL untuk semua row pada trial_id tertentu
+        // Gunakan DB::raw('NULL') untuk set ke NULL
+        DB::connection('oracle')->table('PROMAN.TRIAL_RR_DET')
+            ->where('PROJECT_ID', $project_id)
+            ->where('PROCESS_ID', $process_id)
+            ->where('TRIAL_NO', $trial_id)
+            ->update([
+                'ATT1' => DB::raw('NULL')
+            ]);
+        
+        return true;
+    } catch (\Exception $e) {
+        throw $e;
+    }
+}
+
+public static function markTrialAsSaveLater($project_id, $process_id, $trial_id)
+{
+    try {
+        // Update ATT1 = 1 untuk semua row pada trial_id tertentu
+        DB::connection('oracle')->table('PROMAN.TRIAL_RR_DET')
+            ->where('PROJECT_ID', $project_id)
+            ->where('PROCESS_ID', $process_id)
+            ->where('TRIAL_NO', $trial_id)
+            ->update([
+                'ATT1' => 1,
+                'UPDATED_AT' => now()
+            ]);
+        
+        return true;
+    } catch (\Exception $e) {
+        throw $e;
+    }
+}
+
 
     // public static function insert_task($req)
     // {

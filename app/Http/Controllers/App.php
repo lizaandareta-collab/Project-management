@@ -1453,7 +1453,7 @@ class App extends Controller
         }
     }
 
-    public function trial($id)
+   public function trial($id)
     {
         $project = Maio::get_project_by_id($id);
         if (!$project)
@@ -1654,9 +1654,10 @@ public function trial_report_multi(Request $request)
 
         // info trial
         $trialInfo[$trialKey] = [
-            'id' => $trial->id,
-            'defectIds' => []
-        ];
+    'id' => $trial->id,
+    'att1' => $trial->att1 ?? null, // Tambahkan ini
+    'defectIds' => []
+];
 
         /* OK */
         $okQuant   = (float) ($trial->ok ?? 0);
@@ -1871,6 +1872,98 @@ public function trial_report_multi(Request $request)
         ], 500);
     }
 }
+
+public function markSaveLater(Request $request)
+{
+    try {
+        $validator = Validator::make($request->all(), [
+            'project_id' => 'required',
+            'process_id' => 'required',
+            'trial_id' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        // Panggil model untuk update ATT1 = 1 untuk semua row di trial terakhir
+        $updated = Mapp::markTrialAsSaveLater(
+            $request->project_id,
+            $request->process_id,
+            $request->trial_id
+        );
+
+        if ($updated) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Trial marked as "Save Later" successfully'
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to update trial status'
+        ], 500);
+
+    } catch (\Exception $e) {
+        \Log::error('Error marking trial as save later: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Server error: ' . $e->getMessage()
+        ], 500);
+    }
+}
+
+public function setAtt1Null(Request $request)
+{
+    try {
+        $validator = Validator::make($request->all(), [
+            'project_id' => 'required',
+            'process_id' => 'required',
+            'trial_id' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        // Panggil model untuk set ATT1 = NULL untuk semua row di trial terakhir
+        $updated = Mapp::setAtt1NullForTrial(
+            $request->project_id,
+            $request->process_id,
+            $request->trial_id
+        );
+
+        if ($updated) {
+            return response()->json([
+                'success' => true,
+                'message' => 'ATT1 set to NULL successfully'
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to update ATT1'
+        ], 500);
+
+    } catch (\Exception $e) {
+        \Log::error('Error setting ATT1 to NULL: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Server error: ' . $e->getMessage()
+        ], 500);
+    }
+}
+
+
     public function trailreport($project, $process, $id)
     {
         $data = [
