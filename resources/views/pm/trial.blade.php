@@ -466,7 +466,7 @@
                             <div class="col-12">
                                 <div class="card card-bordered">
                                     <div class="card-inner">
-                                        <div class="chart-title">Berat()</div>
+                                        <div class="chart-title">Berat(Kg)</div>
                                         <div id="chart3" class="chart-wrapper"></div>
                                     </div>
                                 </div>
@@ -581,8 +581,6 @@
     let lastTrialInfo = null;
     let saveTimeout = null;
     let isDataLocked = false;
-    let pendingLockConfirmation = false;
-    let showSaveButton = false;
 
     document.addEventListener('DOMContentLoaded', function () {
         const fileInput = document.getElementById('fileInput');
@@ -614,9 +612,6 @@
                 // Update label pada modal
                 document.getElementById('trialStatLabel').innerHTML =
                     `${processName} <span class="text-danger">*</span>`;
-
-                // Update placeholder pada input modal
-                document.getElementById('trial_stat_input');
 
                 // Update header tabel
                 document.getElementById('tableProcessHeader').innerText = `${processName}`;
@@ -682,25 +677,6 @@
         });
 
         initAutoCalculatePercent();
-
-        // Event listener untuk Save Data button
-        document.getElementById('btnSaveData')?.addEventListener('click', function () {
-            Swal.fire({
-                title: 'Confirm Save Data',
-                text: 'Are you sure you want to save the data? You will not be able to edit Quant. values after this.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#0fac81',
-                cancelButtonColor: '#e85347',
-                confirmButtonText: 'Yes, Save Now',
-                cancelButtonText: 'Cancel',
-                reverseButtons: true
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    lockDataImmediately();
-                }
-            });
-        });
     });
 
     /* ===============================
@@ -863,10 +839,6 @@
         lastTrialInfo = getLastTrial(trials);
         const lastTrialKey = lastTrialInfo ? lastTrialInfo.key : null;
         const lastTrialIndex = lastTrialKey ? columns.indexOf(lastTrialKey) : -1;
-
-        // Reset flags
-        showSaveButton = false;
-        pendingLockConfirmation = false;
 
         // Cek apakah data sudah dilock sebelumnya
         const isAlreadyLocked = checkIfAllColumnsLocked(data);
@@ -1060,15 +1032,11 @@
 
         for (const col of columns) {
             const item = jumlahData[col];
-            // Cek ATT1 status dari data trial
             const trialInfo = data.trials[col];
 
             if (item && item.percent) {
                 const percent = parseFloat(item.percent);
 
-                // PERUBAHAN LOGIKA:
-                // 1. Jika percent 100% DAN ATT1 = NULL, maka dianggap locked (karena sudah save permanent)
-                // 2. Jika percent 100% DAN ATT1 = 1, maka dianggap "save later" (bukan locked permanent)
                 if (Math.abs(percent - 100.00) <= 0.001) {
                     if (trialInfo && trialInfo.att1 === null) {
                         continue; // Kolom ini locked permanent
@@ -1125,19 +1093,6 @@
     }
 
     /* ===============================
-       DISPLAY SAVE DATA BUTTON
-    ================================ */
-    function displaySaveDataButton() {
-        const btnSaveData = document.getElementById('btnSaveData');
-        if (btnSaveData) {
-            btnSaveData.classList.add('show');
-            btnSaveData.style.display = 'inline-block';
-            btnSaveData.disabled = false;
-            btnSaveData.innerHTML = '<em class="icon ni ni-save"></em> Save Data';
-        }
-    }
-
-    /* ===============================
        HIDE SAVE DATA BUTTON
     ================================ */
     function hideSaveDataButton() {
@@ -1146,11 +1101,10 @@
             btnSaveData.classList.remove('show');
             btnSaveData.style.display = 'none';
         }
-        showSaveButton = false;
     }
 
     /* ===============================
-       SHOW LOCK CONFIRMATION
+       SHOW LOCK CONFIRMATION (SIMPLE VERSION)
     ================================ */
     function showLockConfirmation() {
         // Cegah multiple confirmation
@@ -1158,128 +1112,33 @@
 
         Swal.fire({
             title: 'Total Reached 100.00%',
-            text: 'Do you want to Save the data? Once Saved, you cannot edit NG values anymore.',
-            icon: 'question',
-            showCancelButton: true,
+            text: 'Data will be saved and locked. You cannot edit NG values after this.',
+            icon: 'info',
+            showCancelButton: false,
             confirmButtonColor: '#0fac81',
-            cancelButtonColor: '#e85347',
-            confirmButtonText: 'Yes, Save Now',
-            cancelButtonText: 'No, I\'ll Save Later',
-            reverseButtons: true,
+            confirmButtonText: 'OK',
             allowOutsideClick: false,
             allowEscapeKey: false
         }).then((result) => {
             if (result.isConfirmed) {
-                // User pilih Yes → langsung lock
-                lockDataImmediately();
-            } else {
-                // User pilih No → set ATT1 = 1 dan tampilkan tombol Save Data
-                markAsSaveLater();
+                // Langsung lock dan reload
+                lockAndReloadData();
             }
         });
     }
 
     /* ===============================
-       MARK AS SAVE LATER (ATT1 = 1)
-    =============================== */
-    function markAsSaveLater() {
-        // Tampilkan loading
-        Swal.fire({
-            title: 'Saving Status...',
-            text: 'Please wait',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-
-        // Kirim request untuk update ATT1 = 1 untuk semua row trial terakhir
-        const lastTrialId = lastTrialInfo ? lastTrialInfo.id : null;
-        if (!lastTrialId) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Trial ID not found'
-            });
-            return;
-        }
-
-        // Kirim request ke endpoint baru
-        fetch("{{ route('trial.mark.save_later') }}", {
-            method: "POST",
-            headers: {
-                "X-CSRF-TOKEN": "{{ csrf_token() }}",
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                project_id: projectId,
-                process_id: selectedProcessId,
-                trial_id: lastTrialId
-            })
-        })
-            .then(async response => {
-                const data = await response.json();
-                if (!response.ok) {
-                    throw new Error(data.message || `Server returned ${response.status}`);
-                }
-                return data;
-            })
-            .then(data => {
-                // Tampilkan tombol Save Data
-                showSaveButton = true;
-                displaySaveDataButton();
-
-                // Update status di UI
-                pendingLockConfirmation = false;
-
-                // Tampilkan alert success
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Status Saved',
-                    text: 'Data marked as "Save Later". You can continue editing.',
-                    timer: 1500,
-                    showConfirmButton: false
-                });
-            })
-            .catch(error => {
-                console.error('Error marking as save later:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Failed',
-                    text: 'Failed to save status. Please try again.'
-                });
-            });
-    }
-
-    /* ===============================
-       LOCK DATA IMMEDIATELY
+       LOCK AND RELOAD DATA (SIMPLE VERSION)
     ================================ */
-    function lockDataImmediately() {
+    function lockAndReloadData() {
         const btnAddTrial = document.getElementById('btnAddTrial');
         const lockedMessage = document.getElementById('lockedMessage');
-
-        // Tampilkan loading
-        Swal.fire({
-            title: 'Save Data...',
-            text: 'Please wait while we save and lock your data',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
 
         // Simpan semua perubahan terlebih dahulu
         saveAllChangesBeforeLock()
             .then(() => {
-                // Set ATT1 = NULL untuk trial terakhir
-                return setAtt1NullForLastTrial();
-            })
-            .then(() => {
                 // Set status locked
                 isDataLocked = true;
-
-                // Replace semua input dengan teks biasa
-                replaceInputsWithText();
 
                 // Tampilkan pesan locked
                 if (lockedMessage) {
@@ -1295,65 +1154,18 @@
                 // Sembunyikan tombol Save Data
                 hideSaveDataButton();
 
-                // Tutup loading dan tampilkan success
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Data Saved & Locked',
-                    text: 'Data has been successfully saved and locked. You can now add new trial.',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-
-                // Reload data untuk konsistensi
-                setTimeout(() => {
-                    loadReportFreshData();
-                }, 500);
+                // Langsung refresh data
+                loadReportFreshData();
+                loadTrialData();
             })
             .catch(error => {
                 console.error('Error saving/locking data:', error);
                 Swal.fire({
                     icon: 'error',
-                    title: 'Save/Lock Failed',
-                    text: 'Failed to save and lock data. Please try again.'
+                    title: 'Save Failed',
+                    text: 'Failed to save data. Please try again.'
                 });
             });
-    }
-
-    /* ===============================
-       SET ATT1 = NULL FOR LAST TRIAL
-    =============================== */
-    function setAtt1NullForLastTrial() {
-        return new Promise((resolve, reject) => {
-            const lastTrialId = lastTrialInfo ? lastTrialInfo.id : null;
-            if (!lastTrialId) {
-                reject(new Error('Trial ID not found'));
-                return;
-            }
-
-            // Kirim request untuk set ATT1 = NULL untuk trial terakhir
-            fetch("{{ route('trial.set.att1_null') }}", {
-                method: "POST",
-                headers: {
-                    "X-CSRF-TOKEN": "{{ csrf_token() }}",
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    project_id: projectId,
-                    process_id: selectedProcessId,
-                    trial_id: lastTrialId
-                })
-            })
-                .then(async response => {
-                    const data = await response.json();
-                    if (!response.ok) {
-                        throw new Error(data.message || `Server returned ${response.status}`);
-                    }
-                    resolve(data);
-                })
-                .catch(error => {
-                    reject(error);
-                });
-        });
     }
 
     /* ===============================
@@ -1462,7 +1274,6 @@
             const isAlreadyLocked = att1Status === 'null' && parseFloat(input.dataset.currentPercent || 0) == 100.00;
 
             if (isAlreadyLocked) {
-                // Jika sudah locked, nonaktifkan input
                 input.disabled = true;
                 input.style.backgroundColor = '#f8f9fa';
                 input.style.cursor = 'not-allowed';
@@ -1646,14 +1457,12 @@
                 totalPercentCell.className = 'text-end fw-bold text-success-bold';
                 totalPercentCell.style.color = '#0fac81';
 
-                if (Math.abs(percent - 100.00) <= 0.001 && !isDataLocked && !pendingLockConfirmation) {
+                if (Math.abs(percent - 100.00) <= 0.001 && !isDataLocked) {
                     showLockConfirmation();
-                    pendingLockConfirmation = true;
                 }
             } else {
                 totalPercentCell.className = 'text-end fw-bold text-danger-bold';
                 totalPercentCell.style.color = '#e85347';
-                pendingLockConfirmation = false;
             }
 
             updateAddTrialButtonStatus(percent);
@@ -1673,12 +1482,9 @@
         if (isDataLocked) {
             btnAddTrial.disabled = false;
             btnAddTrial.removeAttribute('title');
-        } else if (Math.abs(currentPercent - 100.00) <= 0.001 && showSaveButton) {
-            btnAddTrial.disabled = true;
-            btnAddTrial.setAttribute('title', 'Cannot add trial: Please save and Save data first');
         } else if (Math.abs(currentPercent - 100.00) <= 0.001) {
             btnAddTrial.disabled = true;
-            btnAddTrial.setAttribute('title', 'Cannot add trial: Total must be Save first');
+            btnAddTrial.setAttribute('title', 'Cannot add trial: Total must be saved first');
         } else {
             btnAddTrial.disabled = true;
             btnAddTrial.setAttribute('title', 'Cannot add trial: Total must reach 100.00%');
@@ -1704,7 +1510,7 @@
     ================================ */
     function saveNGValue(input, value) {
         if (isDataLocked) {
-            console.log('Data is Save, cannot save');
+            console.log('Data is locked, cannot save');
             return;
         }
 
@@ -2080,8 +1886,6 @@
                     'align-items': 'center',
                     'margin-top': '10px'
                 });
-
-                console.log('DataTable initialized. Search should work for all columns including "Casting"');
             },
             drawCallback: function () {
                 $('.dataTables_info').css({

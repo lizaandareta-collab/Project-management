@@ -51,8 +51,8 @@ Route::middleware(['web'])->group(function () {
     Route::post('/trial/report-multi', [App::class, 'trial_report_multi'])->name('trial.report_multi');
     Route::post('/trial/report-detail', [App::class, 'trial_report_detail'])->name('trial.report.detail');
     Route::post('/trial/update-detail', [App::class, 'trial_update_detail'])->name('trial.update.detail');
-    Route::post('/trial/mark-save-later', [App::class, 'markSaveLater'])->name('trial.mark.save_later');
-    Route::post('/trial/set-att1-null', [App::class, 'setAtt1Null'])->name('trial.set.att1_null');
+    // Route::post('/trial/mark-save-later', [App::class, 'markSaveLater'])->name('trial.mark.save_later');
+    // Route::post('/trial/set-att1-null', [App::class, 'setAtt1Null'])->name('trial.set.att1_null');
 
     // Route::get('/trial_report/{project}/{process}/{trial}', [App::class, 'trailreport'])
 //     ->name('trailreport');
