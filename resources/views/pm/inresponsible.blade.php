@@ -30,14 +30,13 @@
 
                                     <tbody>
                                         <?php if (!empty($resource)) { ?>
-                                        <?php    foreach ($resource as $r) { ?>
+                                        <?php foreach ($resource as $r) { ?>
                                         <tr>
-                                            <td><?= $r->npk ?></td>
-                                            <td><?= $r->emp_name ?></td>
-                                            <td><?= $r->emp_type ?></td>
-                                            <td><?= $r->department ?></td>
-                                            <td><?= $r->max_hour ?></td>
-                                            <!-- Di bagian tabel (edit button) -->
+                                            <td><?= $r->NPK ?></td>
+                                            <td><?= $r->EMP_NAME ?></td>
+                                            <td><?= $r->EMP_TYPE ?></td>
+                                            <td><?= $r->DEPARTMENT ?></td>
+                                            <td><?= $r->MAX_HOUR ?></td>
                                             <td>
                                                 <div class="drodown">
                                                     <a href="#" class="dropdown-toggle btn btn-icon btn-trigger"
@@ -48,19 +47,18 @@
                                                         <ul class="link-list-opt no-bdr">
                                                             <li>
                                                                 <a href="#" class="edit-resource"
-                                                                    data-npk="<?= $r->npk ?>"
-                                                                    data-emp_name="<?= $r->emp_name ?>"
-                                                                    data-emp_type_id="<?= $r->emp_type_id ?>"
-                                                                    data-department_id="<?= $r->department_id ?>"
-                                                                    data-max_hour="<?= $r->max_hour ?>">
+                                                                    data-npk="<?= $r->NPK ?>"
+                                                                    data-emp_name="<?= $r->EMP_NAME ?>"
+                                                                    data-emp_type_id="<?= $r->EMP_TYPE_ID ?>"
+                                                                    data-department_id="<?= $r->DEPARTMENT_ID ?>"
+                                                                    data-max_hour="<?= $r->MAX_HOUR ?>">
                                                                     <em class="icon ni ni-edit"></em><span>Edit</span>
                                                                 </a>
                                                             </li>
                                                             <li>
                                                                 <a href="#" class="delete-resource"
-                                                                    data-npk="<?= $r->npk ?>">
-                                                                    <em
-                                                                        class="icon ni ni-trash"></em><span>Delete</span>
+                                                                    data-npk="<?= $r->NPK ?>">
+                                                                    <em class="icon ni ni-trash"></em><span>Delete</span>
                                                                 </a>
                                                             </li>
                                                         </ul>
@@ -68,12 +66,10 @@
                                                 </div>
                                             </td>
                                         </tr>
-                                        <?php    } ?>
+                                        <?php } ?>
                                         <?php } else { ?>
                                         <tr>
-                                            <td colspan="7" class="text-center">
-                                                No data available
-                                            </td>
+                                            <td colspan="6" class="text-center">No data available</td>
                                         </tr>
                                         <?php } ?>
                                     </tbody>
@@ -81,7 +77,7 @@
                             </div>
                         </div>
                     </div>
-                </div><!-- .components-preview -->
+                </div>
             </div>
         </div>
     </div>
@@ -103,24 +99,12 @@
                     <div class="row gy-3">
                         <div class="col-md-6">
                             <label class="form-label">NPK</label>
-                            <select class="form-control" name="npk" id="npkSelect" required>
-                                <option value="" disabled selected>-- Select NPK --</option>
-                                <?php if (!empty($employees)) { ?>
-                                <?php    foreach ($employees as $emp) {
-                                    $npk = is_array($emp) ? $emp['NPK'] : $emp->NPK;
-                                    $name = is_array($emp) ? $emp['NAME'] : $emp->NAME;
-                                ?>
-                                <option value="<?= $npk ?>" data-name="<?= $name ?>">
-                                    <?= $npk ?> - <?= $name ?>
-                                </option>
-                                <?php    } ?>
-                                <?php } ?>
-                            </select>
+                            <input type="text" class="form-control" name="npk" required>
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label">Employee Name</label>
-                            <input type="text" class="form-control" name="emp_name" id="empName" readonly required>
+                            <input type="text" class="form-control" name="emp_name" required>
                         </div>
 
                         <div class="col-md-6">
@@ -128,9 +112,9 @@
                             <select class="form-control" name="emp_type" required>
                                 <option value="" disabled selected>-- Select Employee Type --</option>
                                 <?php if (!empty($lov_emptype)) { ?>
-                                <?php    foreach ($lov_emptype as $et) { ?>
-                                <option value="<?= $et->lov_id ?>"><?= $et->description ?></option>
-                                <?php    } ?>
+                                <?php foreach ($lov_emptype as $et) { ?>
+                                <option value="<?= $et->LOV_ID ?>"><?= $et->DESCRIPTION ?></option>
+                                <?php } ?>
                                 <?php } ?>
                             </select>
                         </div>
@@ -140,13 +124,12 @@
                             <select class="form-control" name="department" required>
                                 <option value="" disabled selected>-- Select Department --</option>
                                 <?php if (!empty($lov_empdept)) { ?>
-                                <?php    foreach ($lov_empdept as $dept) { ?>
-                                <option value="<?= $dept->lov_id ?>"><?= $dept->description ?></option>
-                                <?php    } ?>
+                                <?php foreach ($lov_empdept as $dept) { ?>
+                                <option value="<?= $dept->LOV_ID ?>"><?= $dept->DESCRIPTION ?></option>
+                                <?php } ?>
                                 <?php } ?>
                             </select>
                         </div>
-
 
                         <div class="col-md-6">
                             <label class="form-label">Max Hour per Day</label>
@@ -181,8 +164,7 @@
                     <div class="row gy-3">
                         <div class="col-md-6">
                             <label class="form-label">Employee Name</label>
-                            <input type="text" class="form-control" name="emp_name" id="editEmpName" required
-                                maxlength="100">
+                            <input type="text" class="form-control" name="emp_name" id="editEmpName" required>
                         </div>
 
                         <div class="col-md-6">
@@ -190,9 +172,9 @@
                             <select class="form-control" name="emp_type" id="editEmpType" required>
                                 <option value="" disabled selected>-- Select Employee Type --</option>
                                 <?php if (!empty($lov_emptype)) { ?>
-                                <?php    foreach ($lov_emptype as $et) { ?>
-                                <option value="<?= $et->lov_id ?>"><?= $et->description ?></option>
-                                <?php    } ?>
+                                <?php foreach ($lov_emptype as $et) { ?>
+                                <option value="<?= $et->LOV_ID ?>"><?= $et->DESCRIPTION ?></option>
+                                <?php } ?>
                                 <?php } ?>
                             </select>
                         </div>
@@ -202,18 +184,16 @@
                             <select class="form-control" name="department" id="editDepartment" required>
                                 <option value="" disabled selected>-- Select Department --</option>
                                 <?php if (!empty($lov_empdept)) { ?>
-                                <?php    foreach ($lov_empdept as $dept) { ?>
-                                <option value="<?= $dept->lov_id ?>"><?= $dept->description ?></option>
-                                <?php    } ?>
+                                <?php foreach ($lov_empdept as $dept) { ?>
+                                <option value="<?= $dept->LOV_ID ?>"><?= $dept->DESCRIPTION ?></option>
+                                <?php } ?>
                                 <?php } ?>
                             </select>
                         </div>
 
-
                         <div class="col-md-6">
                             <label class="form-label">Max Hour per Day</label>
-                            <input type="number" class="form-control" name="max_hour" id="editMaxHour" required min="1"
-                                max="24">
+                            <input type="number" class="form-control" name="max_hour" id="editMaxHour" required min="1" max="24">
                         </div>
                     </div>
                 </div>
@@ -272,18 +252,16 @@
 
                 const npk = this.getAttribute('data-npk');
                 const empName = this.getAttribute('data-emp_name');
-                const empTypeId = this.getAttribute('data-emp_type_id');  // Ambil ID
-                const departmentId = this.getAttribute('data-department_id'); // Ambil ID
+                const empTypeId = this.getAttribute('data-emp_type_id');
+                const departmentId = this.getAttribute('data-department_id');
                 const maxHour = this.getAttribute('data-max_hour');
 
-                // Populate edit form
                 document.getElementById('editNpk').value = npk;
                 document.getElementById('editEmpName').value = empName;
-                document.getElementById('editEmpType').value = empTypeId;  // Set nilai dropdown
-                document.getElementById('editDepartment').value = departmentId; // Set nilai dropdown
+                document.getElementById('editEmpType').value = empTypeId;
+                document.getElementById('editDepartment').value = departmentId;
                 document.getElementById('editMaxHour').value = maxHour;
 
-                // Show edit modal
                 const editModal = new bootstrap.Modal(document.getElementById('editResourceModal'));
                 editModal.show();
             });
@@ -373,17 +351,5 @@
                 });
             });
         });
-    });
-    document.addEventListener('DOMContentLoaded', function () {
-        const npkSelect = document.getElementById('npkSelect');
-        const empNameInput = document.getElementById('empName');
-
-        if (npkSelect) {
-            npkSelect.addEventListener('change', function () {
-                const selectedOption = this.options[this.selectedIndex];
-                const empName = selectedOption.getAttribute('data-name');
-                empNameInput.value = empName ?? '';
-            });
-        }
     });
 </script>

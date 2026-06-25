@@ -40,22 +40,50 @@ class Auth extends Controller
     //     }
     // }
 
-    public function zzz_login(Request $request)
-    {
-        $request->validate([
-            'npk' => 'required'
-        ]);
+public function zzz_login(Request $request)
+{
+    $request->validate([
+        'npk' => 'required',
+        'password' => 'required'
+    ]);
 
-        $npk = $request->input('npk');
-        $user = Mauth::checkUser($npk);
+    $npk = $request->input('npk');
+    $password = $request->input('password');
 
-        if ($user && isset($user['npk'])) {
-            session(['user' => $user]);
-            return redirect('/project')->with('success', 'Login berhasil tanpa password!');
+    $user = Mauth::checkUser($npk);
+
+    if ($user && isset($user['npk'])) {
+
+        if (md5($password) == $user['password']) {
+
+            // ✅ Mapping role
+            $roleName = 'Unknown';
+
+            if ($user['role_id'] == 80) {
+                $roleName = 'PM';
+            } elseif ($user['role_id'] == 81) {
+                $roleName = 'PE';
+            } elseif ($user['role_id'] == 82) {
+                $roleName = 'QA';
+            }
+
+            // ✅ Simpan ke session
+            session([
+                'user' => $user,
+                'role_id' => $user['role_id'],
+                'role_name' => $roleName
+            ]);
+
+            return redirect('/progress')->with('success', 'Login berhasil sebagai ' . $roleName);
+
         } else {
-            return back()->withErrors(['npk' => 'NPK tidak terdaftar!']);
+            return back()->withErrors(['password' => 'Password salah!']);
         }
+
+    } else {
+        return back()->withErrors(['npk' => 'NPK tidak terdaftar!']);
     }
+}
 
     public function logout()
     {
@@ -72,7 +100,7 @@ class Auth extends Controller
 
         $data = [
             'title' => 'Project',
-            'content' => 'pm.project'
+            'content' => 'pm.progress'
         ];
         return view('template.wrapper', $data);
     }

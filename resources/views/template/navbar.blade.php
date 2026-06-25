@@ -130,6 +130,7 @@
                         </ul>
                     </li>
 
+                     @if(session('role_name') == 'PM')
                     <li
                         class="nk-menu-item has-sub {{ request()->routeIs('inholiday') || request()->routeIs('inclient') ? 'active current-page' : '' }}">
                         <a href="#" class="nk-menu-link nk-menu-toggle">
@@ -162,6 +163,7 @@
                             </li>
                         </ul>
                     </li>
+                    @endif
 
                     <!-- <li class="nk-menu-item {{ request()->routeIs('inholiday') ? 'active' : '' }}">
                         <a href="{{ route('inholiday') }}" class="nk-menu-link">

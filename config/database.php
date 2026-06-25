@@ -113,18 +113,18 @@ return [
             // 'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
         ],
 
-        'oracle' => [
-            'driver' => 'oracle',
-            'tns' => env('DB_TNS', ''),
-            'host' => env('DB_HOST', '192.168.32.202'),
-            'port' => env('DB_PORT', '1551'),
-            'database' => env('DB_DATABASE', 'FREEPDB1'),
-            'service_name' => env('DB_SERVICE_NAME', 'FREEPDB1'),
-            'username' => env('DB_USERNAME', 'CW_VINDA'),
-            'password' => env('DB_PASSWORD', 'CWV1ND4'),
-            'charset' => 'AL32UTF8',
-            'prefix' => '',
-        ],
+        // 'oracle' => [
+        //     'driver' => 'oracle',
+        //     'tns' => env('DB_TNS', ''),
+        //     'host' => env('DB_HOST', '192.168.32.202'),
+        //     'port' => env('DB_PORT', '1551'),
+        //     'database' => env('DB_DATABASE', 'FREEPDB1'),
+        //     'service_name' => env('DB_SERVICE_NAME', 'FREEPDB1'),
+        //     'username' => env('DB_USERNAME', 'CW_VINDA'),
+        //     'password' => env('DB_PASSWORD', 'CWV1ND4'),
+        //     'charset' => 'AL32UTF8',
+        //     'prefix' => '',
+        // ],
 
     ],
 

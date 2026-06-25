@@ -1,13 +1,3 @@
-<style>
-    .modal-overlay {
-        position: absolute;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 1020;
-        border-radius: 6px;
-    }
-</style>
-
 <div class="nk-content">
     <div class="container-fluid">
         <div class="nk-content-inner">
@@ -17,10 +7,11 @@
                         <div class="nk-block-head">
                             <div class="nk-block-head-content d-flex justify-content-between align-items-center">
                                 <h4 class="nk-block-title mb-0">Project Management</h4>
-                                <button class="btn btn-primary" data-bs-toggle="modal"
-                                    data-bs-target="#addProjectModal">
-                                    <em class="icon ni ni-plus"></em> Add Project
-                                </button>
+                                @if(session('role_name') == 'PM')
+<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProjectModal">
+    <em class="icon ni ni-plus"></em> Add Project
+</button>
+@endif
                             </div>
                         </div>
 
@@ -38,7 +29,6 @@
                                             <th>Start Date</th>
                                             <th>Days</th>
                                             <th>End Date</th>
-                                            <!-- <th>Complexity</th> -->
                                             <th>Priority</th>
                                             <th>Status</th>
                                             <th>#</th>
@@ -47,16 +37,15 @@
                                     <tbody>
                                         <?php foreach ($projects as $p) { ?>
                                         <tr>
-                                            <td><?= $p->project_name ?></td>
-                                            <td><?= $p->responsible ?></td>
-                                            <td><?= $p->client ?></td>
-                                            <td>Rp <?= number_format($p->budget, 0, ',', '.') ?></td>
-                                            <td><?= date('Y-m-d', strtotime($p->start_date)) ?></td>
-                                            <td><?= $p->days ?></td>
-                                            <td><?= date('Y-m-d', strtotime($p->end_date)) ?></td>
-                                            <!-- <td><?= $p->complexity ?></td> -->
-                                            <td><?= $p->priority ?></td>
-                                            <td><?= $p->status ?></td>
+                                            <td><?= $p->PROJECT_NAME ?></td>
+                                            <td><?= $p->RESPONSIBLE ?></td>
+                                            <td><?= $p->CLIENT ?></td>
+                                            <td>Rp <?= number_format($p->BUDGET, 0, ',', '.') ?></td>
+                                            <td><?= date('Y-m-d', strtotime($p->START_DATE)) ?></td>
+                                            <td><?= $p->DAYS ?></td>
+                                            <td><?= date('Y-m-d', strtotime($p->END_DATE)) ?></td>
+                                            <td><?= $p->PRIORITY ?></td>
+                                            <td><?= $p->STATUS ?></td>
                                             <td>
                                                 <div class="drodown">
                                                     <a href="#" class="dropdown-toggle btn btn-icon btn-trigger"
@@ -65,19 +54,15 @@
                                                     </a>
                                                     <div class="dropdown-menu dropdown-menu-end">
                                                         <ul class="link-list-opt no-bdr">
-                                                            <li><a href="{{ route('projectdash', ['id' => $p->id]) }}">
+                                                            <li><a href="{{ route('projectdash', ['id' => $p->ID]) }}">
                                                                     <em class="icon ni ni-eye"></em><span>Project
                                                                         Dashboard</span></a></li>
-                                                            <li><a href="{{ route('task', ['id' => $p->id]) }}">
+                                                            <li><a href="{{ route('task', ['id' => $p->ID]) }}">
                                                                     <em class="icon ni ni-eye"></em><span>Task
                                                                         Management</span></a></li>
-                                                            <li><a href="{{ route('trial', ['id' => $p->id]) }}">
+                                                            <li><a href="{{ route('trial', ['id' => $p->ID]) }}">
                                                                     <em class="icon ni ni-eye"></em><span>Trial
                                                                         Record</span></a></li>
-                                                            <!-- <li><a href="{{ route('problem', ['id' => $p->id]) }}">
-                                                                    <em class="icon ni ni-eye"></em><span>Problem
-                                                                        History</span></a></li> -->
-
                                                         </ul>
                                                     </div>
                                                 </div>
@@ -89,7 +74,7 @@
                             </div>
                         </div>
                     </div>
-                </div><!-- .components-preview -->
+                </div>
             </div>
         </div>
     </div>
@@ -120,7 +105,7 @@
                             <select class="form-control" name="responsible" required>
                                 <option value="" disabled selected>-- Select Responsible --</option>
                                 <?php foreach ($responsible as $a) { ?>
-                                <option value="<?= $a->npk ?>"><?= $a->emp_name ?></option>
+                                <option value="<?= $a->NPK ?>"><?= $a->EMP_NAME ?></option>
                                 <?php } ?>
                             </select>
                         </div>
@@ -129,24 +114,19 @@
                             <label class="form-label">Client</label>
                             <select class="form-control" name="client" required>
                                 <option value="" disabled selected>-- Select Client --</option>
-                                <!-- <?php foreach ($client as $b) { ?>
-                                <option value="<?= $b->client_ora ?>"><?= $b->name ?></option>
-                                <?php } ?> -->
-
                                 <?php foreach ($client as $b) { ?>
-                                <?php    if ($b->client_ora) { ?>
-                                <option value="<?= $b->client_ora ?>"><?= $b->name ?></option>
-                                <?php    } ?>
+                                <?php if ($b->CLIENT_ORA) { ?>
+                                <option value="<?= $b->CLIENT_ORA ?>"><?= $b->NAME ?></option>
                                 <?php } ?>
-
+                                <?php } ?>
                             </select>
                         </div>
-
 
                         <div class="col-md-6">
                             <label class="form-label">Budget</label>
                             <input type="number" class="form-control" name="budget" required>
                         </div>
+
                         <div class="col-md-6">
                             <label class="form-label">Start Date</label>
                             <input type="date" class="form-control" name="start_date" required>
@@ -162,22 +142,12 @@
                             <input type="number" class="form-control" name="days" readonly>
                         </div>
 
-                        <!-- <div class="col-md-6">
-                            <label class="form-label">Complexity</label>
-                            <select class="form-control" name="complexity" required>
-                                <option value="" disabled selected>-- Select Complexity --</option>
-                                <?php foreach ($lov_complexity as $c) { ?>
-                                <option value="<?= $c->lov_id ?>"><?= $c->description ?></option>
-                                <?php } ?>
-                            </select>
-                        </div> -->
-
                         <div class="col-md-6">
                             <label class="form-label">Priority</label>
                             <select class="form-control" name="priority" required>
                                 <option value="" disabled selected>-- Select Priority --</option>
                                 <?php foreach ($lov_priority as $p) { ?>
-                                <option value="<?= $p->lov_id ?>"><?= $p->description ?></option>
+                                <option value="<?= $p->LOV_ID ?>"><?= $p->DESCRIPTION ?></option>
                                 <?php } ?>
                             </select>
                         </div>
@@ -187,7 +157,7 @@
                             <select class="form-control" name="status" required>
                                 <option value="" disabled selected>-- Select Status --</option>
                                 <?php foreach ($lov_status as $s) { ?>
-                                <option value="<?= $s->lov_id ?>"><?= $s->description ?></option>
+                                <option value="<?= $s->LOV_ID ?>"><?= $s->DESCRIPTION ?></option>
                                 <?php } ?>
                             </select>
                         </div>
@@ -195,24 +165,21 @@
                         <div class="col-md-12">
                             <label class="form-label">Flow Process</label>
                             <div class="row g-2">
-
                                 <?php foreach ($lov_process as $proc) { ?>
                                 <div class="col-md-4">
                                     <div class="custom-control custom-checkbox">
                                         <input type="checkbox" class="custom-control-input process-checkbox"
-                                            id="proc_<?= $proc->lov_id ?>" data-lov-id="<?= $proc->lov_id ?>"
+                                            id="proc_<?= $proc->LOV_ID ?>" 
+                                            data-lov-id="<?= $proc->LOV_ID ?>"
                                             data-init="process">
-
-                                        <label class="custom-control-label" for="proc_<?= $proc->lov_id ?>">
-                                            <?= $proc->description ?>
+                                        <label class="custom-control-label" for="proc_<?= $proc->LOV_ID ?>">
+                                            <?= $proc->DESCRIPTION ?>
                                         </label>
                                     </div>
                                 </div>
                                 <?php } ?>
-
                             </div>
                         </div>
-
 
                     </div>
                 </div>
@@ -244,7 +211,7 @@
                         <select class="form-control" name="status" id="editStatusSelect" required>
                             <option value="" disabled selected>-- Select Status --</option>
                             <?php foreach ($lov_status as $s) { ?>
-                            <option value="<?= $s->description ?>"><?= $s->description ?></option>
+                            <option value="<?= $s->DESCRIPTION ?>"><?= $s->DESCRIPTION ?></option>
                             <?php } ?>
                         </select>
                     </div>
@@ -261,7 +228,6 @@
 
 <!-- Modal Input Standard Process Value -->
 <div class="modal fade" id="stdValueModal" tabindex="-1" data-bs-backdrop="false">
-
     <div class="modal-dialog">
         <div class="modal-content">
             <form id="formStdValue">
@@ -300,27 +266,12 @@
     </div>
 </div>
 
-
 <script>
     const holidayList = @json($holiday);
     document.addEventListener('DOMContentLoaded', function () {
-        // === AUTO HITUNG END DATE ===
         const startInput = document.querySelector('input[name="start_date"]');
         const daysInput = document.querySelector('input[name="days"]');
         const endInput = document.querySelector('input[name="end_date"]');
-
-        // function update_end_date() {
-        //     const startDate = new Date(startInput.value);
-        //     const days = parseInt(daysInput.value);
-
-        //     if (!isNaN(startDate) && !isNaN(days)) {
-        //         const endDate = new Date(startDate);
-        //         endDate.setDate(startDate.getDate() + days);
-        //         endInput.value = endDate.toISOString().split('T')[0];
-        //     } else {
-        //         endInput.value = '';
-        //     }
-        // }
 
         function update_days() {
             const startDate = new Date(startInput.value);
@@ -335,7 +286,6 @@
             let current = new Date(startDate);
 
             while (current <= endDate) {
-
                 const day = current.getDay();
                 const formatted = current.toISOString().split('T')[0];
 
@@ -352,10 +302,8 @@
             daysInput.value = count;
         }
 
-
         startInput.addEventListener('change', update_days);
         endInput.addEventListener('change', update_days);
-
 
         const form = document.getElementById('formProject');
         form.addEventListener('submit', function (e) {
@@ -388,11 +336,12 @@
                 });
         });
     });
+
     document.addEventListener('DOMContentLoaded', function () {
+        let activeProcessCheckbox = null;
 
         document.querySelectorAll('.process-checkbox').forEach(cb => {
             cb.addEventListener('change', function () {
-
                 fetch("{{ route('zzz_save_process_temp') }}", {
                     method: "POST",
                     headers: {
@@ -418,23 +367,15 @@
                             document.getElementById('std_process_id').value = this.dataset.lovId;
                             new bootstrap.Modal(document.getElementById('stdValueModal')).show();
                         }
-
                     });
             });
-
         });
-
-    });
-
-    document.addEventListener('DOMContentLoaded', function () {
 
         const modal = document.getElementById('addProjectModal');
 
         modal.addEventListener('hidden.bs.modal', function () {
-
             document.querySelectorAll('.process-checkbox').forEach(cb => {
                 if (cb.checked) {
-
                     fetch("{{ route('zzz_save_process_temp') }}", {
                         method: "POST",
                         headers: {
@@ -447,104 +388,92 @@
                             checked: false   
                         })
                     });
-
                     cb.checked = false; 
                 }
             });
-
         });
 
-    });
+        document.getElementById('formStdValue').addEventListener('submit', function (e) {
+            e.preventDefault();
 
-    document.getElementById('formStdValue').addEventListener('submit', function (e) {
-        e.preventDefault();
+            let valid = true;
 
-        let valid = true;
+            document.querySelectorAll('.std-value').forEach(input => {
+                if (input.value === '') {
+                    valid = false;
+                    input.classList.add('is-invalid');
+                } else {
+                    input.classList.remove('is-invalid');
+                }
+            });
 
-        document.querySelectorAll('.std-value').forEach(input => {
-            if (input.value === '') {
-                valid = false;
-                input.classList.add('is-invalid');
-            } else {
-                input.classList.remove('is-invalid');
+            if (!valid) {
+                Swal.fire('Warning', 'All Standard Process Value must be filled!', 'warning');
+                return;
+            }
+
+            const processId = document.getElementById('std_process_id').value;
+
+            document.querySelectorAll('.std-value').forEach(input => {
+                fetch("{{ route('zzz_save_process_temp') }}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                    },
+                    body: JSON.stringify({
+                        process_id: processId,
+                        stdproc_id: input.dataset.stdproc,
+                        value: input.value,
+                        init: 'stdproc',
+                        checked: true
+                    })
+                });
+                input.value = '';
+            });
+
+            document.getElementById('std_process_id').value = '';
+            activeProcessCheckbox = null;
+
+            bootstrap.Modal.getInstance(document.getElementById('stdValueModal')).hide();
+        });
+
+        document.getElementById('stdValueModal').addEventListener('hidden.bs.modal', function () {
+            if (activeProcessCheckbox) {
+                fetch("{{ route('zzz_save_process_temp') }}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                    },
+                    body: JSON.stringify({
+                        lov_id: activeProcessCheckbox.dataset.lovId,
+                        init: 'process',
+                        checked: false
+                    })
+                });
+                activeProcessCheckbox.checked = false;
+                activeProcessCheckbox = null;
+                document.querySelectorAll('.std-value').forEach(i => i.value = '');
+                document.getElementById('std_process_id').value = '';
             }
         });
 
-        if (!valid) {
-            Swal.fire('Warning', 'All Standard Process Value must be filled!', 'warning');
-            return;
-        }
+        const stdModal = document.getElementById('stdValueModal');
+        const overlay = document.getElementById('addProjectOverlay');
 
-        const processId = document.getElementById('std_process_id').value;
-
-        document.querySelectorAll('.std-value').forEach(input => {
-            fetch("{{ route('zzz_save_process_temp') }}", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
-                },
-                body: JSON.stringify({
-                    process_id: processId,
-                    stdproc_id: input.dataset.stdproc,
-                    value: input.value,
-                    init: 'stdproc',
-                    checked: true
-                })
-            });
-
-            input.value = '';
+        stdModal.addEventListener('show.bs.modal', function () {
+            overlay.classList.remove('d-none');
         });
 
-        document.getElementById('std_process_id').value = '';
-        activeProcessCheckbox = null;
+        stdModal.addEventListener('hidden.bs.modal', function () {
+            overlay.classList.add('d-none');
+        });
 
-        bootstrap.Modal.getInstance(
-            document.getElementById('stdValueModal')
-        ).hide();
-    });
-
-    document.getElementById('stdValueModal').addEventListener('hidden.bs.modal', function () {
-
-        if (activeProcessCheckbox) {
-
-            fetch("{{ route('zzz_save_process_temp') }}", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
-                },
-                body: JSON.stringify({
-                    lov_id: activeProcessCheckbox.dataset.lovId,
-                    init: 'process',
-                    checked: false
-                })
+        document.querySelectorAll('.decimal-input').forEach(input => {
+            input.addEventListener('input', function () {
+                this.value = this.value.replace(',', '.');
             });
-
-            activeProcessCheckbox.checked = false;
-            activeProcessCheckbox = null;
-
-            document.querySelectorAll('.std-value').forEach(i => i.value = '');
-            document.getElementById('std_process_id').value = '';
-        }
-    });
-
-    const stdModal = document.getElementById('stdValueModal');
-    const overlay = document.getElementById('addProjectOverlay');
-
-    stdModal.addEventListener('show.bs.modal', function () {
-        overlay.classList.remove('d-none');
-    });
-
-    stdModal.addEventListener('hidden.bs.modal', function () {
-        overlay.classList.add('d-none');
-    });
-
-    document.querySelectorAll('.decimal-input').forEach(input => {
-        input.addEventListener('input', function () {
-            this.value = this.value.replace(',', '.');
         });
     });
-
-
 </script>

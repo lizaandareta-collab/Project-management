@@ -10,7 +10,8 @@ class Maio
     protected static function db()
     {
         if (!self::$db) {
-            self::$db = DB::connection('oracle');
+            self::$db = DB::connection('mysql');
+            self::$db->getDatabaseName(); 
         }
         return self::$db;
     }
@@ -19,42 +20,45 @@ class Maio
     {
         try {
             return self::db()
-                ->table('PROMAN.HOLIDAY')
+                ->table('HOLIDAY')
                 ->select('ID', 'DESCRIPTION', 'DATE', 'STATUS1', 'SYSDATE1')
-                ->orderByRaw('TO_NUMBER(ID) DESC')
+                ->orderByRaw('CAST(ID AS UNSIGNED) DESC')
                 ->get();
         } catch (\Exception $e) {
-            \Log::error('Error getHolidayTable: ' . $e->getMessage());
             return [];
         }
     }
 
-    public static function get_client_table()
-    {
-        try {
-            return self::db()
-                ->table('PROMAN.CLIENT')
-                ->select('ID', 'CLIENT_ORA', 'NAME', 'COMPANY', 'COUNTRY', 'STATUS1', 'SYSDATE1')
-                ->orderByRaw('TO_NUMBER(ID) DESC')
-                ->get();
-        } catch (\Exception $e) {
-            \Log::error('Error getHolidayTable: ' . $e->getMessage());
-            return [];
-        }
+public static function get_client_table()
+{
+    try {
+        return self::db()
+            ->table('CLIENT')
+            ->select(
+                'ID',
+                'CLIENT_ORA',
+                'NAME',
+                'COMPANY',
+                'ADDRESS',
+                'COUNTRY',
+                'STATUS1',
+                'SYSDATE1'
+            )
+            ->orderByRaw('CAST(ID AS UNSIGNED) DESC')
+            ->get();
+    } catch (\Exception $e) {
+        return [];
     }
-
-
-
-
+}
     public static function get_projects()
     {
         try {
-            return self::db()->table('PROMAN.PROJECT as p')
-                ->leftJoin('PROMAN.RESOURCE_MGMT as r', 'p.RESPONSIBLE', '=', 'r.NPK')
-                ->leftJoin('PROMAN.CLIENT as c', 'p.CLIENT', '=', 'c.CLIENT_ORA')
-                ->leftJoin('PROMAN.LOV as lc', 'p.COMPLEXITY', '=', 'lc.LOV_ID')
-                ->leftJoin('PROMAN.LOV as lp', 'p.PRIORITY', '=', 'lp.LOV_ID')
-                ->leftJoin('PROMAN.LOV as ls', 'p.STATUS', '=', 'ls.LOV_ID')
+            return self::db()->table('PROJECT as p')
+                ->leftJoin('RESOURCE_MGMT as r', 'p.RESPONSIBLE', '=', 'r.NPK')
+                ->leftJoin('CLIENT as c', 'p.CLIENT', '=', 'c.CLIENT_ORA')
+                ->leftJoin('LOV as lc', 'p.COMPLEXITY', '=', 'lc.LOV_ID')
+                ->leftJoin('LOV as lp', 'p.PRIORITY', '=', 'lp.LOV_ID')
+                ->leftJoin('LOV as ls', 'p.STATUS', '=', 'ls.LOV_ID')
                 ->select(
                     'p.ID',
                     'p.PROJECT_NAME',
@@ -78,7 +82,7 @@ class Maio
     public static function get_invoice_amount_by_project($projectId)
     {
         try {
-            return self::db()->table('PROMAN.INVOICE_MGMT')
+            return self::db()->table('INVOICE_MGMT')
                 ->where('PROJECT_ID', $projectId)
                 ->sum('AMOUNT');
         } catch (\Exception $e) {
@@ -88,20 +92,19 @@ class Maio
 
     public static function get_invoices_by_project($projectId)
     {
-        $db = DB::connection('oracle');
+        $db = DB::connection('mysql');
 
-        return $db->table('PROMAN.INVOICE_MGMT')
+        return $db->table('INVOICE_MGMT')
             ->select('ID', 'PROJECT_ID', 'CLIENT_ID', 'AMOUNT', 'REMARKS', 'DATE_CREATED')
             ->where('PROJECT_ID', $projectId)
             ->orderBy('DATE_CREATED', 'desc')
             ->get();
     }
 
-
     public static function get_project_by_id($id)
     {
         try {
-            return self::db()->table('PROMAN.PROJECT')
+            return self::db()->table('PROJECT')
                 ->where('ID', $id)
                 ->select('ID', 'PROJECT_NAME', 'BUDGET')
                 ->first();
@@ -110,29 +113,19 @@ class Maio
         }
     }
 
-
     public static function get_lov()
     {
         try {
-            return self::db()->table('PROMAN.LOV')->get();
+            return self::db()->table('LOV')->get();
         } catch (\Exception $e) {
             return [];
         }
     }
 
-    // public static function get_standard()
-    // {
-    //     try {
-    //         return self::db()->table('PROMAN.STANDARD')->get();
-    //     } catch (\Exception $e) {
-    //         return [];
-    //     }
-    // }
-
     public static function get_standard_by_project_process($project_id, $process_id)
     {
         return self::db()
-            ->table('PROMAN.STANDARD')
+            ->table('STANDARD')
             ->where('PROJECT_ID', $project_id)
             ->where('PROCESS_ID', $process_id)
             ->whereIn('STDPROC_ID', [77, 78, 79])
@@ -142,7 +135,7 @@ class Maio
     public static function has_standard_target($project_id, $process_id)
     {
         return self::db()
-            ->table('PROMAN.STANDARD')
+            ->table('STANDARD')
             ->where('PROJECT_ID', $project_id)
             ->where('PROCESS_ID', $process_id)
             ->whereIn('STDPROC_ID', [77, 78, 79])
@@ -150,12 +143,11 @@ class Maio
             ->exists();
     }
 
-
     public static function get_trial_rr($project_id, $process_id)
     {
         try {
             return self::db()
-                ->table('PROMAN.TRIAL_RR')
+                ->table('TRIAL_RR')
                 ->where('PROJECT_ID', $project_id)
                 ->where('PROCESS_ID', $process_id)
                 ->orderByDesc('ID') 
@@ -165,97 +157,70 @@ class Maio
         }
     }
 
-
     public static function get_last_trial_no($project_id, $process_id)
     {
         return self::db()
-            ->table('PROMAN.TRIAL_RR')
+            ->table('TRIAL_RR')
             ->where('PROJECT_ID', $project_id)
             ->where('PROCESS_ID', $process_id)
             ->orderByDesc('ID')
             ->value('TRIAL_NO');
     }
 
-public static function get_trial_rr_det($project_id, $process_id, $trial_id)
-{
-    return self::db()
-        ->table('PROMAN.TRIAL_RR_DET as d')
-        ->leftJoin('PROMAN.DEFECT as f', 'f.ID', '=', 'd.DEFECT_ID')
-        ->where('d.PROJECT_ID', $project_id)
-        ->where('d.PROCESS_ID', $process_id)
-        ->where('d.TRIAL_NO', $trial_id)
-        ->orderBy('d.ID') 
-        ->select([
-            'd.TRANS_TYPE',
-            'd.DEFECT_ID',
-            'f.DEFECT as DEFECT_NAME',
-            'd.NG',
-            'd.PERCT'
-        ])
-        ->get();
-}
-
-public static function get_trial_rr_det_all($project_id, $process_id, $trial_id)
-{
-    return self::db()
-        ->table('PROMAN.TRIAL_RR_DET as d')
-        ->leftJoin('PROMAN.DEFECT as f', 'f.ID', '=', 'd.DEFECT_ID')
-        ->where('d.PROJECT_ID', $project_id)
-        ->where('d.PROCESS_ID', $process_id)
-        ->where('d.TRIAL_NO', $trial_id)
-        ->orderBy('d.ID')
-        ->select([
-            'd.ID',
-            'd.TRANS_TYPE',
-            'd.DEFECT_ID',
-            'f.DEFECT as DEFECT_NAME',
-            'd.NG',
-            'd.PERCT',
-            'd.OK',
-            'd.ACTUAL'
-        ])
-        ->get();
-}
-
-
-    
-
-    //     public static function get_trial_rr_det_report($project_id, $process_id, $trial_no)
-//     {
-//         return self::db()
-//             ->table('PROMAN.TRIAL_RR_DET as D')
-//             ->leftJoin('PROMAN.DEFECT as DF', 'DF.ID', '=', 'D.DEFECT_ID')
-//             ->select(
-//                 'D.PROJECT_ID',
-//                 'D.PROCESS_ID',
-//                 'D.TRANS_TYPE',
-//                 'D.OK',
-//                 'D.NG',
-//                 'D.PERCT',
-//                 'DF.DEFECT as DEFECT_NAME'
-//             )
-//  ->where('D.PROJECT_ID', $project_id)
-// ->where('D.PROCESS_ID', $process_id)
-// ->where('D.TRIAL_NO', $trial_no)
-
-    //             ->get();
-//     }
-
-
-
-    public static function get_softcopy_by_ids(array $ids)
+    public static function get_trial_rr_det($project_id, $process_id, $trial_id)
     {
         return self::db()
-            ->table('PROMAN.SOFTCOPY')
-            ->whereIn('ID', $ids)
-            ->get()
-            ->keyBy('id');
+            ->table('TRIAL_RR_DET as d')
+            ->leftJoin('DEFECT as f', 'f.ID', '=', 'd.DEFECT_ID')
+            ->where('d.PROJECT_ID', $project_id)
+            ->where('d.PROCESS_ID', $process_id)
+            ->where('d.TRIAL_NO', $trial_id)
+            ->orderBy('d.ID') 
+            ->select([
+                'd.TRANS_TYPE',
+                'd.DEFECT_ID',
+                'f.DEFECT as DEFECT_NAME',
+                'd.NG',
+                'd.PERCT'
+            ])
+            ->get();
     }
+
+    public static function get_trial_rr_det_all($project_id, $process_id, $trial_id)
+    {
+        return self::db()
+            ->table('TRIAL_RR_DET as d')
+            ->leftJoin('DEFECT as f', 'f.ID', '=', 'd.DEFECT_ID')
+            ->where('d.PROJECT_ID', $project_id)
+            ->where('d.PROCESS_ID', $process_id)
+            ->where('d.TRIAL_NO', $trial_id)
+            ->orderBy('d.ID')
+            ->select([
+                'd.ID',
+                'd.TRANS_TYPE',
+                'd.DEFECT_ID',
+                'f.DEFECT as DEFECT_NAME',
+                'd.NG',
+                'd.PERCT',
+                'd.OK',
+                'd.ACTUAL'
+            ])
+            ->get();
+    }
+
+public static function get_softcopy_by_ids(array $ids)
+{
+    return self::db()
+        ->table('SOFTCOPY')
+        ->whereIn('ID', $ids)
+        ->get()
+        ->keyBy('ID');
+}
 
     public static function get_client()
     {
         try {
-            return self::db()->table('PROMAN.CLIENT')->get();
+            return self::db()->table('CLIENT')->get();
         } catch (\Exception $e) {
             return [];
         }
@@ -265,9 +230,9 @@ public static function get_trial_rr_det_all($project_id, $process_id, $trial_id)
     {
         try {
             return self::db()
-                ->table('PROMAN.RESOURCE_MGMT as rm')
-                ->leftJoin('PROMAN.LOV as lt', 'rm.EMP_TYPE', '=', 'lt.LOV_ID')
-                ->leftJoin('PROMAN.LOV as ld', 'rm.DEPARTMENT', '=', 'ld.LOV_ID')
+                ->table('RESOURCE_MGMT as rm')
+                ->leftJoin('LOV as lt', 'rm.EMP_TYPE', '=', 'lt.LOV_ID')
+                ->leftJoin('LOV as ld', 'rm.DEPARTMENT', '=', 'ld.LOV_ID')
                 ->select(
                     'rm.NPK',
                     'rm.EMP_NAME',
@@ -283,31 +248,25 @@ public static function get_trial_rr_det_all($project_id, $process_id, $trial_id)
         }
     }
 
-
-
     public static function get_holiday()
     {
         try {
-            $data = self::db()->table('PROMAN.HOLIDAY')->get();
+            $data = self::db()->table('HOLIDAY')->get();
 
-            // Ambil hanya kolom DATE dan ubah ke format Y-m-d
             $dates = $data->map(function ($row) {
                 return date('Y-m-d', strtotime($row->date));
             })->toArray();
 
             return $dates;
         } catch (\Exception $e) {
-            \Log::error('Error getHoliday: ' . $e->getMessage());
             return [];
         }
     }
 
-
-
     public static function get_activity_log($projectId, $taskId)
     {
         try {
-            return self::db()->table('PROMAN.ACTIVITY_LOG as al')
+            return self::db()->table('ACTIVITY_LOG as al')
                 ->select(
                     'al.SYSDATE1',
                     'al.INPUTBY',
@@ -324,18 +283,17 @@ public static function get_trial_rr_det_all($project_id, $process_id, $trial_id)
         }
     }
 
-
     public static function get_project_task($projectId)
     {
         try {
-            return self::db()->table('PROMAN.PROJECT_TASK as pt')
-                ->leftJoin('PROMAN.PROJECT as p', 'pt.PROJECT_ID', '=', 'p.ID')
-                ->leftJoin('PROMAN.RESOURCE_MGMT as r', 'pt.RESPONSIBLE', '=', 'r.NPK')
-                ->leftJoin('PROMAN.LOV as ls', 'pt.STATUS', '=', 'ls.LOV_ID')
-                ->leftJoin('PROMAN.LOV as lc', 'pt.COMPLEXITY', '=', 'lc.LOV_ID')
-                ->leftJoin('PROMAN.LOV as lp', 'pt.PRIORITY', '=', 'lp.LOV_ID')
-                ->leftJoin('PROMAN.LOV as lm', 'pt.IS_MILESTONE', '=', 'lm.LOV_ID')
-                ->leftJoin('PROMAN.LOV as la', 'pt.ACTUAL_PROGRESS', '=', 'la.LOV_ID')
+            return self::db()->table('PROJECT_TASK as pt')
+                ->leftJoin('PROJECT as p', 'pt.PROJECT_ID', '=', 'p.ID')
+                ->leftJoin('RESOURCE_MGMT as r', 'pt.RESPONSIBLE', '=', 'r.NPK')
+                ->leftJoin('LOV as ls', 'pt.STATUS', '=', 'ls.LOV_ID')
+                ->leftJoin('LOV as lc', 'pt.COMPLEXITY', '=', 'lc.LOV_ID')
+                ->leftJoin('LOV as lp', 'pt.PRIORITY', '=', 'lp.LOV_ID')
+                ->leftJoin('LOV as lm', 'pt.IS_MILESTONE', '=', 'lm.LOV_ID')
+                ->leftJoin('LOV as la', 'pt.ACTUAL_PROGRESS', '=', 'la.LOV_ID')
                 ->select(
                     'pt.ID',
                     'pt.TASK_ID',
@@ -373,6 +331,4 @@ public static function get_trial_rr_det_all($project_id, $process_id, $trial_id)
             return collect();
         }
     }
-
-
 }

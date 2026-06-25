@@ -22,6 +22,7 @@
                                             <th>Client_Ora</th>
                                             <th>Name</th>
                                             <th>Company</th>
+                                            <th>Address</th>
                                             <th>Country</th>
                                             <th>Action</th>
                                         </tr>
@@ -30,22 +31,29 @@
                                     <tbody>
                                         <?php foreach ($client as $c) { ?>
                                         <tr>
-                                            <td><?= $c->client_ora ?></td>
-                                            <td><?= $c->name ?></td>
-                                            <td><?= $c->company ?></td>
-                                            <td><?= $c->country ?></td>
+                                            <td><?= $c->CLIENT_ORA ?></td>
+                                            <td><?= $c->NAME ?></td>
+                                            <td><?= $c->COMPANY ?></td>
+                                            <td><?= $c->ADDRESS ?? '-' ?></td>
+                                            <td><?= $c->COUNTRY ?></td>
                                             <td>
                                                 <em class="icon ni ni-edit text-primary btn-edit"
                                                     style="font-size: 20px; cursor: pointer; margin-right: 8px;"
-                                                    data-id="<?= $c->id ?>" data-client_ora="<?= $c->client_ora ?>"
-                                                    data-name="<?= $c->name ?>" data-company="<?= $c->company ?>"
-                                                    data-country="<?= $c->country ?>" data-bs-toggle="tooltip"
+                                                    data-id="<?= $c->ID ?>"
+                                                    data-client_ora="<?= $c->CLIENT_ORA ?>"
+                                                    data-name="<?= $c->NAME ?>"
+                                                    data-company="<?= $c->COMPANY ?>"
+                                                    data-address="<?= $c->ADDRESS ?? '' ?>"
+                                                    data-country="<?= $c->COUNTRY ?>"
+                                                    data-bs-toggle="tooltip"
                                                     title="Edit Client">
                                                 </em>
 
                                                 <em class="icon ni ni-trash text-danger btn-delete"
-                                                    style="font-size: 20px; cursor: pointer;" data-id="<?= $c->id ?>"
-                                                    data-bs-toggle="tooltip" title="Delete Client">
+                                                    style="font-size: 20px; cursor: pointer;" 
+                                                    data-id="<?= $c->ID ?>"
+                                                    data-bs-toggle="tooltip" 
+                                                    title="Delete Client">
                                                 </em>
                                             </td>
 
@@ -82,14 +90,22 @@
                         <label class="form-label">Client ORA</label>
                         <input type="text" class="form-control" name="client_ora" required>
                     </div>
+
                     <div class="mb-3">
                         <label class="form-label">Name</label>
                         <input type="text" class="form-control" name="name" required>
                     </div>
+
                     <div class="mb-3">
                         <label class="form-label">Company</label>
                         <input type="text" class="form-control" name="company" required>
                     </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Address</label>
+                        <input type="text" class="form-control" name="address">
+                    </div>
+
                     <div class="mb-3">
                         <label class="form-label">Country</label>
                         <input type="text" class="form-control" name="country" required>
@@ -135,6 +151,11 @@
                     <div class="mb-3">
                         <label class="form-label">Company</label>
                         <input type="text" class="form-control" name="company" id="edit_company" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Address</label>
+                        <input type="text" class="form-control" name="address" id="edit_address">
                     </div>
 
                     <div class="mb-3">
@@ -198,11 +219,19 @@ function insert_client() {
             .then(res => res.json())
             .then(res => {
                 if (res.success) {
-                    Swal.fire("Success", res.message, "success")
-                        .then(() => location.reload());
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: res.message,
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => location.reload());
                 } else {
                     Swal.fire("Error", res.message, "error");
                 }
+            })
+            .catch(err => {
+                Swal.fire("Error", "Something went wrong!", "error");
             });
     });
 }
@@ -219,6 +248,7 @@ function edit_client() {
             document.getElementById("edit_client_ora").value = this.dataset.client_ora;
             document.getElementById("edit_name").value = this.dataset.name;
             document.getElementById("edit_company").value = this.dataset.company;
+            document.getElementById("edit_address").value = this.dataset.address || '';
             document.getElementById("edit_country").value = this.dataset.country;
 
             new bootstrap.Modal(document.getElementById("editClientModal")).show();
@@ -250,11 +280,19 @@ function update_client() {
             .then(res => res.json())
             .then(res => {
                 if (res.success) {
-                    Swal.fire("Updated!", res.message, "success")
-                        .then(() => location.reload());
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Updated',
+                        text: res.message,
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => location.reload());
                 } else {
                     Swal.fire("Error", res.message, "error");
                 }
+            })
+            .catch(err => {
+                Swal.fire("Error", "Something went wrong!", "error");
             });
 
     });
@@ -293,13 +331,20 @@ function delete_client() {
                         .then(res => res.json())
                         .then(res => {
                             if (res.success) {
-                                Swal.fire("Deleted!", res.message, "success")
-                                    .then(() => location.reload());
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Deleted!',
+                                    text: res.message,
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                }).then(() => location.reload());
                             } else {
                                 Swal.fire("Error", res.message, "error");
                             }
+                        })
+                        .catch(err => {
+                            Swal.fire("Error", "Something went wrong!", "error");
                         });
-
                 }
 
             });

@@ -29,22 +29,22 @@
                                     <tbody>
                                         <?php foreach ($holiday as $h) { ?>
                                         <tr>
-                                            <td><?= $h->description ?></td>
-                                            <td><?= date('Y-m-d', strtotime($h->date)) ?></td>
-
+                                            <td><?= $h->DESCRIPTION ?></td>
+                                            <td><?= date('Y-m-d', strtotime($h->DATE)) ?></td>
                                             <td>
                                                 <em class="icon ni ni-edit text-primary btn-edit"
-                                                    style="font-size: 20px; cursor: pointer;" data-id="<?= $h->id ?>"
-                                                    data-description="<?= $h->description ?>"
-                                                    data-date="<?= date('Y-m-d', strtotime($h->date)) ?>"
+                                                    style="font-size: 20px; cursor: pointer;" 
+                                                    data-id="<?= $h->ID ?>"
+                                                    data-description="<?= $h->DESCRIPTION ?>"
+                                                    data-date="<?= date('Y-m-d', strtotime($h->DATE)) ?>"
                                                     data-bs-toggle="tooltip" title="Edit Holiday">
                                                 </em>
                                                 <em class="icon ni ni-trash text-danger btn-delete"
-                                                    style="font-size: 20px; cursor: pointer;" data-id="<?= $h->id ?>"
+                                                    style="font-size: 20px; cursor: pointer;" 
+                                                    data-id="<?= $h->ID ?>"
                                                     data-bs-toggle="tooltip" title="Delete Holiday">
                                                 </em>
                                             </td>
-
                                         </tr>
                                         <?php } ?>
                                     </tbody>
@@ -61,6 +61,7 @@
     </div>
 </div>
 
+<!-- Modal Add Holiday -->
 <div class="modal fade" id="addHolidayModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -97,6 +98,7 @@
     </div>
 </div>
 
+<!-- Modal Edit Holiday -->
 <div class="modal fade" id="editHolidayModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -137,7 +139,6 @@
         </div>
     </div>
 </div>
-
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
@@ -190,6 +191,9 @@
                     } else {
                         Swal.fire("Error", res.message, "error");
                     }
+                })
+                .catch(err => {
+                    Swal.fire("Error", "Something went wrong!", "error");
                 });
         });
 
@@ -247,6 +251,9 @@
                     } else {
                         Swal.fire("Error", res.message, "error");
                     }
+                })
+                .catch(err => {
+                    Swal.fire("Error", "Something went wrong!", "error");
                 });
         });
 
@@ -289,6 +296,9 @@
                                 } else {
                                     Swal.fire("Error", res.message, "error");
                                 }
+                            })
+                            .catch(err => {
+                                Swal.fire("Error", "Something went wrong!", "error");
                             });
                     }
 

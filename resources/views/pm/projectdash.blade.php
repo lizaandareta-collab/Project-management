@@ -188,15 +188,6 @@
     }
 
     /* PLAN HOURS vs HOURS SPENT - IMPROVED VISUALIZATION */
-    /* .hours-visualization-container {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-end;
-        height: 140px;
-        margin-top: 15px;
-        padding: 0 10px;
-    } */
-
     .hours-visualization-container {
         display: flex;
         justify-content: space-between;
@@ -205,7 +196,6 @@
         margin-top: auto;
         padding: 0 10px;
     }
-
 
     .hours-column {
         display: flex;
@@ -501,13 +491,6 @@
         background: #f8f9fa;
         border-radius: 8px;
         border: 1px solid #e9ecef;
-    }
-
-    .legend-item {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 12px;
     }
 
     /* Task Counter */
@@ -1023,52 +1006,13 @@
             height: 350px;
         }
     }
-
-    /* Select Process Area */
-    .process-wrapper {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-    }
-
-    /* Default button */
-    .btn-process {
-        border-radius: 20px;
-        padding: 6px 16px;
-        font-size: 13px;
-        font-weight: 500;
-        white-space: nowrap;
-        transition: background-color .2s ease, color .2s ease, border-color .2s ease;
-    }
-
-    /* Hover = hijau gelap */
-    .btn-process:hover {
-        background-color: #0fac81;
-        border-color: #0fac81;
-        color: #fff !important;
-    }
-
-    /* Focus */
-    .btn-process:focus {
-        background-color: #0fac81;
-        border-color: #0fac81;
-        color: #fff !important;
-        box-shadow: none;
-    }
-
-    /* Active (yang diklik) */
-    .btn-process.btn-primary {
-        background-color: #0fac81;
-        border-color: #0fac81;
-        color: #fff !important;
-    }
 </style>
 
 <div class="nk-content">
     <div class="container-fluid">
         <div class="nk-content-inner">
             <div class="nk-content-body">
-                <h4 class="mb-4">Project Dashboard - {{ $project->project_name ?? 'Unknown Project' }}</h4>
+                <h4 class="mb-4">Project Dashboard - {{ $project->PROJECT_NAME ?? 'Unknown Project' }}</h4>
 
                 <!-- WRAPPER 4 CARD -->
                 <div class="card-row">
@@ -1108,11 +1052,6 @@
                         <div class="card-title">PROJECT MILESTONE</div>
                         <div id="container"></div>
                         <div class="progress-legend" style="margin-top: 10px;">
-                            <!-- <div class="legend-item">
-                                <span class="status-open-box"></span>
-                                <span>Click bars to view activities (Subactivities not counted)</span>
-                            </div> -->
-                            <!-- Legend di bawah chart -->
                             <div class="progress-legend">
                                 <div class="legend-item">
                                     <span class="legend-color" style="background-color: #1f77b4;"></span>
@@ -1230,7 +1169,7 @@
                                 @foreach($groupedTasks as $milestoneId => $milestoneData)
                                     @if($milestoneData['parent'])
                                         <option value="{{ $milestoneId }}">
-                                            {{ $milestoneData['parent']->milestone_task ?? 'Unnamed Milestone' }}
+                                            {{ $milestoneData['parent']->MILESTONE_TASK ?? 'Unnamed Milestone' }}
                                         </option>
                                     @endif
                                 @endforeach
@@ -1268,25 +1207,60 @@
                                     <!-- Level 1: Milestone Card -->
                                     @if($milestoneData['parent'])
                                         @php
-                                            $parentStatus = $milestoneData['parent']->status ?? 0;
-                                            $parentStatusClass = getStatusClass($parentStatus);
-                                            $parentStatusBullet = getStatusBulletClass($parentStatus);
-                                            $parentStatusText = getStatusText($parentStatus);
-                                            $parentCategoryClass = getCategoryClass($milestoneData['parent']->is_milestone ?? '');
+                                            $parentStatus = $milestoneData['parent']->STATUS ?? 0;
+                                            $parentStatusClass = '';
+                                            $parentStatusBullet = '';
+                                            $parentStatusText = '';
+                                            $parentCategoryClass = '';
+                                            
+                                            if($parentStatus == 0) {
+                                                $parentStatusClass = 'status-nostatus';
+                                                $parentStatusBullet = 'status-nostatus-bullet';
+                                                $parentStatusText = 'No Status';
+                                            } elseif($parentStatus == 1) {
+                                                $parentStatusClass = 'status-open';
+                                                $parentStatusBullet = 'status-open-bullet';
+                                                $parentStatusText = 'Open';
+                                            } elseif($parentStatus == 2) {
+                                                $parentStatusClass = 'status-inprogress';
+                                                $parentStatusBullet = 'status-inprogress-bullet';
+                                                $parentStatusText = 'In Progress';
+                                            } elseif($parentStatus == 3) {
+                                                $parentStatusClass = 'status-completed';
+                                                $parentStatusBullet = 'status-completed-bullet';
+                                                $parentStatusText = 'Completed';
+                                            } elseif($parentStatus == 4) {
+                                                $parentStatusClass = 'status-onhold';
+                                                $parentStatusBullet = 'status-onhold-bullet';
+                                                $parentStatusText = 'On Hold';
+                                            } elseif($parentStatus == 5) {
+                                                $parentStatusClass = 'status-cancelled';
+                                                $parentStatusBullet = 'status-cancelled-bullet';
+                                                $parentStatusText = 'Cancelled';
+                                            }
+                                            
+                                            $milestoneCategory = $milestoneData['parent']->IS_MILESTONE ?? '';
+                                            if($milestoneCategory == '20') {
+                                                $parentCategoryClass = 'category-milestone';
+                                            } elseif($milestoneCategory == '21') {
+                                                $parentCategoryClass = 'category-deliverable';
+                                            } else {
+                                                $parentCategoryClass = 'category-task';
+                                            }
                                         @endphp
                                         <div class="task-milestone-card {{ $parentStatusClass }}">
                                             <div class="milestone-header">
                                                 <div class="milestone-title">
                                                     <span class="status-bullet {{ $parentStatusBullet }}"></span>
                                                     <strong
-                                                        class="{{ $parentCategoryClass }}">{{ $milestoneData['parent']->milestone_task ?? 'Unnamed Milestone' }}</strong>
+                                                        class="{{ $parentCategoryClass }}">{{ $milestoneData['parent']->MILESTONE_TASK ?? 'Unnamed Milestone' }}</strong>
                                                     <span class="milestone-badge">{{ $parentStatusText }}</span>
                                                 </div>
                                                 <div class="milestone-meta">
-                                                    @if($milestoneData['parent']->responsible_name)
+                                                    @if($milestoneData['parent']->RESPONSIBLE_NAME)
                                                         <span class="meta-item">
                                                             <i class="icon ni ni-user"></i>
-                                                            {{ $milestoneData['parent']->responsible_name }}
+                                                            {{ $milestoneData['parent']->RESPONSIBLE_NAME }}
                                                         </span>
                                                     @endif
                                                 </div>
@@ -1301,11 +1275,46 @@
                                                 <!-- Level 2: Activity Card -->
                                                 @if($activityData['activity'])
                                                     @php
-                                                        $activityStatus = $activityData['activity']->status ?? 0;
-                                                        $activityStatusClass = getStatusClass($activityStatus);
-                                                        $activityStatusBullet = getStatusBulletClass($activityStatus);
-                                                        $activityStatusText = getStatusText($activityStatus);
-                                                        $activityCategoryClass = getCategoryClass($activityData['activity']->is_milestone ?? '');
+                                                        $activityStatus = $activityData['activity']->STATUS ?? 0;
+                                                        $activityStatusClass = '';
+                                                        $activityStatusBullet = '';
+                                                        $activityStatusText = '';
+                                                        $activityCategoryClass = '';
+                                                        
+                                                        if($activityStatus == 0) {
+                                                            $activityStatusClass = 'status-nostatus';
+                                                            $activityStatusBullet = 'status-nostatus-bullet';
+                                                            $activityStatusText = 'No Status';
+                                                        } elseif($activityStatus == 1) {
+                                                            $activityStatusClass = 'status-open';
+                                                            $activityStatusBullet = 'status-open-bullet';
+                                                            $activityStatusText = 'Open';
+                                                        } elseif($activityStatus == 2) {
+                                                            $activityStatusClass = 'status-inprogress';
+                                                            $activityStatusBullet = 'status-inprogress-bullet';
+                                                            $activityStatusText = 'In Progress';
+                                                        } elseif($activityStatus == 3) {
+                                                            $activityStatusClass = 'status-completed';
+                                                            $activityStatusBullet = 'status-completed-bullet';
+                                                            $activityStatusText = 'Completed';
+                                                        } elseif($activityStatus == 4) {
+                                                            $activityStatusClass = 'status-onhold';
+                                                            $activityStatusBullet = 'status-onhold-bullet';
+                                                            $activityStatusText = 'On Hold';
+                                                        } elseif($activityStatus == 5) {
+                                                            $activityStatusClass = 'status-cancelled';
+                                                            $activityStatusBullet = 'status-cancelled-bullet';
+                                                            $activityStatusText = 'Cancelled';
+                                                        }
+                                                        
+                                                        $activityCategory = $activityData['activity']->IS_MILESTONE ?? '';
+                                                        if($activityCategory == '20') {
+                                                            $activityCategoryClass = 'category-milestone';
+                                                        } elseif($activityCategory == '21') {
+                                                            $activityCategoryClass = 'category-deliverable';
+                                                        } else {
+                                                            $activityCategoryClass = 'category-task';
+                                                        }
                                                     @endphp
                                                     <div class="task-activity-card {{ $activityStatusClass }}"
                                                         data-status="{{ $activityStatus }}">
@@ -1314,19 +1323,19 @@
                                                             <div class="activity-content">
                                                                 <div class="activity-title">
                                                                     <span
-                                                                        class="{{ $activityCategoryClass }}">{{ $activityData['activity']->milestone_task ?? 'Unnamed Activity' }}</span>
+                                                                        class="{{ $activityCategoryClass }}">{{ $activityData['activity']->MILESTONE_TASK ?? 'Unnamed Activity' }}</span>
                                                                 </div>
                                                                 <div class="activity-meta">
-                                                                    @if($activityData['activity']->plan_start)
+                                                                    @if($activityData['activity']->PLAN_START)
                                                                         <span class="meta-item">
                                                                             <i class="icon ni ni-calendar"></i>
-                                                                            {{ date('d M', strtotime($activityData['activity']->plan_start)) }}
+                                                                            {{ date('d M', strtotime($activityData['activity']->PLAN_START)) }}
                                                                         </span>
                                                                     @endif
-                                                                    @if($activityData['activity']->responsible_name)
+                                                                    @if($activityData['activity']->RESPONSIBLE_NAME)
                                                                         <span class="meta-item">
                                                                             <i class="icon ni ni-user"></i>
-                                                                            {{ $activityData['activity']->responsible_name }}
+                                                                            {{ $activityData['activity']->RESPONSIBLE_NAME }}
                                                                         </span>
                                                                     @endif
                                                                 </div>
@@ -1341,11 +1350,46 @@
                                                     <div class="subactivities-container">
                                                         @foreach($activityData['subactivities'] as $subactivity)
                                                             @php
-                                                                $subStatus = $subactivity->status ?? 0;
-                                                                $subStatusClass = getStatusClass($subStatus);
-                                                                $subStatusBullet = getStatusBulletClass($subStatus);
-                                                                $subStatusText = getStatusText($subStatus);
-                                                                $subCategoryClass = getCategoryClass($subactivity->is_milestone ?? '');
+                                                                $subStatus = $subactivity->STATUS ?? 0;
+                                                                $subStatusClass = '';
+                                                                $subStatusBullet = '';
+                                                                $subStatusText = '';
+                                                                $subCategoryClass = '';
+                                                                
+                                                                if($subStatus == 0) {
+                                                                    $subStatusClass = 'status-nostatus';
+                                                                    $subStatusBullet = 'status-nostatus-bullet';
+                                                                    $subStatusText = 'No Status';
+                                                                } elseif($subStatus == 1) {
+                                                                    $subStatusClass = 'status-open';
+                                                                    $subStatusBullet = 'status-open-bullet';
+                                                                    $subStatusText = 'Open';
+                                                                } elseif($subStatus == 2) {
+                                                                    $subStatusClass = 'status-inprogress';
+                                                                    $subStatusBullet = 'status-inprogress-bullet';
+                                                                    $subStatusText = 'In Progress';
+                                                                } elseif($subStatus == 3) {
+                                                                    $subStatusClass = 'status-completed';
+                                                                    $subStatusBullet = 'status-completed-bullet';
+                                                                    $subStatusText = 'Completed';
+                                                                } elseif($subStatus == 4) {
+                                                                    $subStatusClass = 'status-onhold';
+                                                                    $subStatusBullet = 'status-onhold-bullet';
+                                                                    $subStatusText = 'On Hold';
+                                                                } elseif($subStatus == 5) {
+                                                                    $subStatusClass = 'status-cancelled';
+                                                                    $subStatusBullet = 'status-cancelled-bullet';
+                                                                    $subStatusText = 'Cancelled';
+                                                                }
+                                                                
+                                                                $subCategory = $subactivity->IS_MILESTONE ?? '';
+                                                                if($subCategory == '20') {
+                                                                    $subCategoryClass = 'category-milestone';
+                                                                } elseif($subCategory == '21') {
+                                                                    $subCategoryClass = 'category-deliverable';
+                                                                } else {
+                                                                    $subCategoryClass = 'category-task';
+                                                                }
                                                             @endphp
                                                             <div class="task-subactivity-card {{ $subStatusClass }}"
                                                                 data-status="{{ $subStatus }}">
@@ -1354,19 +1398,19 @@
                                                                     <div class="subactivity-content">
                                                                         <div class="subactivity-title">
                                                                             <span
-                                                                                class="{{ $subCategoryClass }}">{{ $subactivity->milestone_task ?? 'Unnamed Sub-activity' }}</span>
+                                                                                class="{{ $subCategoryClass }}">{{ $subactivity->MILESTONE_TASK ?? 'Unnamed Sub-activity' }}</span>
                                                                         </div>
                                                                         <div class="subactivity-meta">
-                                                                            @if($subactivity->plan_start)
+                                                                            @if($subactivity->PLAN_START)
                                                                                 <span class="meta-item">
                                                                                     <i class="icon ni ni-calendar"></i>
-                                                                                    {{ date('d M', strtotime($subactivity->plan_start)) }}
+                                                                                    {{ date('d M', strtotime($subactivity->PLAN_START)) }}
                                                                                 </span>
                                                                             @endif
-                                                                            @if($subactivity->responsible_name)
+                                                                            @if($subactivity->RESPONSIBLE_NAME)
                                                                                 <span class="meta-item">
                                                                                     <i class="icon ni ni-user"></i>
-                                                                                    {{ $subactivity->responsible_name }}
+                                                                                    {{ $subactivity->RESPONSIBLE_NAME }}
                                                                                 </span>
                                                                             @endif
                                                                         </div>
@@ -1404,8 +1448,8 @@
                                 <div class="process-wrapper">
                                     @foreach($process as $p)
                                         <button type="button" class="btn btn-outline-primary btn-process"
-                                            data-process-id="{{ $p->lov_id }}" data-process-name="{{ $p->description }}">
-                                            {{ $p->description }}
+                                            data-process-id="{{ $p->LOV_ID }}" data-process-name="{{ $p->DESCRIPTION }}">
+                                            {{ $p->DESCRIPTION }}
                                         </button>
                                     @endforeach
                                 </div>
@@ -1465,16 +1509,20 @@
                 <div class="modal-body">
                     <div class="row gy-3">
                         <input type="hidden" name="project_id" value="{{ $projectId }}">
+
+                        @if(session('role_name') == 'PM')
                         <div class="col-md-6">
                             <label class="form-label">Amount <span class="text-danger">*</span></label>
-                            <input type="number" class="form-control" name="amount" placeholder="Enter amount..."
-                                required>
+                            <input type="number" class="form-control" name="amount" 
+                                   placeholder="Enter amount..." required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Description <span class="text-danger">*</span></label>
-                            <textarea class="form-control" name="remarks" rows="1" placeholder="Enter Description..."
-                                required></textarea>
+                            <textarea class="form-control" name="remarks" rows="1" 
+                                      placeholder="Enter Description..." required></textarea>
                         </div>
+                        @endif
+
                         <div class="col-md-12">
                             <hr>
                             <h6>Invoice List</h6>
@@ -1492,14 +1540,14 @@
                                         @forelse ($invoices as $inv)
                                             <tr>
                                                 <td>{{ $loop->iteration }}</td>
-                                                <td>Rp {{ number_format($inv->amount, 0, ',', '.') }}</td>
-                                                <td>{{ $inv->remarks ?: '-' }}</td>
-                                                <td>{{ $inv->date_created ? date('Y-m-d', strtotime($inv->date_created)) : '-' }}
-                                                </td>
+                                                <td>Rp {{ number_format($inv->AMOUNT, 0, ',', '.') }}</td>
+                                                <td>{{ $inv->REMARKS ?: '-' }}</td>
+                                                <td>{{ $inv->DATE_CREATED ? date('Y-m-d', strtotime($inv->DATE_CREATED)) : '-' }}</td>
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="4" class="text-center text-muted">There is no invoice data yet.
+                                                <td colspan="4" class="text-center text-muted">
+                                                    There is no invoice data yet.
                                                 </td>
                                             </tr>
                                         @endforelse
@@ -1511,7 +1559,9 @@
                 </div>
                 <div class="modal-footer d-flex">
                     <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                    @if(session('role_name') == 'PM')
                     <button type="submit" class="btn btn-primary ms-auto">Save</button>
+                    @endif
                 </div>
             </form>
         </div>
@@ -1519,813 +1569,817 @@
 </div>
 
 <script>
-    // Helper functions for status
-    @php
-        function getStatusClass($status)
-        {
-            $statusClasses = [
-                0 => 'status-nostatus',
-                1 => 'status-open',
-                2 => 'status-inprogress',
-                3 => 'status-completed',
-                4 => 'status-onhold',
-                5 => 'status-cancelled'
-            ];
-            return $statusClasses[$status] ?? 'status-nostatus';
-        }
+// ============================================
+// HELPER FUNCTIONS DALAM JAVASCRIPT
+// ============================================
+function getStatusClassJS(status) {
+    const statusClasses = {
+        0: 'status-nostatus',
+        1: 'status-open',
+        2: 'status-inprogress',
+        3: 'status-completed',
+        4: 'status-onhold',
+        5: 'status-cancelled'
+    };
+    return statusClasses[status] || 'status-nostatus';
+}
 
-        function getStatusBulletClass($status)
-        {
-            $bulletClasses = [
-                0 => 'status-nostatus-bullet',
-                1 => 'status-open-bullet',
-                2 => 'status-inprogress-bullet',
-                3 => 'status-completed-bullet',
-                4 => 'status-onhold-bullet',
-                5 => 'status-cancelled-bullet'
-            ];
-            return $bulletClasses[$status] ?? 'status-nostatus-bullet';
-        }
+function getStatusBulletClassJS(status) {
+    const bulletClasses = {
+        0: 'status-nostatus-bullet',
+        1: 'status-open-bullet',
+        2: 'status-inprogress-bullet',
+        3: 'status-completed-bullet',
+        4: 'status-onhold-bullet',
+        5: 'status-cancelled-bullet'
+    };
+    return bulletClasses[status] || 'status-nostatus-bullet';
+}
 
-        function getStatusText($status)
-        {
-            $statusTexts = [
-                0 => 'No Status',
-                1 => 'Open',
-                2 => 'In Progress',
-                3 => 'Completed',
-                4 => 'On Hold',
-                5 => 'Cancelled'
-            ];
-            return $statusTexts[$status] ?? 'No Status';
-        }
+function getStatusTextJS(status) {
+    const statusTexts = {
+        0: 'No Status',
+        1: 'Open',
+        2: 'In Progress',
+        3: 'Completed',
+        4: 'On Hold',
+        5: 'Cancelled'
+    };
+    return statusTexts[status] || 'No Status';
+}
 
-        function getCategoryClass($isMilestone)
-        {
-            $categoryClasses = [
-                '20' => 'category-milestone',
-                '21' => 'category-deliverable',
-                '70' => 'category-task'
-            ];
-            return $categoryClasses[$isMilestone] ?? 'category-task';
-        }
-    @endphp
+function getCategoryClassJS(isMilestone) {
+    const categoryClasses = {
+        '20': 'category-milestone',
+        '21': 'category-deliverable',
+        '70': 'category-task'
+    };
+    return categoryClasses[isMilestone] || 'category-task';
+}
 
-    function createOverallProgressChart(elementId, statusData, overallPercentage) {
-        const data = [
-            {
-                name: 'Open',
-                y: statusData.open || 0,
-                color: '#1f77b4',
-                borderColor: '#1a6499'
-            },
-            {
-                name: 'In Progress',
-                y: statusData.inProgress || 0,
-                color: '#00a591',
-                borderColor: '#00897b'
-            },
-            {
-                name: 'Completed',
-                y: statusData.completed || 0,
-                color: '#9acd32',
-                borderColor: '#7cb342'
-            },
-            {
-                name: 'On Hold',
-                y: statusData.onHold || 0,
-                color: '#f0ad4e',
-                borderColor: '#eea236'
-            },
-            {
-                name: 'Cancelled',
-                y: statusData.cancelled || 0,
-                color: '#d9534f',
-                borderColor: '#d43f3a'
+// ============================================
+// CREATE OVERALL PROGRESS CHART
+// ============================================
+function createOverallProgressChart(elementId, statusData, overallPercentage) {
+    const data = [
+        {
+            name: 'Open',
+            y: statusData.open || 0,
+            color: '#1f77b4',
+            borderColor: '#1a6499'
+        },
+        {
+            name: 'In Progress',
+            y: statusData.inProgress || 0,
+            color: '#00a591',
+            borderColor: '#00897b'
+        },
+        {
+            name: 'Completed',
+            y: statusData.completed || 0,
+            color: '#9acd32',
+            borderColor: '#7cb342'
+        },
+        {
+            name: 'On Hold',
+            y: statusData.onHold || 0,
+            color: '#f0ad4e',
+            borderColor: '#eea236'
+        },
+        {
+            name: 'Cancelled',
+            y: statusData.cancelled || 0,
+            color: '#d9534f',
+            borderColor: '#d43f3a'
+        }
+    ];
+
+    const chart = Highcharts.chart(elementId, {
+        chart: {
+            type: 'pie',
+            backgroundColor: 'transparent',
+            plotBackgroundColor: null,
+            plotBorderWidth: 0,
+            plotShadow: false,
+            height: 260,
+            margin: [0, 0, 0, 0],
+            spacing: [0, 0, 0, 0],
+            events: {
+                load: function () {
+                    const centerX = this.plotWidth / 2;
+                    const centerY = this.plotHeight / 2;
+
+                    this.renderer.label(
+                        `<div class="center-percentage">${overallPercentage}%</div>
+                         <div class="center-text">OVERALL<br>PROGRESS</div>`,
+                        centerX - 40,
+                        centerY - 25
+                    )
+                        .css({
+                            textAlign: 'center',
+                            width: '80px',
+                            height: '50px',
+                            color: '#2c3e50'
+                        })
+                        .add();
+                }
             }
-        ];
-
-        const chart = Highcharts.chart(elementId, {
-            chart: {
-                type: 'pie',
-                backgroundColor: 'transparent',
-                plotBackgroundColor: null,
-                plotBorderWidth: 0,
-                plotShadow: false,
-                height: 260,
-                margin: [0, 0, 0, 0],
-                spacing: [0, 0, 0, 0],
-                events: {
-                    load: function () {
-                        const centerX = this.plotWidth / 2;
-                        const centerY = this.plotHeight / 2;
-
-                        this.renderer.label(
-                            `<div class="center-percentage">${overallPercentage}%</div>
-                             <div class="center-text">OVERALL<br>PROGRESS</div>`,
-                            centerX - 40,
-                            centerY - 25
-                        )
-                            .css({
-                                textAlign: 'center',
-                                width: '80px',
-                                height: '50px',
-                                color: '#2c3e50'
-                            })
-                            .add();
-                    }
-                }
+        },
+        title: {
+            text: null
+        },
+        tooltip: {
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            borderColor: '#dee2e6',
+            borderRadius: 6,
+            borderWidth: 1,
+            style: {
+                color: '#333333',
+                fontSize: '12px'
             },
-            title: {
-                text: null
-            },
-            tooltip: {
-                backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                borderColor: '#dee2e6',
-                borderRadius: 6,
-                borderWidth: 1,
-                style: {
-                    color: '#333333',
-                    fontSize: '12px'
-                },
-                headerFormat: '',
-                pointFormat: '<span style="color:{point.color};font-weight:bold">{point.name}</span>: <b>{point.y}</b> tasks<br>({point.percentage:.1f}%)',
-                shadow: true
-            },
-            credits: {
-                enabled: false
-            },
-            plotOptions: {
-                pie: {
-                    innerSize: '75%',
-                    allowPointSelect: true,
-                    cursor: 'pointer',
-                    dataLabels: {
-                        enabled: false
-                    },
-                    showInLegend: false,
-                    borderWidth: 0,
-                    states: {
-                        hover: {
-                            brightness: 0.1,
-                            halo: {
-                                size: 0
-                            }
-                        }
-                    }
-                }
-            },
-            series: [{
-                name: 'Tasks',
-                colorByPoint: true,
-                data: data,
-                size: '100%',
+            headerFormat: '',
+            pointFormat: '<span style="color:{point.color};font-weight:bold">{point.name}</span>: <b>{point.y}</b> tasks<br>({point.percentage:.1f}%)',
+            shadow: true
+        },
+        credits: {
+            enabled: false
+        },
+        plotOptions: {
+            pie: {
                 innerSize: '75%',
+                allowPointSelect: true,
+                cursor: 'pointer',
                 dataLabels: {
                     enabled: false
-                }
-            }]
-        });
-
-        return chart;
-    }
-
-    function createMilestoneDrilldownChart(elementId, groupedTasks) {
-        function getStatusColor(status) {
-            const statusColors = {
-                0: '#34495e', // No Status
-                1: '#1f77b4', // Open
-                2: '#00a591', // In Progress
-                3: '#9acd32', // Completed
-                4: '#f0ad4e', // On Hold
-                5: '#d9534f'  // Cancelled
-            };
-            return statusColors[status] || '#34495e';
-        }
-
-        function getStatusTextFromNumber(status) {
-            const statusTexts = {
-                0: 'No Status',
-                1: 'Open',
-                2: 'In Progress',
-                3: 'Completed',
-                4: 'On Hold',
-                5: 'Cancelled'
-            };
-            return statusTexts[status] || 'No Status';
-        }
-
-        const mainSeriesData = [];
-        const drilldownSeries = [];
-
-        Object.entries(groupedTasks).forEach(([milestoneId, milestoneData]) => {
-            if (milestoneData['parent']) {
-                const milestoneName = milestoneData['parent'].milestone_task || 'Unnamed Milestone';
-                const milestoneStatus = milestoneData['parent'].status || 0;
-                const milestoneColor = getStatusColor(milestoneStatus);
-
-                let totalActivities = 0;
-                const drilldownData = [];
-                const activitiesList = [];
-
-                if (milestoneData['activities']) {
-                    Object.entries(milestoneData['activities']).forEach(([activityId, activityData]) => {
-                        if (activityData['activity']) {
-                            totalActivities++;
-                            const activityName = activityData['activity'].milestone_task || 'Unnamed Activity';
-                            const activityStatus = activityData['activity'].status || 0;
-                            const activityColor = getStatusColor(activityStatus);
-
-                            drilldownData.push({
-                                name: activityName,
-                                y: 1,
-                                color: activityColor,
-                                status: activityStatus,
-                                statusText: getStatusTextFromNumber(activityStatus)
-                            });
-
-                            activitiesList.push({
-                                name: activityName,
-                                color: activityColor,
-                                statusText: getStatusTextFromNumber(activityStatus)
-                            });
+                },
+                showInLegend: false,
+                borderWidth: 0,
+                states: {
+                    hover: {
+                        brightness: 0.1,
+                        halo: {
+                            size: 0
                         }
-                    });
+                    }
                 }
-
-                mainSeriesData.push({
-                    name: milestoneName,
-                    y: totalActivities,
-                    drilldown: `milestone-${milestoneId}`,
-                    color: milestoneColor,
-                    status: milestoneStatus,
-                    statusText: getStatusTextFromNumber(milestoneStatus),
-                    activitiesList: activitiesList,
-                    totalActivities: totalActivities
-                });
-
-                drilldownSeries.push({
-                    name: milestoneName,
-                    id: `milestone-${milestoneId}`,
-                    data: drilldownData,
-                    color: milestoneColor,
-                    isDrilldown: true
-                });
             }
-        });
-
-        Highcharts.chart(elementId, {
-            chart: {
-                type: 'bar',
-                height: 400,
-                events: {
-                    drilldown: function (e) {
-                        if (e.seriesOptions) {
-                            e.seriesOptions.color = e.point.color;
-                        }
-                    },
-                    drillup: function (e) {
-                        this.series[0].update({
-                            colorByPoint: true
-                        });
-                    }
-                }
-            },
-            title: {
-                text: '',
-                align: 'left'
-            },
-            accessibility: {
-                announceNewData: {
-                    enabled: true
-                }
-            },
-            xAxis: {
-                type: 'category'
-            },
-            yAxis: {
-                title: {
-                    text: 'Number of Activities'
-                },
-                min: 1,
-                allowDecimals: false,
-                tickInterval: 1
-            },
-            legend: {
-                enabled: false
-            },
-            plotOptions: {
-                series: {
-                    borderWidth: 0,
-                    dataLabels: {
-                        enabled: true,
-                        format: '{point.y}',
-                        style: {
-                            fontWeight: 'bold'
-                        }
-                    },
-                    cursor: 'pointer'
-                },
-                bar: {
-                    pointPadding: 0.2,
-                    groupPadding: 0.1
-                }
-            },
-            tooltip: {
-                useHTML: true,
-                backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                borderColor: '#dee2e6',
-                borderRadius: 6,
-                borderWidth: 1,
-                shadow: true,
-                style: {
-                    color: '#333333',
-                    fontSize: '12px',
-                    padding: '10px'
-                },
-                formatter: function () {
-                    if (this.series.userOptions && this.series.userOptions.isDrilldown) {
-                        return `
-                            <span style="font-size:13px; font-weight:bold">${this.point.name}</span><br>
-                            <span style="color:${this.point.color}">●</span> 
-                            Status: <b style="color:${this.point.color}">${this.point.statusText}</b>
-                        `;
-                    } else {
-                        let tooltipHTML = `
-                            <div style="text-align:left;">
-                                <span style="font-size:13px; font-weight:bold">${this.point.name}</span><br>
-                                <span style="color:${this.point.color}">●</span> 
-                                Milestone Status: <b style="color:${this.point.color}">${this.point.statusText}</b><br/>
-                                Total Activities: <b>${this.point.totalActivities}</b>
-                        `;
-
-                        if (this.point.activitiesList && this.point.activitiesList.length > 0) {
-                            tooltipHTML += `
-                                <hr style="margin:8px 0; border:none; border-top:1px solid #eee;">
-                                <div style="font-weight:600; margin-bottom:5px;">Activities:</div>
-                            `;
-
-                            this.point.activitiesList.forEach((activity, index) => {
-                                tooltipHTML += `
-                                    <div style="margin-left:8px; margin-bottom:3px; display:flex; align-items:center; gap:5px;">
-                                        <div style="width:8px; height:8px; background:${activity.color}; border-radius:1px;"></div>
-                                        <span style="font-size:11px;">${activity.name}</span>
-                                        <span style="font-size:10px; color:${activity.color}; margin-left:auto;">${activity.statusText}</span>
-                                    </div>
-                                `;
-                            });
-                        }
-
-                        tooltipHTML += `</div>`;
-                        return tooltipHTML;
-                    }
-                }
-            },
-            series: [{
-                name: 'Milestones',
-                colorByPoint: true,
-                data: mainSeriesData
-            }],
-            drilldown: {
-                activeDataLabelStyle: {
-                    color: '#333333',
-                    fontWeight: 'bold'
-                },
-                breadcrumbs: {
-                    position: {
-                        align: 'right'
-                    },
-                    buttonTheme: {
-                        fill: '#f8f9fa',
-                        stroke: '#dee2e6',
-                        'stroke-width': 1,
-                        style: {
-                            color: '#495057'
-                        },
-                        states: {
-                            hover: {
-                                fill: '#e9ecef'
-                            }
-                        }
-                    }
-                },
-                series: drilldownSeries
-            },
-            credits: {
+        },
+        series: [{
+            name: 'Tasks',
+            colorByPoint: true,
+            data: data,
+            size: '100%',
+            innerSize: '75%',
+            dataLabels: {
                 enabled: false
             }
-        });
-    }
-
-    const statusChart = @json($statusChart);
-    const overallPercentage = {{ $overall }};
-    const groupedTasks = @json($groupedTasks);
-
-    createOverallProgressChart('overallProgressChart', statusChart, overallPercentage);
-    createMilestoneDrilldownChart('container', groupedTasks);
-
-    function initializeHoursVisualization() {
-        const planHours = parseFloat({{ $planHours }}) || 0;
-        const hoursSpent = parseFloat({{ $hoursSpent }}) || 0;
-        const maxValue = Math.max(planHours, hoursSpent, 1);
-        const containerHeight = 100;
-
-        const planHeight = (planHours / maxValue) * (containerHeight * 0.8);
-        const spentHeight = (hoursSpent / maxValue) * (containerHeight * 0.8);
-
-        const planBar = document.getElementById('planHoursBar');
-        const spentBar = document.getElementById('hoursSpentBar');
-
-        if (planBar) {
-            planBar.style.height = Math.max(20, planHeight) + 'px';
-        }
-
-        if (spentBar) {
-            spentBar.style.height = Math.max(20, spentHeight) + 'px';
-        }
-
-        const planLabel = document.getElementById('planHoursLabel');
-        const spentLabel = document.getElementById('hoursSpentLabel');
-
-        if (planLabel) {
-            planLabel.style.top = (planHeight > 25 ? '-25px' : '-30px');
-        }
-
-        if (spentLabel) {
-            spentLabel.style.top = (spentHeight > 25 ? '-25px' : '-30px');
-        }
-    }
-
-    const day = 24 * 36e5;
-    let chart;
-
-    function convertTime(dateString) {
-        if (!dateString) return null;
-        try {
-            const date = new Date(dateString);
-            return Date.UTC(
-                date.getFullYear(),
-                date.getMonth(),
-                date.getDate(),
-                12, 0, 0, 0
-            );
-        } catch (error) {
-            console.error('Error converting date:', dateString, error);
-            return null;
-        }
-    }
-
-    function getColorMilestone(isMilestone) {
-        switch (isMilestone) {
-            case '20': return { color: '#28a745', fontWeight: '600' };
-            case '21': return { color: '#000000', fontWeight: 'bold' };
-            case '70': return { color: '#000000', fontWeight: 'normal' };
-            default: return { color: '#6c757d', fontWeight: 'normal' };
-        }
-    }
-
-    function getStyledMilestone(taskName, isMilestone) {
-        const style = getColorMilestone(isMilestone);
-        return `<span style="color: ${style.color}; font-weight: ${style.fontWeight}">${taskName}</span>`;
-    }
-
-    function isTaskOverdue(planEnd, actualEnd) {
-        if (!planEnd || !actualEnd) return false;
-        try {
-            const planDate = new Date(planEnd);
-            const actualDate = new Date(actualEnd);
-
-            planDate.setHours(0, 0, 0, 0);
-            actualDate.setHours(0, 0, 0, 0);
-
-            return actualDate > planDate;
-        } catch (error) {
-            console.error('Error comparing dates:', error);
-            return false;
-        }
-    }
-
-    function prepareGanttData(tasks) {
-        const seriesData = [];
-        const projectId = {{ $projectId }};
-        const projectName = "{{ addslashes($tasks->first()->project_name ?? 'Project') }}";
-
-        const projectTasks = [{
-            name: projectName,
-            id: `project_${projectId}`,
-            color: '#fac70fff'
-        }];
-
-        tasks.forEach((task, index) => {
-            const taskId = `task_${projectId}_${index}`;
-            const taskName = task.milestone_task ||
-                (task.is_milestone_name ? `Milestone ${index + 1}` : `Task ${index + 1}`);
-
-            const planStart = convertTime(task.plan_start);
-            const planEnd = convertTime(task.plan_end);
-            const actualStart = convertTime(task.actual_start);
-            const actualEnd = convertTime(task.actual_end);
-
-            const formattedName = getStyledMilestone(taskName, task.is_milestone);
-            const isOverdue = isTaskOverdue(task.plan_end, task.actual_end);
-
-            if (planStart && planEnd) {
-                projectTasks.push({
-                    name: getStyledMilestone(taskName + " (Plan)", task.is_milestone),
-                    id: taskId + "_plan",
-                    parent: `project_${projectId}`,
-                    start: planStart,
-                    end: planEnd,
-                    color: '#3498db',
-                    borderColor: '#2980b9',
-                    opacity: 0.8,
-                    type: 'plan',
-                    responsible: task.responsible_name,
-                    status: task.status,
-                    plan_start: task.plan_start?.split(' ')[0],
-                    plan_end: task.plan_end?.split(' ')[0],
-                    actual_start: task.actual_start?.split(' ')[0],
-                    actual_end: task.actual_end?.split(' ')[0],
-                    is_overdue: false,
-                    is_plan: true
-                });
-            }
-
-            if (actualStart) {
-                let actualColor, actualBorderColor, actualType;
-
-                if (!actualEnd) {
-                    actualColor = '#f39c12';
-                    actualBorderColor = '#d68910';
-                    actualType = 'actual_inprogress';
-                } else {
-                    if (isOverdue) {
-                        actualColor = '#e74c3c';
-                        actualBorderColor = '#c0392b';
-                        actualType = 'actual_complete_overdue';
-                    } else {
-                        actualColor = '#2ecc71';
-                        actualBorderColor = '#27ae60';
-                        actualType = 'actual_complete_ontime';
-                    }
-                }
-
-                projectTasks.push({
-                    name: getStyledMilestone(taskName + " (Actual)", task.is_milestone),
-                    id: taskId + "_actual",
-                    parent: `project_${projectId}`,
-                    start: actualStart,
-                    end: actualEnd || actualStart + day,
-                    color: actualColor,
-                    borderColor: actualBorderColor,
-                    opacity: 0.9,
-                    type: actualType,
-                    responsible: task.responsible_name,
-                    status: task.status,
-                    plan_start: task.plan_start?.split(' ')[0],
-                    plan_end: task.plan_end?.split(' ')[0],
-                    actual_start: task.actual_start?.split(' ')[0],
-                    actual_end: task.actual_end?.split(' ')[0],
-                    is_overdue: isOverdue,
-                    is_actual: true,
-                    is_inprogress: !actualEnd
-                });
-            }
-        });
-
-        seriesData.push({
-            name: projectName,
-            data: projectTasks
-        });
-
-        return seriesData;
-    }
-
-    function getDateRange() {
-        const now = new Date();
-        const currentMonth = now.getMonth();
-        const currentYear = now.getFullYear();
-
-        const startDate = new Date(currentYear, currentMonth - 3, 1);
-        const endDate = new Date(currentYear, currentMonth + 4, 0);
-
-        return {
-            min: Date.UTC(startDate.getFullYear(), startDate.getMonth(), startDate.getDate(), 0, 0, 0, 0),
-            max: Date.UTC(endDate.getFullYear(), endDate.getMonth(), endDate.getDate(), 23, 59, 59, 999)
-        };
-    }
-
-    function getXAxisConfig() {
-        const dateRange = getDateRange();
-        const dateTimeLabelFormats = {
-            day: '',
-            week: '',
-            month: '%b %Y',
-            year: '%Y'
-        };
-
-        return {
-            dateTimeLabelFormats: dateTimeLabelFormats,
-            tickInterval: 30 * day
-        };
-    }
-
-    function renderGanttChart() {
-        const tasks = @json($tasks);
-
-        if (!tasks || tasks.length === 0) {
-            document.getElementById('ganttContainer').innerHTML =
-                '<div style="text-align: center; padding: 50px; color: #6c757d;">No tasks available for this project</div>';
-            document.getElementById('exportMenuContainer').style.display = 'none';
-            return;
-        }
-
-        const ganttData = prepareGanttData(tasks);
-        const dateRange = getDateRange();
-        const xAxisConfig = getXAxisConfig();
-        const totalTasks = ganttData.reduce((sum, series) => sum + series.data.length, 0);
-        const rowHeight = 20;
-        const dynamicHeight = Math.max(100, totalTasks * rowHeight);
-
-        const legendData = [
-            { color: '#3498db', label: 'Plan Only', text: '' },
-            { color: '#f39c12', label: 'In Progress', text: '' },
-            { color: '#2ecc71', label: 'On Time', text: '' },
-            { color: '#e74c3c', label: 'Overdue', text: '' }
-        ];
-
-        const options = {
-            chart: {
-                plotBackgroundColor: 'rgba(128,128,128,0.02)',
-                plotBorderColor: 'rgba(128,128,128,0.1)',
-                plotBorderWidth: 1,
-                height: dynamicHeight + 100,
-                events: {
-                    load: function () {
-                        document.getElementById('exportMenuContainer').style.display = 'block';
-                        addCustomLegend(legendData);
-                    }
-                }
-            },
-            credits: { enabled: false },
-            plotOptions: {
-                series: {
-                    borderRadius: '50%',
-                    connectors: {
-                        dashStyle: 'ShortDot',
-                        lineWidth: 2,
-                        radius: 5,
-                        startMarker: { enabled: false }
-                    },
-                    groupPadding: 0,
-                    dataLabels: [{
-                        enabled: true,
-                        align: 'left',
-                        format: '{point.name}',
-                        padding: 10,
-                        style: {
-                            fontWeight: 'normal',
-                            textOutline: 'none'
-                        },
-                        useHTML: true
-                    }]
-                }
-            },
-            series: ganttData,
-            tooltip: {
-                pointFormat: '<span style="font-weight: bold">{point.name}</span><br>' +
-                    'Responsible: <b>{point.responsible}</b><br>' +
-                    'Start: {point.start:%e %b %Y}<br>' +
-                    'End: {point.end:%e %b %Y}<br>' +
-                    '{#if point.is_plan}' +
-                    'Type: <span style="color: #3498db"><b>Plan</b></span><br>' +
-                    '{else}' +
-                    '{#if point.is_inprogress}' +
-                    'Type: <span style="color: #f39c12"><b>Actual (In Progress)</b></span><br>' +
-                    '{else}' +
-                    '{#if point.is_overdue}' +
-                    'Type: <span style="color: #e74c3c"><b>Actual (Overdue)</b></span><br>' +
-                    '{else}' +
-                    'Type: <span style="color: #2ecc71"><b>Actual (Completed)</b></span><br>' +
-                    '{/if}' +
-                    '{/if}' +
-                    '{/if}' +
-                    'Plan Dates: {point.plan_start:%e %b %Y} - {point.plan_end:%e %b %Y}<br>' +
-                    'Actual Dates: {point.actual_start:%e %b %Y} - {point.actual_end:%e %b %Y}',
-                useHTML: true,
-                outside: true,
-                zIndex: 999999
-            },
-            title: { text: '' },
-            xAxis: [{
-                currentDateIndicator: {
-                    color: '#2caffe',
-                    dashStyle: 'ShortDot',
-                    width: 2,
-                    label: { format: 'Today' }
-                },
-                dateTimeLabelFormats: xAxisConfig.dateTimeLabelFormats,
-                grid: { borderWidth: 0 },
-                gridLineWidth: 1,
-                min: dateRange.min,
-                max: dateRange.max,
-                tickInterval: xAxisConfig.tickInterval,
-                units: [['month', [1]]]
-            }],
-            yAxis: {
-                gridLineWidth: 0,
-                labels: { enabled: false },
-                staticScale: 35
-            },
-            exporting: {
-                enabled: true,
-                sourceWidth: 1200,
-                sourceHeight: 800,
-                chartOptions: {
-                    chart: { backgroundColor: '#ffffff' }
-                }
-            }
-        };
-
-        if (chart) {
-            chart.destroy();
-        }
-
-        chart = Highcharts.ganttChart('ganttContainer', options);
-    }
-
-    function addCustomLegend(legendData) {
-        const legendContainer = document.createElement('div');
-        legendContainer.className = 'gantt-legend';
-        legendContainer.style.cssText = `
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-top: 15px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 6px;
-            border: 1px solid #dee2e6;
-        `;
-
-        legendData.forEach(item => {
-            const legendItem = document.createElement('div');
-            legendItem.style.cssText = `
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                font-size: 12px;
-                color: #495057;
-            `;
-
-            const colorBox = document.createElement('div');
-            colorBox.style.cssText = `
-                width: 15px;
-                height: 15px;
-                background: ${item.color};
-                border-radius: 3px;
-                border: 1px solid rgba(0,0,0,0.1);
-            `;
-
-            const textContainer = document.createElement('div');
-            textContainer.innerHTML = `
-                <strong>${item.label}</strong><br>
-                <span style="font-size: 11px; color: #6c757d;">${item.text}</span>
-            `;
-
-            legendItem.appendChild(colorBox);
-            legendItem.appendChild(textContainer);
-            legendContainer.appendChild(legendItem);
-        });
-
-        const ganttContainer = document.getElementById('ganttContainer');
-        ganttContainer.parentNode.insertBefore(legendContainer, ganttContainer.nextSibling);
-    }
-
-    let selectedProcessId = null;
-    const projectId = {{ $projectId }};
-    let trialData = [];
-
-    document.querySelectorAll('.btn-process').forEach(btn => {
-        btn.addEventListener('click', function () {
-            document.querySelectorAll('.btn-process')
-                .forEach(b => b.classList.remove('btn-primary'));
-
-            this.classList.add('btn-primary');
-
-            selectedProcessId = this.dataset.processId;
-            document.getElementById('trialChartSection').classList.remove('d-none');
-            loadTrialData();
-        });
+        }]
     });
 
-    function loadTrialData() {
-        if (!selectedProcessId) return;
+    return chart;
+}
 
-        ['trialChart1', 'trialChart2', 'trialChart3'].forEach(id => {
-            const container = document.getElementById(id);
-            if (container) {
-                container.innerHTML = `
+// ============================================
+// CREATE MILESTONE DRILLDOWN CHART
+// ============================================
+function createMilestoneDrilldownChart(elementId, groupedTasks) {
+    function getStatusColor(status) {
+        const statusColors = {
+            0: '#34495e',
+            1: '#1f77b4',
+            2: '#00a591',
+            3: '#9acd32',
+            4: '#f0ad4e',
+            5: '#d9534f'
+        };
+        return statusColors[status] || '#34495e';
+    }
+
+    function getStatusTextFromNumber(status) {
+        const statusTexts = {
+            0: 'No Status',
+            1: 'Open',
+            2: 'In Progress',
+            3: 'Completed',
+            4: 'On Hold',
+            5: 'Cancelled'
+        };
+        return statusTexts[status] || 'No Status';
+    }
+
+    const mainSeriesData = [];
+    const drilldownSeries = [];
+
+    Object.entries(groupedTasks).forEach(([milestoneId, milestoneData]) => {
+        if (milestoneData['parent']) {
+            const milestoneName = milestoneData['parent'].MILESTONE_TASK ?? 'Unnamed Milestone';
+            const milestoneStatus = milestoneData['parent'].STATUS ?? 0;
+            const milestoneColor = getStatusColor(milestoneStatus);
+
+            let totalActivities = 0;
+            const drilldownData = [];
+            const activitiesList = [];
+
+            if (milestoneData['activities']) {
+                Object.entries(milestoneData['activities']).forEach(([activityId, activityData]) => {
+                    if (activityData['activity']) {
+                        totalActivities++;
+                        const activityName = activityData['activity'].MILESTONE_TASK ?? 'Unnamed Activity';
+                        const activityStatus = activityData['activity'].STATUS ?? 0;
+                        const activityColor = getStatusColor(activityStatus);
+
+                        drilldownData.push({
+                            name: activityName,
+                            y: 1,
+                            color: activityColor,
+                            status: activityStatus,
+                            statusText: getStatusTextFromNumber(activityStatus)
+                        });
+
+                        activitiesList.push({
+                            name: activityName,
+                            color: activityColor,
+                            statusText: getStatusTextFromNumber(activityStatus)
+                        });
+                    }
+                });
+            }
+
+            mainSeriesData.push({
+                name: milestoneName,
+                y: totalActivities,
+                drilldown: `milestone-${milestoneId}`,
+                color: milestoneColor,
+                status: milestoneStatus,
+                statusText: getStatusTextFromNumber(milestoneStatus),
+                activitiesList: activitiesList,
+                totalActivities: totalActivities
+            });
+
+            drilldownSeries.push({
+                name: milestoneName,
+                id: `milestone-${milestoneId}`,
+                data: drilldownData,
+                color: milestoneColor,
+                isDrilldown: true
+            });
+        }
+    });
+
+    Highcharts.chart(elementId, {
+        chart: {
+            type: 'bar',
+            height: 400,
+            events: {
+                drilldown: function (e) {
+                    if (e.seriesOptions) {
+                        e.seriesOptions.color = e.point.color;
+                    }
+                },
+                drillup: function (e) {
+                    this.series[0].update({
+                        colorByPoint: true
+                    });
+                }
+            }
+        },
+        title: {
+            text: '',
+            align: 'left'
+        },
+        accessibility: {
+            announceNewData: {
+                enabled: true
+            }
+        },
+        xAxis: {
+            type: 'category'
+        },
+        yAxis: {
+            title: {
+                text: 'Number of Activities'
+            },
+            min: 1,
+            allowDecimals: false,
+            tickInterval: 1
+        },
+        legend: {
+            enabled: false
+        },
+        plotOptions: {
+            series: {
+                borderWidth: 0,
+                dataLabels: {
+                    enabled: true,
+                    format: '{point.y}',
+                    style: {
+                        fontWeight: 'bold'
+                    }
+                },
+                cursor: 'pointer'
+            },
+            bar: {
+                pointPadding: 0.2,
+                groupPadding: 0.1
+            }
+        },
+        tooltip: {
+            useHTML: true,
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            borderColor: '#dee2e6',
+            borderRadius: 6,
+            borderWidth: 1,
+            shadow: true,
+            style: {
+                color: '#333333',
+                fontSize: '12px',
+                padding: '10px'
+            },
+            formatter: function () {
+                if (this.series.userOptions && this.series.userOptions.isDrilldown) {
+                    return `
+                        <span style="font-size:13px; font-weight:bold">${this.point.name}</span><br>
+                        <span style="color:${this.point.color}">●</span> 
+                        Status: <b style="color:${this.point.color}">${this.point.statusText}</b>
+                    `;
+                } else {
+                    let tooltipHTML = `
+                        <div style="text-align:left;">
+                            <span style="font-size:13px; font-weight:bold">${this.point.name}</span><br>
+                            <span style="color:${this.point.color}">●</span> 
+                            Milestone Status: <b style="color:${this.point.color}">${this.point.statusText}</b><br/>
+                            Total Activities: <b>${this.point.totalActivities}</b>
+                    `;
+
+                    if (this.point.activitiesList && this.point.activitiesList.length > 0) {
+                        tooltipHTML += `
+                            <hr style="margin:8px 0; border:none; border-top:1px solid #eee;">
+                            <div style="font-weight:600; margin-bottom:5px;">Activities:</div>
+                        `;
+
+                        this.point.activitiesList.forEach((activity, index) => {
+                            tooltipHTML += `
+                                <div style="margin-left:8px; margin-bottom:3px; display:flex; align-items:center; gap:5px;">
+                                    <div style="width:8px; height:8px; background:${activity.color}; border-radius:1px;"></div>
+                                    <span style="font-size:11px;">${activity.name}</span>
+                                    <span style="font-size:10px; color:${activity.color}; margin-left:auto;">${activity.statusText}</span>
+                                </div>
+                            `;
+                        });
+                    }
+
+                    tooltipHTML += `</div>`;
+                    return tooltipHTML;
+                }
+            }
+        },
+        series: [{
+            name: 'Milestones',
+            colorByPoint: true,
+            data: mainSeriesData
+        }],
+        drilldown: {
+            activeDataLabelStyle: {
+                color: '#333333',
+                fontWeight: 'bold'
+            },
+            breadcrumbs: {
+                position: {
+                    align: 'right'
+                },
+                buttonTheme: {
+                    fill: '#f8f9fa',
+                    stroke: '#dee2e6',
+                    'stroke-width': 1,
+                    style: {
+                        color: '#495057'
+                    },
+                    states: {
+                        hover: {
+                            fill: '#e9ecef'
+                        }
+                    }
+                }
+            },
+            series: drilldownSeries
+        },
+        credits: {
+            enabled: false
+        }
+    });
+}
+
+// ============================================
+// INITIALIZE HOURS VISUALIZATION
+// ============================================
+function initializeHoursVisualization() {
+    const planHours = parseFloat({{ $planHours }}) || 0;
+    const hoursSpent = parseFloat({{ $hoursSpent }}) || 0;
+    const maxValue = Math.max(planHours, hoursSpent, 1);
+    const containerHeight = 100;
+
+    const planHeight = (planHours / maxValue) * (containerHeight * 0.8);
+    const spentHeight = (hoursSpent / maxValue) * (containerHeight * 0.8);
+
+    const planBar = document.getElementById('planHoursBar');
+    const spentBar = document.getElementById('hoursSpentBar');
+
+    if (planBar) {
+        planBar.style.height = Math.max(20, planHeight) + 'px';
+    }
+
+    if (spentBar) {
+        spentBar.style.height = Math.max(20, spentHeight) + 'px';
+    }
+
+    const planLabel = document.getElementById('planHoursLabel');
+    const spentLabel = document.getElementById('hoursSpentLabel');
+
+    if (planLabel) {
+        planLabel.style.top = (planHeight > 25 ? '-25px' : '-30px');
+    }
+
+    if (spentLabel) {
+        spentLabel.style.top = (spentHeight > 25 ? '-25px' : '-30px');
+    }
+}
+
+// ============================================
+// GANTT CHART FUNCTIONS
+// ============================================
+const day = 24 * 36e5;
+let chart;
+
+function convertTime(dateString) {
+    if (!dateString) return null;
+    try {
+        const date = new Date(dateString);
+        return Date.UTC(
+            date.getFullYear(),
+            date.getMonth(),
+            date.getDate(),
+            12, 0, 0, 0
+        );
+    } catch (error) {
+        console.error('Error converting date:', dateString, error);
+        return null;
+    }
+}
+
+function getColorMilestone(isMilestone) {
+    switch (isMilestone) {
+        case '20': return { color: '#28a745', fontWeight: '600' };
+        case '21': return { color: '#000000', fontWeight: 'bold' };
+        case '70': return { color: '#000000', fontWeight: 'normal' };
+        default: return { color: '#6c757d', fontWeight: 'normal' };
+    }
+}
+
+function getStyledMilestone(taskName, isMilestone) {
+    const style = getColorMilestone(isMilestone);
+    return `<span style="color: ${style.color}; font-weight: ${style.fontWeight}">${taskName}</span>`;
+}
+
+function isTaskOverdue(planEnd, actualEnd) {
+    if (!planEnd || !actualEnd) return false;
+    try {
+        const planDate = new Date(planEnd);
+        const actualDate = new Date(actualEnd);
+
+        planDate.setHours(0, 0, 0, 0);
+        actualDate.setHours(0, 0, 0, 0);
+
+        return actualDate > planDate;
+    } catch (error) {
+        console.error('Error comparing dates:', error);
+        return false;
+    }
+}
+
+function prepareGanttData(tasks) {
+    const seriesData = [];
+    const projectId = {{ $projectId }};
+    const projectName = "{{ addslashes($tasks->first()->PROJECT_NAME ?? 'Project') }}";
+
+    const projectTasks = [{
+        name: projectName,
+        id: `project_${projectId}`,
+        color: '#fac70fff'
+    }];
+
+    tasks.forEach((task, index) => {
+        const taskId = `task_${projectId}_${index}`;
+        const taskName = task.MILESTONE_TASK ||
+            (task.IS_MILESTONE_NAME ? `Milestone ${index + 1}` : `Task ${index + 1}`);
+
+        const planStart = convertTime(task.PLAN_START);
+        const planEnd = convertTime(task.PLAN_END);
+        const actualStart = convertTime(task.ACTUAL_START);
+        const actualEnd = convertTime(task.ACTUAL_END);
+
+        const formattedName = getStyledMilestone(taskName, task.IS_MILESTONE);
+        const isOverdue = isTaskOverdue(task.PLAN_END, task.ACTUAL_END);
+
+        if (planStart && planEnd) {
+            projectTasks.push({
+                name: getStyledMilestone(taskName + " (Plan)", task.IS_MILESTONE),
+                id: taskId + "_plan",
+                parent: `project_${projectId}`,
+                start: planStart,
+                end: planEnd,
+                color: '#3498db',
+                borderColor: '#2980b9',
+                opacity: 0.8,
+                type: 'plan',
+                responsible: task.RESPONSIBLE_NAME,
+                status: task.STATUS,
+                plan_start: task.PLAN_START?.split(' ')[0],
+                plan_end: task.PLAN_END?.split(' ')[0],
+                actual_start: task.ACTUAL_START?.split(' ')[0],
+                actual_end: task.ACTUAL_END?.split(' ')[0],
+                is_overdue: false,
+                is_plan: true
+            });
+        }
+
+        if (actualStart) {
+            let actualColor, actualBorderColor, actualType;
+
+            if (!actualEnd) {
+                actualColor = '#f39c12';
+                actualBorderColor = '#d68910';
+                actualType = 'actual_inprogress';
+            } else {
+                if (isOverdue) {
+                    actualColor = '#e74c3c';
+                    actualBorderColor = '#c0392b';
+                    actualType = 'actual_complete_overdue';
+                } else {
+                    actualColor = '#2ecc71';
+                    actualBorderColor = '#27ae60';
+                    actualType = 'actual_complete_ontime';
+                }
+            }
+
+            projectTasks.push({
+                name: getStyledMilestone(taskName + " (Actual)", task.IS_MILESTONE),
+                id: taskId + "_actual",
+                parent: `project_${projectId}`,
+                start: actualStart,
+                end: actualEnd || actualStart + day,
+                color: actualColor,
+                borderColor: actualBorderColor,
+                opacity: 0.9,
+                type: actualType,
+                responsible: task.RESPONSIBLE_NAME,
+                status: task.STATUS,
+                plan_start: task.PLAN_START?.split(' ')[0],
+                plan_end: task.PLAN_END?.split(' ')[0],
+                actual_start: task.ACTUAL_START?.split(' ')[0],
+                actual_end: task.ACTUAL_END?.split(' ')[0],
+                is_overdue: isOverdue,
+                is_actual: true,
+                is_inprogress: !actualEnd
+            });
+        }
+    });
+
+    seriesData.push({
+        name: projectName,
+        data: projectTasks
+    });
+
+    return seriesData;
+}
+
+function getDateRange() {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    const startDate = new Date(currentYear, currentMonth - 3, 1);
+    const endDate = new Date(currentYear, currentMonth + 4, 0);
+
+    return {
+        min: Date.UTC(startDate.getFullYear(), startDate.getMonth(), startDate.getDate(), 0, 0, 0, 0),
+        max: Date.UTC(endDate.getFullYear(), endDate.getMonth(), endDate.getDate(), 23, 59, 59, 999)
+    };
+}
+
+function getXAxisConfig() {
+    const dateRange = getDateRange();
+    const dateTimeLabelFormats = {
+        day: '',
+        week: '',
+        month: '%b %Y',
+        year: '%Y'
+    };
+
+    return {
+        dateTimeLabelFormats: dateTimeLabelFormats,
+        tickInterval: 30 * day
+    };
+}
+
+function renderGanttChart() {
+    const tasks = @json($tasks);
+
+    if (!tasks || tasks.length === 0) {
+        document.getElementById('ganttContainer').innerHTML =
+            '<div style="text-align: center; padding: 50px; color: #6c757d;">No tasks available for this project</div>';
+        document.getElementById('exportMenuContainer').style.display = 'none';
+        return;
+    }
+
+    const ganttData = prepareGanttData(tasks);
+    const dateRange = getDateRange();
+    const xAxisConfig = getXAxisConfig();
+    const totalTasks = ganttData.reduce((sum, series) => sum + series.data.length, 0);
+    const rowHeight = 20;
+    const dynamicHeight = Math.max(100, totalTasks * rowHeight);
+
+    const legendData = [
+        { color: '#3498db', label: 'Plan Only', text: '' },
+        { color: '#f39c12', label: 'In Progress', text: '' },
+        { color: '#2ecc71', label: 'On Time', text: '' },
+        { color: '#e74c3c', label: 'Overdue', text: '' }
+    ];
+
+    const options = {
+        chart: {
+            plotBackgroundColor: 'rgba(128,128,128,0.02)',
+            plotBorderColor: 'rgba(128,128,128,0.1)',
+            plotBorderWidth: 1,
+            height: dynamicHeight + 100,
+            events: {
+                load: function () {
+                    document.getElementById('exportMenuContainer').style.display = 'block';
+                    addCustomLegend(legendData);
+                }
+            }
+        },
+        credits: { enabled: false },
+        plotOptions: {
+            series: {
+                borderRadius: '50%',
+                connectors: {
+                    dashStyle: 'ShortDot',
+                    lineWidth: 2,
+                    radius: 5,
+                    startMarker: { enabled: false }
+                },
+                groupPadding: 0,
+                dataLabels: [{
+                    enabled: true,
+                    align: 'left',
+                    format: '{point.name}',
+                    padding: 10,
+                    style: {
+                        fontWeight: 'normal',
+                        textOutline: 'none'
+                    },
+                    useHTML: true
+                }]
+            }
+        },
+        series: ganttData,
+        tooltip: {
+            pointFormat: '<span style="font-weight: bold">{point.name}</span><br>' +
+                'Responsible: <b>{point.responsible}</b><br>' +
+                'Start: {point.start:%e %b %Y}<br>' +
+                'End: {point.end:%e %b %Y}<br>' +
+                '{#if point.is_plan}' +
+                'Type: <span style="color: #3498db"><b>Plan</b></span><br>' +
+                '{else}' +
+                '{#if point.is_inprogress}' +
+                'Type: <span style="color: #f39c12"><b>Actual (In Progress)</b></span><br>' +
+                '{else}' +
+                '{#if point.is_overdue}' +
+                'Type: <span style="color: #e74c3c"><b>Actual (Overdue)</b></span><br>' +
+                '{else}' +
+                'Type: <span style="color: #2ecc71"><b>Actual (Completed)</b></span><br>' +
+                '{/if}' +
+                '{/if}' +
+                '{/if}' +
+                'Plan Dates: {point.plan_start:%e %b %Y} - {point.plan_end:%e %b %Y}<br>' +
+                'Actual Dates: {point.actual_start:%e %b %Y} - {point.actual_end:%e %b %Y}',
+            useHTML: true,
+            outside: true,
+            zIndex: 999999
+        },
+        title: { text: '' },
+        xAxis: [{
+            currentDateIndicator: {
+                color: '#2caffe',
+                dashStyle: 'ShortDot',
+                width: 2,
+                label: { format: 'Today' }
+            },
+            dateTimeLabelFormats: xAxisConfig.dateTimeLabelFormats,
+            grid: { borderWidth: 0 },
+            gridLineWidth: 1,
+            min: dateRange.min,
+            max: dateRange.max,
+            tickInterval: xAxisConfig.tickInterval,
+            units: [['month', [1]]]
+        }],
+        yAxis: {
+            gridLineWidth: 0,
+            labels: { enabled: false },
+            staticScale: 35
+        },
+        exporting: {
+            enabled: true,
+            sourceWidth: 1200,
+            sourceHeight: 800,
+            chartOptions: {
+                chart: { backgroundColor: '#ffffff' }
+            }
+        }
+    };
+
+    if (chart) {
+        chart.destroy();
+    }
+
+    chart = Highcharts.ganttChart('ganttContainer', options);
+}
+
+function addCustomLegend(legendData) {
+    const legendContainer = document.createElement('div');
+    legendContainer.className = 'gantt-legend';
+    legendContainer.style.cssText = `
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-top: 15px;
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 6px;
+        border: 1px solid #dee2e6;
+    `;
+
+    legendData.forEach(item => {
+        const legendItem = document.createElement('div');
+        legendItem.style.cssText = `
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #495057;
+        `;
+
+        const colorBox = document.createElement('div');
+        colorBox.style.cssText = `
+            width: 15px;
+            height: 15px;
+            background: ${item.color};
+            border-radius: 3px;
+            border: 1px solid rgba(0,0,0,0.1);
+        `;
+
+        const textContainer = document.createElement('div');
+        textContainer.innerHTML = `
+            <strong>${item.label}</strong><br>
+            <span style="font-size: 11px; color: #6c757d;">${item.text}</span>
+        `;
+
+        legendItem.appendChild(colorBox);
+        legendItem.appendChild(textContainer);
+        legendContainer.appendChild(legendItem);
+    });
+
+    const ganttContainer = document.getElementById('ganttContainer');
+    ganttContainer.parentNode.insertBefore(legendContainer, ganttContainer.nextSibling);
+}
+
+// ============================================
+// TRIAL CHART FUNCTIONS
+// ============================================
+let selectedProcessId = null;
+const projectId = {{ $projectId }};
+let trialData = [];
+
+document.querySelectorAll('.btn-process').forEach(btn => {
+    btn.addEventListener('click', function () {
+        document.querySelectorAll('.btn-process')
+            .forEach(b => b.classList.remove('btn-primary'));
+
+        this.classList.add('btn-primary');
+
+        selectedProcessId = this.dataset.processId;
+        document.getElementById('trialChartSection').classList.remove('d-none');
+        loadTrialData();
+    });
+});
+
+function loadTrialData() {
+    if (!selectedProcessId) return;
+
+    ['trialChart1', 'trialChart2', 'trialChart3'].forEach(id => {
+        const container = document.getElementById(id);
+        if (container) {
+            container.innerHTML = `
                 <div class="text-center text-muted p-5">
                     <div class="spinner-border text-primary" role="status">
                         <span class="visually-hidden">Loading...</span>
@@ -2333,35 +2387,35 @@
                     <p class="mt-2">Loading chart data...</p>
                 </div>
             `;
-            }
-        });
+        }
+    });
 
-        fetch("{{ route('trial.data') }}", {
-            method: "POST",
-            headers: {
-                "X-CSRF-TOKEN": "{{ csrf_token() }}",
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                project_id: projectId,
-                process_id: selectedProcessId
-            })
+    fetch("{{ route('trial.data') }}", {
+        method: "POST",
+        headers: {
+            "X-CSRF-TOKEN": "{{ csrf_token() }}",
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            project_id: projectId,
+            process_id: selectedProcessId
         })
-            .then(res => res.json())
-            .then(data => {
-                trialData = data;
-                renderTrialCharts(data);
-            })
-            .catch(err => {
-                console.error('Error loading trial data:', err);
-                ['trialChart1', 'trialChart2', 'trialChart3'].forEach(id => {
-                    const container = document.getElementById(id);
-                    if (container) {
-                        container.innerHTML = '<div class="text-center text-danger p-5">Error loading chart data</div>';
-                    }
-                });
+    })
+        .then(res => res.json())
+        .then(data => {
+            trialData = data;
+            renderTrialCharts(data);
+        })
+        .catch(err => {
+            console.error('Error loading trial data:', err);
+            ['trialChart1', 'trialChart2', 'trialChart3'].forEach(id => {
+                const container = document.getElementById(id);
+                if (container) {
+                    container.innerHTML = '<div class="text-center text-danger p-5">Error loading chart data</div>';
+                }
             });
-    }
+        });
+}
 
 function renderTrialCharts(data) {
     if (!data || data.length === 0) {
@@ -2372,17 +2426,17 @@ function renderTrialCharts(data) {
     }
 
     const sortedData = [...data].sort((a, b) => {
-        return (a.trial_no || '').localeCompare(b.trial_no || '');
+        return (a.TRIAL_NO || '').localeCompare(b.TRIAL_NO || '');
     });
 
-    const trialNos = sortedData.map(item => item.trial_no || '');
+    const trialNos = sortedData.map(item => item.TRIAL_NO || '');
     const selectedButton = document.querySelector('.btn-process.btn-primary');
     const selectedProcessName = selectedButton ? selectedButton.dataset.processName : '';
 
-    const perctData = sortedData.map(item => parseFloat(item.perct) || 0);
-    const targetData = sortedData.map(item => parseFloat(item.target) || 0);
+    const perctData = sortedData.map(item => parseFloat(item.PERCT) || 0);
+    const targetData = sortedData.map(item => parseFloat(item.TARGET) || 0);
 
-    // Grafik 1: %OK RATIO - DENGAN DATA LABELS
+    // Grafik 1: %OK RATIO
     Highcharts.chart('trialChart1', {
         chart: {
             type: 'column',
@@ -2423,7 +2477,7 @@ function renderTrialCharts(data) {
             }
         },
         tooltip: {
-            headerFormat: '<span style="font-size:10px">Trial {point.key}</span><table>',
+            headerFormat: '<span style="font-size:10px">Trial {point.key}</span><tr>',
             pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
                 '<td style="padding:0"><b>{point.y:.2f}%</b></td></tr>',
             footerFormat: '</table>',
@@ -2442,9 +2496,9 @@ function renderTrialCharts(data) {
                         fontWeight: 'bold',
                         textOutline: 'none'
                     },
-                    color: '#ffffff', // Warna teks putih untuk kontras
-                    inside: true, // Label di dalam kolom
-                    verticalAlign: 'middle', // Posisi vertikal tengah
+                    color: '#ffffff',
+                    inside: true,
+                    verticalAlign: 'middle',
                     crop: false,
                     overflow: 'none'
                 }
@@ -2463,17 +2517,16 @@ function renderTrialCharts(data) {
                 symbol: 'circle',
                 radius: 6
             }
-            // Tidak ada dataLabels untuk target
         }],
         credits: {
             enabled: false
         }
     });
 
-    const ctData = sortedData.map(item => parseFloat(item.ct) || 0);
-    const ctTargetData = sortedData.map(item => parseFloat(item.ct_target) || 0);
+    const ctData = sortedData.map(item => parseFloat(item.CT) || 0);
+    const ctTargetData = sortedData.map(item => parseFloat(item.CT_TARGET) || 0);
 
-    // Grafik 2: CT - DENGAN DATA LABELS
+    // Grafik 2: CT
     Highcharts.chart('trialChart2', {
         chart: {
             type: 'column',
@@ -2505,7 +2558,7 @@ function renderTrialCharts(data) {
             }
         },
         tooltip: {
-            headerFormat: '<span style="font-size:10px">Trial {point.key}</span><table>',
+            headerFormat: '<span style="font-size:10px">Trial {point.key}</span><tr>',
             pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
                 '<td style="padding:0"><b>{point.y:.2f}</b></td></tr>',
             footerFormat: '</table>',
@@ -2545,17 +2598,16 @@ function renderTrialCharts(data) {
                 symbol: 'circle',
                 radius: 6
             }
-            // Tidak ada dataLabels untuk target
         }],
         credits: {
             enabled: false
         }
     });
 
-    const beratData = sortedData.map(item => parseFloat(item.berat) || 0);
-    const beratTargetData = sortedData.map(item => parseFloat(item.berat_target) || 0);
+    const beratData = sortedData.map(item => parseFloat(item.BERAT) || 0);
+    const beratTargetData = sortedData.map(item => parseFloat(item.BERAT_TARGET) || 0);
 
-    // Grafik 3: BERAT - DENGAN DATA LABELS
+    // Grafik 3: BERAT
     Highcharts.chart('trialChart3', {
         chart: {
             type: 'column',
@@ -2585,7 +2637,7 @@ function renderTrialCharts(data) {
             title: {
                 text: 'Berat'
             },
-            tickInterval: 0.5, 
+            tickInterval: 0.5,
             labels: {
                 formatter: function () {
                     return this.value.toLocaleString('id-ID', {
@@ -2596,7 +2648,7 @@ function renderTrialCharts(data) {
             }
         },
         tooltip: {
-            headerFormat: '<span style="font-size:10px">Trial {point.key}</span><table>',
+            headerFormat: '<span style="font-size:10px">Trial {point.key}</span></tr>',
             pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
                 '<td style="padding:0"><b>{point.y:.2f}</b></td></tr>',
             footerFormat: '</table>',
@@ -2636,7 +2688,6 @@ function renderTrialCharts(data) {
                 symbol: 'circle',
                 radius: 6
             }
-            // Tidak ada dataLabels untuk target
         }],
         credits: {
             enabled: false
@@ -2644,77 +2695,107 @@ function renderTrialCharts(data) {
     });
 }
 
-    document.addEventListener('DOMContentLoaded', function () {
-        initializeHoursVisualization();
+// ============================================
+// FILTER TASKS FUNCTIONS
+// ============================================
+function filterTasks() {
+    let visibleTaskCount = 0;
+    const taskGroups = document.querySelectorAll('.task-group-card');
+    const currentMilestoneFilter = document.getElementById('milestoneFilter')?.value || 'all';
 
-        let currentMilestoneFilter = 'all';
+    taskGroups.forEach(group => {
+        const milestoneId = group.getAttribute('data-milestone-id');
 
-        const taskGridContainer = document.getElementById('taskGridContainer');
-        const visibleTaskCounter = document.getElementById('visibleTaskCounter');
-        const milestoneFilter = document.getElementById('milestoneFilter');
+        if (currentMilestoneFilter === 'all' || milestoneId === currentMilestoneFilter) {
+            group.classList.remove('hidden');
 
-        function filterTasks() {
-            let visibleTaskCount = 0;
-            const taskGroups = document.querySelectorAll('.task-group-card');
+            const milestoneCard = group.querySelector('.task-milestone-card');
+            const activityCards = group.querySelectorAll('.task-activity-card');
+            const subactivityCards = group.querySelectorAll('.task-subactivity-card');
 
-            taskGroups.forEach(group => {
-                const milestoneId = group.getAttribute('data-milestone-id');
-
-                if (currentMilestoneFilter === 'all' || milestoneId === currentMilestoneFilter) {
-                    group.classList.remove('hidden');
-
-                    const milestoneCard = group.querySelector('.task-milestone-card');
-                    const activityCards = group.querySelectorAll('.task-activity-card');
-                    const subactivityCards = group.querySelectorAll('.task-subactivity-card');
-
-                    if (milestoneCard) visibleTaskCount++;
-                    visibleTaskCount += activityCards.length;
-                    visibleTaskCount += subactivityCards.length;
-                } else {
-                    group.classList.add('hidden');
-                }
-            });
-
-            visibleTaskCounter.textContent = `(${visibleTaskCount} tasks)`;
-
-            const noTasksMessage = document.querySelector('.no-tasks');
-            if (noTasksMessage) {
-                if (visibleTaskCount === 0) {
-                    noTasksMessage.classList.remove('hidden');
-                } else {
-                    noTasksMessage.classList.add('hidden');
-                }
-            }
+            if (milestoneCard) visibleTaskCount++;
+            visibleTaskCount += activityCards.length;
+            visibleTaskCount += subactivityCards.length;
+        } else {
+            group.classList.add('hidden');
         }
+    });
 
-        if (milestoneFilter) {
-            milestoneFilter.addEventListener('change', function () {
-                currentMilestoneFilter = this.value;
-                filterTasks();
+    const visibleTaskCounter = document.getElementById('visibleTaskCounter');
+    if (visibleTaskCounter) {
+        visibleTaskCounter.textContent = `(${visibleTaskCount} tasks)`;
+    }
+
+    const noTasksMessage = document.querySelector('.no-tasks');
+    if (noTasksMessage) {
+        if (visibleTaskCount === 0) {
+            noTasksMessage.classList.remove('hidden');
+        } else {
+            noTasksMessage.classList.add('hidden');
+        }
+    }
+}
+
+// ============================================
+// DOM CONTENT LOADED
+// ============================================
+document.addEventListener('DOMContentLoaded', function () {
+    // Inisialisasi Hours Visualization
+    initializeHoursVisualization();
+
+    // Inisialisasi Filter Milestone
+    const milestoneFilter = document.getElementById('milestoneFilter');
+    if (milestoneFilter) {
+        milestoneFilter.addEventListener('change', function () {
+            filterTasks();
+        });
+    }
+
+    // Panggil filter tasks awal
+    filterTasks();
+
+    // Inisialisasi Modal Invoice
+    var invoiceModal = document.getElementById('invoiceModal');
+    if (invoiceModal) {
+        var modal = new bootstrap.Modal(invoiceModal);
+        
+        const invoiceCard = document.getElementById('invoiceCard');
+        if (invoiceCard) {
+            invoiceCard.addEventListener('click', function (e) {
+                e.preventDefault();
+                modal.show();
             });
         }
+    }
 
-        filterTasks();
+    // Inisialisasi Export Menu
+    const exportMenuBtn = document.getElementById('exportMenuBtn');
+    const exportMenu = document.getElementById('exportMenu');
 
-        const exportMenuBtn = document.getElementById('exportMenuBtn');
-        const exportMenu = document.getElementById('exportMenu');
+    if (exportMenuBtn && exportMenu) {
+        exportMenuBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            exportMenu.classList.toggle('show');
+        });
 
-        if (exportMenuBtn) {
-            exportMenuBtn.addEventListener('click', function (e) {
-                e.stopPropagation();
-                exportMenu.classList.toggle('show');
-            });
+        document.addEventListener('click', function () {
+            exportMenu.classList.remove('show');
+        });
 
-            document.addEventListener('click', function () {
-                exportMenu.classList.remove('show');
-            });
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        const printChartBtn = document.getElementById('printChartBtn');
+        const downloadPNGBtn = document.getElementById('downloadPNGBtn');
+        const downloadJPGBtn = document.getElementById('downloadJPGBtn');
 
-            document.getElementById('fullscreenBtn').addEventListener('click', function () {
+        if (fullscreenBtn) {
+            fullscreenBtn.addEventListener('click', function () {
                 if (chart) chart.fullscreen.toggle();
                 exportMenu.classList.remove('show');
             });
+        }
 
-            document.getElementById('printChartBtn').addEventListener('click', function () {
+        if (printChartBtn) {
+            printChartBtn.addEventListener('click', function () {
                 if (chart) {
                     chart.exportChart({
                         type: 'application/pdf',
@@ -2725,8 +2806,10 @@ function renderTrialCharts(data) {
                 }
                 exportMenu.classList.remove('show');
             });
+        }
 
-            document.getElementById('downloadPNGBtn').addEventListener('click', function () {
+        if (downloadPNGBtn) {
+            downloadPNGBtn.addEventListener('click', function () {
                 if (chart) {
                     chart.exportChart({
                         type: 'image/png',
@@ -2737,8 +2820,10 @@ function renderTrialCharts(data) {
                 }
                 exportMenu.classList.remove('show');
             });
+        }
 
-            document.getElementById('downloadJPGBtn').addEventListener('click', function () {
+        if (downloadJPGBtn) {
+            downloadJPGBtn.addEventListener('click', function () {
                 if (chart) {
                     chart.exportChart({
                         type: 'image/jpeg',
@@ -2750,101 +2835,106 @@ function renderTrialCharts(data) {
                 exportMenu.classList.remove('show');
             });
         }
+    }
 
-        renderGanttChart();
+    // Buat Charts
+    const statusChart = @json($statusChart);
+    const overallPercentage = {{ $overall }};
+    const groupedTasksData = @json($groupedTasks);
+    
+    createOverallProgressChart('overallProgressChart', statusChart, overallPercentage);
+    createMilestoneDrilldownChart('container', groupedTasksData);
+    
+    // Render Gantt Chart
+    renderGanttChart();
 
-        const invoiceCard = document.getElementById('invoiceCard');
-        if (invoiceCard) {
-            invoiceCard.addEventListener('click', function () {
-                var modal = new bootstrap.Modal(document.getElementById('invoiceModal'));
-                modal.show();
-            });
-        }
+    // Form Invoice Submit
+    const form = document.getElementById('formInvoice');
+    if (form) {
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
 
-        const form = document.getElementById('formInvoice');
-        if (form) {
-            form.addEventListener('submit', function (e) {
-                e.preventDefault();
+            const amount = form.querySelector('[name="amount"]').value;
+            const remarks = form.querySelector('[name="remarks"]').value;
 
-                const amount = form.querySelector('[name="amount"]').value;
-                const remarks = form.querySelector('[name="remarks"]').value;
-
-                if (!amount || amount <= 0) {
-                    Swal.fire('Error', 'Please enter a valid amount', 'error');
-                    return;
-                }
-
-                if (!remarks || remarks.trim() === '') {
-                    Swal.fire('Error', 'Description is required', 'error');
-                    return;
-                }
-
-                fetch("{{ route('invoice.add') }}", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/x-www-form-urlencoded",
-                        "X-CSRF-TOKEN": "{{ csrf_token() }}"
-                    },
-                    body: new URLSearchParams(new FormData(form))
-                })
-                    .then(response => response.json())
-                    .then(res => {
-                        if (res.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Success',
-                                text: res.message,
-                                timer: 1500,
-                                showConfirmButton: false
-                            }).then(() => location.reload());
-                        } else {
-                            Swal.fire('Error', res.message, 'error');
-                        }
-                    })
-                    .catch(err => {
-                        Swal.fire('Error', 'Failed to save invoice', 'error');
-                    });
-            });
-        }
-    });
-
-    Highcharts.addEvent(Highcharts.Axis, 'foundExtremes', e => {
-        if (e.target.options.custom && e.target.options.custom.weekendPlotBands) {
-            const axis = e.target,
-                chart = axis.chart,
-                day = 24 * 36e5,
-                isWeekend = t => /[06]/.test(chart.time.dateFormat('%w', t)),
-                weekendPlotBands = [];
-
-            let inWeekend = false;
-
-            for (
-                let x = Math.floor(axis.min / day) * day;
-                x <= Math.ceil(axis.max / day) * day;
-                x += day
-            ) {
-                const last = weekendPlotBands.at(-1);
-                if (isWeekend(x) && !inWeekend) {
-                    weekendPlotBands.push({
-                        from: x,
-                        color: {
-                            pattern: {
-                                path: 'M 0 10 L 10 0 M -1 1 L 1 -1 M 9 11 L 11 9',
-                                width: 10, height: 10,
-                                color: 'rgba(128,128,128,0.15)'
-                            }
-                        }
-                    });
-                    inWeekend = true;
-                }
-
-                if (!isWeekend(x) && inWeekend && last) {
-                    last.to = x;
-                    inWeekend = false;
-                }
+            if (!amount || amount <= 0) {
+                Swal.fire('Error', 'Please enter a valid amount', 'error');
+                return;
             }
 
-            axis.options.plotBands = weekendPlotBands;
+            if (!remarks || remarks.trim() === '') {
+                Swal.fire('Error', 'Description is required', 'error');
+                return;
+            }
+
+            fetch("{{ route('invoice.add') }}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                },
+                body: new URLSearchParams(new FormData(form))
+            })
+                .then(response => response.json())
+                .then(res => {
+                    if (res.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: res.message,
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => location.reload());
+                    } else {
+                        Swal.fire('Error', res.message, 'error');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    Swal.fire('Error', 'Failed to save invoice', 'error');
+                });
+        });
+    }
+});
+
+// Highcharts event untuk weekend plot bands
+Highcharts.addEvent(Highcharts.Axis, 'foundExtremes', e => {
+    if (e.target.options.custom && e.target.options.custom.weekendPlotBands) {
+        const axis = e.target,
+            chart = axis.chart,
+            day = 24 * 36e5,
+            isWeekend = t => /[06]/.test(chart.time.dateFormat('%w', t)),
+            weekendPlotBands = [];
+
+        let inWeekend = false;
+
+        for (
+            let x = Math.floor(axis.min / day) * day;
+            x <= Math.ceil(axis.max / day) * day;
+            x += day
+        ) {
+            const last = weekendPlotBands.at(-1);
+            if (isWeekend(x) && !inWeekend) {
+                weekendPlotBands.push({
+                    from: x,
+                    color: {
+                        pattern: {
+                            path: 'M 0 10 L 10 0 M -1 1 L 1 -1 M 9 11 L 11 9',
+                            width: 10, height: 10,
+                            color: 'rgba(128,128,128,0.15)'
+                        }
+                    }
+                });
+                inWeekend = true;
+            }
+
+            if (!isWeekend(x) && inWeekend && last) {
+                last.to = x;
+                inWeekend = false;
+            }
         }
-    });
+
+        axis.options.plotBands = weekendPlotBands;
+    }
+});
 </script>
